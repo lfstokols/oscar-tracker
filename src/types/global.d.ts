@@ -8,26 +8,30 @@ declare global {
 	
 	type DataFlavor = 'movies' | 'users' | 'nominations' | 'categoriess' | 'watchlist';
 
+	type MovieId = string;
+	type UserId = string;
+	type CategoryId = string;
+
 	type RawUser = {
-		userId: string,
+		userId: UserId,
 		username: string,
 		//[other: string]: any,
 	}
 	
 	type RawMovie = {
-		movieId: string,
+		movieId: MovieId,
 		title: string,
 		//[other: string]: any,
 	}
 	
 	type Nom = {
-		movieId: string,
-		catId: string,
+		movieId: MovieId,
+		catId: CategoryId,
 		note: string,
 	}
 	
 	type Category = {
-		catId: string,
+		catId: CategoryId,
 		shortName:string, 
 		fullName: string, 
 		hasNote: boolean, 
@@ -37,8 +41,8 @@ declare global {
 	}
 	
 	type WatchNotice = {
-		userId: string,
-		movieId: string,
+		userId: UserId,
+		movieId: MovieId,
 		status: watchStatus,
 	}
 	

@@ -1,11 +1,10 @@
-from datetime import time
-from time import sleep
+#from datetime import time
+#from time import sleep
 import random
 from pathlib import Path
 import re
 import pandas as pd
 import numpy as np
-import os
 import sys
 from contextlib import contextmanager
 if sys.platform.startswith('win'):
@@ -63,7 +62,7 @@ class StorageManager:
 			if id not in existing_ids:
 				return id
 			tries += 1
-		raise Exception(f"Unable to create unique ID. Erroring out to avoid infinite loop.")
+		raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")
 
 	# Converts flavor from alias
 	# Throws on invalid flavor
