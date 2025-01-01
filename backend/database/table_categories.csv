@@ -1,0 +1,24 @@
+id,shortName,fullName,hasNote,isShort,grouping,maxNoms
+cat_pict,Best Picture,Best Picture,0,0,Big Three,10
+cat_mact,Actor,Best Actor,1,0,Acting,5
+cat_fact,Actress,Best Actress,1,0,Acting,5
+cat_msac,Supporting Actor,Best Supporting Actor,1,0,Acting,5
+cat_fsac,Supporting Actress,Best Supporting Actress,1,0,Acting,5
+cat_dirc,Director,Best Director,0,0,Big Three,5
+cat_oscp,Original Screenplay,Best Original Screenplay,0,0,Big Three,5
+cat_ascp,Adapted Screenplay,Best Adapted Screenplay,0,0,Big Three,5
+cat_anim,Animated,Best Animated Feature,0,0,Best in Class,5
+cat_cine,Cinematography,Best Cinematography,0,0,Technical (Filmkraft),5
+cat_edit,Editing,Best Film Editing,0,0,Technical (Filmkraft),5
+cat_soun,Sound,Best Sound,0,0,Technical (Audio),5
+cat_scor,Score,Best Original Score,0,0,Technical (Audio),5
+cat_song,Original Song,Best Original Song,1,0,Technical (Audio),5
+cat_prod,Production Design,Best Production Design,0,0,Technical (Art),5
+cat_mkup,Makeup & Hair,Best Makeup and Hairstyling,0,0,Technical (Art),5
+cat_cstu,Costumes,Best Costume Design,0,0,Technical (Art),5
+cat_vfxx,Visual Effects,Best Visual Effects,0,0,Technical (Art),5
+cat_frgn,International,Best International Feature Film,1,0,Best in Class,5
+cat_docu,Documentary,Best Documentary Feature Film,0,0,Best in Class,5
+cat_shla,Short (Live-Action),Best Live Action Short Film,0,1,Short,5
+cat_sanm,Short (Animated),Best Animated Short Film,0,1,Short,5
+cat_sdoc,Short (Documentary),Best Documentary Short Film,0,1,Short,5

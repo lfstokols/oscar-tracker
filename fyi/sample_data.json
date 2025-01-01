@@ -1,0 +1,17 @@
+{
+	"users": {"username": "Logan", "seenlist": ["Oppenheimer"]},
+	"movies":[
+		{"name": "Oppenheimer", "nominations": [
+			"Best Picture", "Actor", "Actress"
+		]},
+		{"name": "Poor Things", "nominations": [
+			"Best Picture", "Actor", "Actress"
+		]},
+		{"name": "Killers of the Flower Moon", "nominations": [
+			"Best Picture", "Actor", "Actress"
+		]},
+		{"name": "Barbie", "nominations": [
+			"Best Picture", "Actor", "Actress"
+		]}
+	]
+}
