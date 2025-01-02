@@ -43,10 +43,11 @@ declare global {
 	type WatchNotice = {
 		userId: UserId,
 		movieId: MovieId,
-		status: watchStatus,
+		status: WatchStatus,
 	}
 	
-	type watchStatus = 'seen' | 'todo' | '';
+	//type watchStatus = 'seen' | 'todo' | '';
+
 	
 	type Movie = {
 		title: string,
@@ -79,4 +80,3 @@ declare global {
   }
   
   export {}; // Ensures this file is treated as a module
-  

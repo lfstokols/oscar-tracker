@@ -8,19 +8,19 @@ export default function useData(year: number):
 												categories: Category[] | undefined, 
 												watchlist: WatchNotice[] | undefined 
 											}, 
-		isFetching: boolean } {
+									isFetching: boolean } {
 	const movieResults = useQuery({
 		queryKey: ['movieData'],
-		queryFn: async () => {
+		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
 				`/api/${'movies'}?year=${year}`, { method: 'GET' }
 			);
-			return await response.json() as RawMovie[];
+			return await response.json();
 		},
 	});
 	const userResults = useQuery({
 		queryKey: ['userData'],
-		queryFn: async () => {
+		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
 				`/api/${'users'}?year=${year}`, { method: 'GET' }
 			);
@@ -29,7 +29,7 @@ export default function useData(year: number):
 	});
 	const nomResults = useQuery({
 		queryKey: ['nominationData'],
-		queryFn: async () => {
+		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
 				`/api/${'nominations'}?year=${year}`, { method: 'GET' }
 			);
@@ -38,7 +38,7 @@ export default function useData(year: number):
 	});
 	const catResults = useQuery({
 		queryKey: ['categoryData'],
-		queryFn: async () => {
+		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
 				`/api/${'categories'}?year=${year}`, { method: 'GET' }
 			);
@@ -47,9 +47,10 @@ export default function useData(year: number):
 	});
 	const watchResults = useQuery({
 		queryKey: ['watchlistData'],
-		queryFn: async () => {
+		queryFn: async ():Promise<unknown> => {
+			const params = new URLSearchParams({ year: year.toString(), userId: 'all' });
 			const response = await fetch(
-				`/api/${'watchlist'}?year=${year}`, { method: 'GET' }
+				`/api/${'watchlist'}?${params.toString()}`, { method: 'GET' }
 			);
 			return await response.json() as WatchNotice[];
 		},
@@ -59,43 +60,57 @@ export default function useData(year: number):
 	const isError = movieResults.error !== null || userResults.error !== null || nomResults.error !== null || catResults.error !== null || watchResults.error !== null;
 	const allData = {
 		movies: mapMovie(movieResults.data),
-		users: mapUser(movieResults.data),
+		users: mapUser(userResults.data),
 		nominations: mapNom(nomResults.data),
 		categories: mapCategory(catResults.data),
-		watchlist: (watchResults.data),
+		watchlist: mapWatchlist(watchResults.data),
 	};
 	return { isPending, isError, allData, isFetching };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapMovie(data: any[] | undefined): RawMovie[] | undefined{
+function mapMovie(data: unknown | undefined): RawMovie[] | undefined{
 	if (data === undefined) return undefined;
-	return data.map(item => ({
+	if (!Array.isArray(data)) throw new Error('Movie Data is not an array');
+	if (!data.every(item => item.hasOwnProperty('id'))) throw new Error('Movie Data does not have an id property');
+	if (!data.every(item => item.hasOwnProperty('title'))) throw new Error('Movie Data does not have a title property');
+	return data.map((item):RawMovie => ({
 		movieId: item.id,
 		title: item.title,
 	}));
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapNom(data: any[] | undefined): Nom[] | undefined {
+function mapNom(data: unknown | undefined): Nom[] | undefined {
 	if (data === undefined) return undefined;
-	return data.map(item => ({
+	if (!Array.isArray(data)) throw new Error('Nomination Data is not an array');
+	if (!data.every(item => item.hasOwnProperty('movie'))) throw new Error('Nomination Data does not have a movie property');
+	if (!data.every(item => item.hasOwnProperty('category'))) throw new Error('Nomination Data does not have a category property');
+	if (!data.every(item => item.hasOwnProperty('note'))) throw new Error('Nomination Data does not have a note property');
+	return data.map((item):Nom => ({
 		movieId: item.movie,
 		catId: item.category,
 		note: item.note,
 	}));
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapUser(data: any[] | undefined): RawUser[] | undefined {
+function mapUser(data: unknown | undefined): RawUser[] | undefined {
 	if (data === undefined) return undefined;
-	return data.map(item => ({
+	if (!Array.isArray(data)) throw new Error('User Data is not an array');
+	if (!data.every(item => item.hasOwnProperty('id'))) throw new Error('User Data does not have an id property');
+	if (!data.every(item => item.hasOwnProperty('username'))) throw new Error('User Data does not have a username property');
+	return data.map((item):RawUser => ({
 		userId: item.id,
 		username: item.username,
 	}));
 }
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function mapCategory(data: any[] | undefined): Category[] | undefined {
+function mapCategory(data: unknown | undefined): Category[] | undefined {
 	if (data === undefined) return undefined;
-	return data.map(item => ({
+	if (!Array.isArray(data)) throw new Error('Category Data is not an array');
+	if (!data.every(item => item.hasOwnProperty('id'))) throw new Error('Category Data does not have an id property');
+	if (!data.every(item => item.hasOwnProperty('shortName'))) throw new Error('Category Data does not have a shortName property');
+	if (!data.every(item => item.hasOwnProperty('fullName'))) throw new Error('Category Data does not have a fullName property');
+	if (!data.every(item => item.hasOwnProperty('hasNote'))) throw new Error('Category Data does not have a hasNote property');
+	if (!data.every(item => item.hasOwnProperty('isShort'))) throw new Error('Category Data does not have an isShort property');
+	if (!data.every(item => item.hasOwnProperty('grouping'))) throw new Error('Category Data does not have a grouping property');
+	if (!data.every(item => item.hasOwnProperty('maxNoms'))) throw new Error('Category Data does not have a maxNoms property');
+	return data.map((item):Category => ({
 		catId: item.id,
 		shortName: item.shortName,
 		fullName: item.fullName,
@@ -103,5 +118,17 @@ function mapCategory(data: any[] | undefined): Category[] | undefined {
 		isShort: item.isShort,
 		grouping: item.grouping,
 		maxNoms: item.maxNoms,
+	}));
+}
+function mapWatchlist(data: unknown | undefined): WatchNotice[] | undefined {
+	if (data === undefined) return undefined;
+	if (!Array.isArray(data)) throw new Error('Watchlist Data is not an array');
+	if (!data.every(item => item.hasOwnProperty('userId'))) throw new Error('Watchlist Data does not have a userId property');
+	if (!data.every(item => item.hasOwnProperty('movieId'))) throw new Error('Watchlist Data does not have a movieId property');
+	if (!data.every(item => item.hasOwnProperty('status'))) throw new Error('Watchlist Data does not have a status property');
+	return data.map((item):WatchNotice => ({
+		userId: item.userId,
+		movieId: item.movieId,
+		status: item.status,
 	}));
 }

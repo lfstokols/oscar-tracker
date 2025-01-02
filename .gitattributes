@@ -1,0 +1,18 @@
+# Exclude files from server version
+#syntax is `filename export-ignore` or `folder/ export-ignore`
+
+# Config files
+vite.config.mjs export-ignore
+.gitignore export-ignore
+.pylintrc export-ignore
+babel.config.js export-ignore
+package.json export-ignore
+package-lock.json export-ignore
+tsconfig.json export-ignore
+
+# Dev Folders
+src/ export-ignore
+fyi/ export-ignore
+
+# Inside backend/
+devserver.py export-ignore

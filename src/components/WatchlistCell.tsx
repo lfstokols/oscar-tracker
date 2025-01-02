@@ -1,32 +1,34 @@
 import React, { useState } from 'react';
+import { WatchStatus } from './NomineeTable';
 
 type Props = {
-	initState: watchStatus,
+	initState: WatchStatus,
 };
 
 export default function MultiStateCell({ initState }: Props): React.ReactElement{
-	const indexToStatus: Record<number,watchStatus> = {
-	0: '',
-	1: 'seen',
-	2: 'todo',
+	const indexToStatus: Record<number,WatchStatus> = {
+		0: WatchStatus.blank,
+		1: WatchStatus.seen,
+		2: WatchStatus.todo,
 	};
-	const statusToIndex: Record<watchStatus,number> = {
-	'': 0,
-	'seen': 1,
-	'todo': 2,
+	const statusToIndex = (stat:WatchStatus): number => {
+		if (stat === WatchStatus.blank) return 0;
+		if (stat === WatchStatus.seen) return 1;
+		if (stat === WatchStatus.todo) return 2;
+		return 0;
 	};
-	const [watchState, setWatchState] = useState(statusToIndex[initState]);
+	const [watchState, setWatchState] = useState(statusToIndex(initState));
   
-	const handleDoubleClick = () => {
+	const handleInteract = () => {
 	  setWatchState((prevIndex) => (prevIndex + 1) % 3);
 	};
   
 	return (
 		<div 
-			onDoubleClick={handleDoubleClick}
+			onClick={handleInteract}
 			style={{ 
 				cursor: 'pointer', 
-				backgroundColor: watchState === 0 ? 'transparent' : watchState === 1 ? 'lightgreen' : 'lightgoldenrodyellow',
+				backgroundColor: watchState === 0 ? 'lightgrey' : watchState === 1 ? 'lightgreen' : 'lightgoldenrodyellow',
 				minWidth: '50px',
 				minHeight: '20px',
 				width: '100%',
