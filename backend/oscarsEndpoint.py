@@ -8,7 +8,7 @@ from logic.MyTypes import *
 storage = StorageManager(os.path.join(os.path.dirname(__file__), 'database'))
 
 oscars = Blueprint('oscars', __name__,
-				   static_folder='../public',
+				   static_folder='../dist/',
 				   static_url_path='/oscars/')
 #CORS(oscars)  # Enable CORS for all routes
 
@@ -69,6 +69,10 @@ def get_watchlist():
 @oscars.route('/')
 def serve_root():
 	return send_from_directory(oscars.static_folder, 'index.html')
+@oscars.route('/favicon<path:_>')
+def serve_favicon(_):
+	return send_from_directory('../public', 'favicon.ico')
+
 @oscars.route('/<path:relpath>')
 def serve(relpath):
 	filepath = Path(oscars.static_folder) / relpath

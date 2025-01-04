@@ -13,6 +13,3 @@ tsconfig.json export-ignore
 # Dev Folders
 src/ export-ignore
 fyi/ export-ignore
-
-# Inside backend/
-devserver.py export-ignore

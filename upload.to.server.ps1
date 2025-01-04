@@ -23,35 +23,56 @@ try {
     Write-Error "Error during Vite build: $_"
     exit 1
 }
-Write-Host "Project build completed.
+if ($?) {
+	Write-Host "Project build completed."
+} else { throw $_ }
 
 # Archive the git repository
 Write-Host "Archiving the repo as $ArchiveName.gz..."
 try {
     git archive --format=tar --output="$ArchiveName" HEAD
-    tar --append --file=$ArchiveName -C . build/
-    gzip $ArchiveName
+	if ($?) {
+		Write-Host "Git archive done..."
+	} else { throw $_ }	
+    tar --append --file=".\$ArchiveName" dist
+	if ($?) {
+		Write-Host "dist/ folder added..."
+	} else { throw $_ }
+    gzip "$ArchiveName"
+	if ($?) {
+		Write-Host "Result gzipped..."
+	} else { throw $_ }
 } catch {
     Write-Error "Error during archive creation: $_"
     exit 1
 }
-if (-not (Test-Path "$ArchiveName.gz")) {
+if (-not (Test-Path "${ArchiveName}.gz")) {
     Write-Error "Archive was not created successfully."
     exit 1
+}
+if ((Test-Path "${ArchiveName}.gz")) {
+    Write-Host "Archive was created successfully."
 }
 Write-Host "Archive created: $ArchiveName.gz"
 
 # Upload to SSH server
 Write-Host "Uploading $ArchiveName.gz to $env:MY_SSH..."
 try {
-    & scp $ArchiveName.gz $env:MY_SSH:$env:REMOTE_PATH
+    scp ".\${ArchiveName}.gz" "${env:MY_SSH}:${env:REMOTE_PATH}"
+	if ($?) {
+		Write-Host "Upload complete."
+	} else { throw $_ }
 } catch {
     Write-Error "Error during upload to the server: $_"
     exit 1
 }
-Write-Host "Upload complete."
+
 
 # Cleanup local archive
-Write-Host "Cleaning up local archive..."
-Remove-Item $ArchiveName.gz
+$resp = Read-Host "Would you like to clean up? (y/n) "
+if ($resp -eq "y") {
+	Write-Host "Cleaning up local archive..."
+	Remove-Item "${ArchiveName}.gz"
+	Write-Host "Cleaned up!"
+}
 Write-Host "Done!"

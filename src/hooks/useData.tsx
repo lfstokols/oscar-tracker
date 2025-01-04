@@ -13,7 +13,7 @@ export default function useData(year: number):
 		queryKey: ['movieData'],
 		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
-				`/api/${'movies'}?year=${year}`, { method: 'GET' }
+				`api/${'movies'}?year=${year}`, { method: 'GET' }
 			);
 			return await response.json();
 		},
@@ -22,7 +22,7 @@ export default function useData(year: number):
 		queryKey: ['userData'],
 		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
-				`/api/${'users'}?year=${year}`, { method: 'GET' }
+				`api/${'users'}?year=${year}`, { method: 'GET' }
 			);
 			return await response.json() as RawUser[];
 		},
@@ -31,7 +31,7 @@ export default function useData(year: number):
 		queryKey: ['nominationData'],
 		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
-				`/api/${'nominations'}?year=${year}`, { method: 'GET' }
+				`api/${'nominations'}?year=${year}`, { method: 'GET' }
 			);
 			return await response.json() as Nom[];
 		},
@@ -40,7 +40,7 @@ export default function useData(year: number):
 		queryKey: ['categoryData'],
 		queryFn: async ():Promise<unknown> => {
 			const response = await fetch(
-				`/api/${'categories'}?year=${year}`, { method: 'GET' }
+				`api/${'categories'}?year=${year}`, { method: 'GET' }
 			);
 			return await response.json() as Category[];
 		},
@@ -50,7 +50,7 @@ export default function useData(year: number):
 		queryFn: async ():Promise<unknown> => {
 			const params = new URLSearchParams({ year: year.toString(), userId: 'all' });
 			const response = await fetch(
-				`/api/${'watchlist'}?${params.toString()}`, { method: 'GET' }
+				`api/${'watchlist'}?${params.toString()}`, { method: 'GET' }
 			);
 			return await response.json() as WatchNotice[];
 		},
