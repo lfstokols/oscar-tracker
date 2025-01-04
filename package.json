@@ -13,7 +13,8 @@
 		"@emotion/styled": "",
 		"@fontsource/roboto": "",
 		"@tanstack/react-query": "^5.62.11",
-		"@tanstack/react-query-devtools": "^5.62.11"
+		"@tanstack/react-query-devtools": "^5.62.11",
+		"js-cookie": ""
 	},
 	"devDependencies": {
 		"@babel/core": "^7.23.0",

@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useContext } from "react";
 import { AppTabType } from "../types/Enums"
-import App from "../App";
+import Cookies from 'js-cookie';
 
 export type OscarAppContextValue= Readonly<{
 	selectedTab: AppTabType,
@@ -42,8 +42,8 @@ export default function OscarAppContextProvider(
 		return {
 				selectedTab,
 				setSelectedTab,
-				activeUser: activeUser,
-				setActiveUser: setActiveUser,
+				activeUser,
+				setActiveUser,
 				preferences,
 				setPreferences,
 				year,
@@ -62,6 +62,7 @@ export default function OscarAppContextProvider(
 
 	return (
 		<OscarAppContext.Provider value={contextValue}>
+			<CookieHandler />
 			{props.children}
 		</OscarAppContext.Provider>
 	);
@@ -77,3 +78,26 @@ const activeUser = contextValue.activeUser
 // second example
 const {activeUser}d = useContext(OscarAppContext); //faster way to just get activeUser
 */
+
+function CookieHandler(): React.ReactElement {
+	const { activeUser, setActiveUser} = useContext(OscarAppContext);
+	const EXPIRATION_DAYS = 400;
+	const [isInitialised, setIsInitialised] = useState(false);
+
+	useEffect(() => {
+		if (isInitialised) {
+			Cookies.set('activeUser', activeUser, {expires: EXPIRATION_DAYS});
+		} else {
+			setIsInitialised(true);
+			const value: string|undefined = Cookies.get('activeUser');
+			if (value && value.startsWith('usr_')) {
+				setActiveUser(value);
+			} else {
+				setActiveUser(null);
+			}
+		}
+
+	}, [activeUser]);
+	//useEffect(() => {Cookies.set('activeUser', activeUser, {expires: EXPIRATION_DAYS})}, [activeUser]);
+	return <></>;
+}
