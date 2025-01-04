@@ -11,6 +11,8 @@ import {
 	QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import OscarAppContext from './contexts/AppContext';
+import SiteHeader from './components/SiteHeader';
 
 const queryClient = new QueryClient();
 
@@ -26,12 +28,14 @@ export default function App(): React.ReactElement {
 				<ErrorBoundary>
 					<Suspense fallback={<div>Loading app...</div>}>
 						<QueryClientProvider client={queryClient}>
-							<ReactQueryDevtools />
-							<div className="App">
-								<h1>Oscar Nominee Tracker</h1>
-								<UserControls filterWatched={filterWatched} setFilterWatched={setFilterWatched} />
-								<NomineeTable filterWatched={filterWatched} />
-							</div>
+							<OscarAppContext>
+								<ReactQueryDevtools />
+								<div className="App">
+									<SiteHeader />
+									<UserControls filterWatched={filterWatched} setFilterWatched={setFilterWatched} />
+									<NomineeTable filterWatched={filterWatched} />
+								</div>
+							</OscarAppContext>
 						</QueryClientProvider>
 					</Suspense>
 				</ErrorBoundary>

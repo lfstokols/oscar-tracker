@@ -42,6 +42,9 @@ export default function useData(year: number):
 			const response = await fetch(
 				`api/${'categories'}?year=${year}`, { method: 'GET' }
 			);
+			if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 			return await response.json() as Category[];
 		},
 	});
@@ -52,6 +55,9 @@ export default function useData(year: number):
 			const response = await fetch(
 				`api/${'watchlist'}?${params.toString()}`, { method: 'GET' }
 			);
+			if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 			return await response.json() as WatchNotice[];
 		},
 	});

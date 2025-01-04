@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { WatchStatus } from './NomineeTable';
+import { WatchStatus } from '../types/Enums';
 
 type Props = {
 	initState: WatchStatus,

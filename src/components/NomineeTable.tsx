@@ -13,6 +13,7 @@ import {
   TablePagination,
   TableSortLabel
 } from '@mui/material';
+import { WatchStatus } from '../types/Enums';
 
 
 //const TEST_DATA = '{ "users": [{ "username": "Logan", "watchedMovies": ["Oppenheimer"] }], "movies": [ { "title": "Oppenheimer", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Poor Things", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Killers of the Flower Moon", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Barbie", "nominations": [ "Best Picture", "Actor", "Actress" ] } ] }';
@@ -27,11 +28,7 @@ export type Row = {
 	category_tooltip: string|null,
 } & Record<Exclude<string, 'title' | 'categories'>, WatchStatus>
 
-export enum WatchStatus {
-	seen = 'seen',
-	todo = 'todo',
-	blank = '',
-}
+
 
 function NomineeTable(): React.ReactElement {
 	const [page, setPage] = useState(0);

@@ -48,6 +48,9 @@ declare global {
 	
 	//type watchStatus = 'seen' | 'todo' | '';
 
+	type Preferences = {
+		shortsAreSeparate: boolean,
+	}
 	
 	type Movie = {
 		title: string,
