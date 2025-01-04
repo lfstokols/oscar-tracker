@@ -13,3 +13,20 @@ tsconfig.json export-ignore
 # Dev Folders
 src/ export-ignore
 fyi/ export-ignore
+
+## EOL to unix, force conversion
+
+# Force LF for all text files
+* text=auto eol=lf
+
+# Explicitly set LF for common text file types
+*.js eol=lf
+*.ts eol=lf
+*.jsx eol=lf
+*.tsx eol=lf
+*.css eol=lf
+*.html eol=lf
+*.json eol=lf
+
+# Prevent conversion for PowerShell scripts
+*.ps1 eol=crlf
