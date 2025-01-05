@@ -1,10 +1,11 @@
-import React, { useContext, useState } from "react";
+import React, { use } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LinearProgress } from "@mui/material";
 import { Error } from "@mui/icons-material";
 import { WatchStatus } from "../types/Enums";
 import useWatchlist from "../hooks/useWatchlist";
 import { OscarAppContext } from "../contexts/AppContext";
+import {useNotifications} from "../modules/notifications/NotificationContext";
 
 type Props = {
 	movieId: MovieId;
@@ -15,9 +16,11 @@ export default function WatchlistCell({
 	movieId,
 	userId,
 }: Props): React.ReactElement {
-	const { isPending, isError, watchlist } = useWatchlist();
 	const queryClient = useQueryClient();
-	const { activeUserId } = useContext(OscarAppContext);
+	const notifications = useNotifications();
+
+	const { isPending, isError, watchlist } = useWatchlist();
+
 	const mutation = useMutation({
 		mutationFn: async (newState: WatchStatus) => {
 			const body = JSON.stringify({ movieId, status: newState, year: 2023 });
@@ -33,11 +36,14 @@ export default function WatchlistCell({
 			//	queryKey: ["watchlistData"],
 			//});
 		},
+		onError: async (response) => {
+			notifications.show({type: 'error', message: 'Failed to update watch status.',});
+		}
 	});
 	if (isPending) return <LinearProgress />;
 	if (isError) return <Error />;
 
-	const isEditingDisabled = activeUserId !== userId;
+	const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
 	const remoteWatchState: WatchStatus =
 		watchlist!.find((item) => item.movieId === movieId)?.status ??
 		WatchStatus.blank;
