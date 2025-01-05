@@ -5,8 +5,8 @@ import Cookies from "js-cookie";
 export type OscarAppContextValue = Readonly<{
 	selectedTab: AppTabType;
 	setSelectedTab: (tab: AppTabType) => void;
-	activeUser: string | null;
-	setActiveUser: (username: string | null) => void;
+	activeUserId: string | null;
+	setActiveUserId: (username: string | null) => void;
 	preferences: Preferences;
 	setPreferences: (pref: Preferences) => void;
 	year: number;
@@ -16,8 +16,8 @@ export type OscarAppContextValue = Readonly<{
 const DEFAULT_CONTEXT_VALUE: OscarAppContextValue = {
 	selectedTab: AppTabType.legacy,
 	setSelectedTab: (tab) => {},
-	activeUser: null,
-	setActiveUser: (username) => {},
+	activeUserId: null,
+	setActiveUserId: (username) => {},
 	preferences: { shortsAreSeparate: false },
 	setPreferences: (pref) => {},
 	year: 2023,
@@ -35,7 +35,7 @@ export default function OscarAppContextProvider(
 	props: Props
 ): React.ReactElement {
 	const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
-	const [activeUser, setActiveUser] = useState<string | null>(null);
+	const [activeUserId, setActiveUserId] = useState<string | null>(null);
 	const [preferences, setPreferences] = useState<Preferences>({
 		shortsAreSeparate: false,
 	});
@@ -45,8 +45,8 @@ export default function OscarAppContextProvider(
 		return {
 			selectedTab,
 			setSelectedTab,
-			activeUser,
-			setActiveUser,
+			activeUserId,
+			setActiveUserId,
 			preferences,
 			setPreferences,
 			year,
@@ -55,8 +55,8 @@ export default function OscarAppContextProvider(
 	}, [
 		selectedTab,
 		setSelectedTab,
-		activeUser,
-		setActiveUser,
+		activeUserId,
+		setActiveUserId,
 		preferences,
 		setPreferences,
 		year,
@@ -75,33 +75,33 @@ export default function OscarAppContextProvider(
 //sample usage
 const contextValue = useContext(OscarAppContext); //puts current context value into variable contextValue
 // contextValue has type OscarAppContextValue
-const activeUser = contextValue.activeUser
-// activeUser has type string
+const activeUserId = contextValue.activeUserId
+// activeUserId has type string
 
 // second example
-const {activeUser}d = useContext(OscarAppContext); //faster way to just get activeUser
+const {activeUserId}d = useContext(OscarAppContext); //faster way to just get activeUserId
 */
 
 function CookieHandler(): React.ReactElement {
-	const { activeUser, setActiveUser } = useContext(OscarAppContext);
+	const { activeUserId, setActiveUserId } = useContext(OscarAppContext);
 	const EXPIRATION_DAYS = 400;
 	const [isInitialised, setIsInitialised] = useState(false);
 
 	useEffect(() => {
 		if (isInitialised) {
-			Cookies.set("activeUser", activeUser as string, {
+			Cookies.set("activeUserId", activeUserId as string, {
 				expires: EXPIRATION_DAYS,
 			});
 		} else {
 			setIsInitialised(true);
-			const value: string | undefined = Cookies.get("activeUser");
+			const value: string | undefined = Cookies.get("activeUserId");
 			if (value && value.startsWith("usr_")) {
-				setActiveUser(value);
+				setActiveUserId(value);
 			} else {
-				setActiveUser(null);
+				setActiveUserId(null);
 			}
 		}
-	}, [activeUser]);
-	//useEffect(() => {Cookies.set('activeUser', activeUser, {expires: EXPIRATION_DAYS})}, [activeUser]);
+	}, [activeUserId]);
+	//useEffect(() => {Cookies.set('activeUserId', activeUserId, {expires: EXPIRATION_DAYS})}, [activeUserId]);
 	return <></>;
 }

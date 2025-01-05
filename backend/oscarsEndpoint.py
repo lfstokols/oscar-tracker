@@ -62,8 +62,8 @@ def get_categories():
 @oscars.route("/api/watchlist", methods=["GET", "PUT"])
 def get_watchlist():
     # Get userId from cookie if not provided in URL params
-    if "activeUser" in request.cookies:
-        userId = request.cookies.get("activeUser")
+    if "activeUserId" in request.cookies:
+        userId = request.cookies.get("activeUserId")
     else:
         userId = request.json.get("userId")
     justMe = (

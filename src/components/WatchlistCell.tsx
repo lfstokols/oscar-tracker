@@ -18,7 +18,7 @@ export default function WatchlistCell({
 	//const [currentVal, setCurrentVal] = useState<WatchStatus>(WatchStatus.blank);
 	const { isPending, isError, watchlist } = useWatchlist();
 	const queryClient = useQueryClient();
-	const { activeUser } = useContext(OscarAppContext);
+	const { activeUserId } = useContext(OscarAppContext);
 	const mutation = useMutation({
 		mutationFn: async (newState: WatchStatus) => {
 			const body = JSON.stringify({ movieId, status: newState, year: 2023 });
@@ -38,7 +38,7 @@ export default function WatchlistCell({
 	if (isPending) return <LinearProgress />;
 	if (isError) return <Error />;
 
-	const isEditingDisabled = activeUser !== userId;
+	const isEditingDisabled = activeUserId !== userId;
 	const remoteWatchState: WatchStatus =
 		watchlist!.find((item) => item.movieId === movieId)?.status ??
 		WatchStatus.blank;
