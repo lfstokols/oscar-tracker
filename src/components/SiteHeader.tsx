@@ -10,10 +10,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { OscarAppContext } from '../contexts/AppContext';
 import UserButton from './UserButton';
 
-interface SiteHeaderProps {
-}
+type Props = {}
 
-export default function SiteHeader(): React.ReactElement {
+export default function SiteHeader(props: Props): React.ReactElement {
 	const title = "Oscar Tracker: Track the Oscars!";
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -40,7 +39,7 @@ export default function SiteHeader(): React.ReactElement {
 					<MenuItem onClick={handleMenuClose}>Option 2</MenuItem>
 					<MenuItem onClick={handleMenuClose}>Option 3</MenuItem>
 				</Menu>
-				<Typography variant="h6" style={{ flexGrow: 1 }}>
+				<Typography variant="h6" style={{ flexGrow: 1, marginRight: '8px'}}>
 					{title}
 				</Typography>
 				<UserButton />

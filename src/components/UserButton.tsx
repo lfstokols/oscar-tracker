@@ -28,12 +28,17 @@ export default function UserButton():React.ReactElement {
         <div style={{ display: 'flex', alignItems: 'center' }}>
             {activeUserId ? (
                 <>
-                    <Chip avatar={<Avatar>{getUsername[activeUserId]?.charAt(0).toUpperCase()}</Avatar>} onClick={handleUserClick} label={getUsername[activeUserId]} color="secondary"/>
+                    <Chip
+                        avatar={<Avatar>{getUsername[activeUserId]?.charAt(0).toUpperCase()}</Avatar>}
+                        onClick={handleUserClick} label={getUsername[activeUserId]}
+                        color="secondary"
+                        sx={{mr: 1}}
+                    />
                     <Button variant="contained" color="secondary" size="small" onClick={logout}>Logout</Button>
                 </>
             ) : (
                 <>
-                    <Button variant="contained" onClick={handleMenuOpen}>Login</Button>
+                    <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>Login</Button>
                     <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
                 </>
             )}

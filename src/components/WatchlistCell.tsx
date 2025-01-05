@@ -15,7 +15,6 @@ export default function WatchlistCell({
 	movieId,
 	userId,
 }: Props): React.ReactElement {
-	//const [currentVal, setCurrentVal] = useState<WatchStatus>(WatchStatus.blank);
 	const { isPending, isError, watchlist } = useWatchlist();
 	const queryClient = useQueryClient();
 	const { activeUserId } = useContext(OscarAppContext);
