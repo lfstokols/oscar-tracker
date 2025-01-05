@@ -2,6 +2,7 @@ import React, { Suspense, useState } from "react";
 import { WatchFilter } from "../App";
 import WatchlistCell from "./WatchlistCell";
 import useData from "../hooks/useData";
+import {getNominationCategoriesForMovie, getMovieWatchStatusForUser} from "../utils/dataSelectors";
 import {
 	Table,
 	TableBody,
@@ -23,8 +24,38 @@ export type Row = {
 	title: string;
 	title_tooltip: string;
 	categories: string;
-	category_tooltip: string | null;
-} & Record<Exclude<string, "title" | "categories">, WatchStatus>;
+};
+
+function getRowInfo(
+	movie: RawMovie,
+	nominations: Nom[],
+	users: RawUser[],
+	watchlist: WatchNotice[],
+	categories: Category[]
+): Row {
+	// Get nomination list for this movie
+	const nomList = getNominationCategoriesForMovie(movie.movieId, nominations, categories)
+		.map(nom => nom.shortName)
+		.join(", ");
+
+	// get watch status for each user
+	const watchStatuses = users.reduce(
+		(acc: Record<string, WatchStatus>, user: RawUser) => {
+			acc[user.username] = getMovieWatchStatusForUser(user.userId, movie.movieId, watchlist);
+			return acc;
+		},
+		{}
+	);
+	const row: Row = {
+		title: movie.title,
+		title_tooltip: movie.movieId,
+		categories: nomList,
+		...watchStatuses,
+	};
+	
+	return row;
+}
+
 
 function NomineeTable(): React.ReactElement {
 	const [page, setPage] = useState(0);
@@ -33,57 +64,16 @@ function NomineeTable(): React.ReactElement {
 	const [order, setOrder] = useState<"asc" | "desc">("asc");
 
 	const { isPending, isError, allData, isFetching } = useData(year);
-
-	function getRowInfo(
-		movie: RawMovie,
-		nominations: Nom[],
-		users: RawUser[],
-		watchlist: WatchNotice[],
-		categories: Category[]
-	): Row {
-		// Get nomination list for this movie
-		const nomList = nominations
-			.filter((nom) => nom.movieId === movie.movieId)
-			.map(
-				(nom) =>
-					categories.find((cat) => cat.catId === nom.catId)?.shortName ??
-					"Unknown"
-			)
-			.join(", ");
-		// get watch status for each user
-		const watchStatuses = users.reduce(
-			(acc: Record<string, WatchStatus>, user: RawUser) => {
-				const watchStatus =
-					watchlist
-						.slice()
-						.reverse()
-						.find(
-							(watchnotice) =>
-								watchnotice.movieId === movie.movieId &&
-								watchnotice.userId === user.userId
-						)?.status || WatchStatus.blank;
-				acc[user.username] = watchStatus;
-				return acc;
-			},
-			{}
-		);
-		const row = {
-			title: movie.title,
-			title_tooltip: movie.movieId,
-			categories: nomList,
-			...watchStatuses,
-		} as Row;
-		return row;
-	}
-
+	
 	const tableData = allData.movies?.map((movie: RawMovie) => {
 		if (
 			!allData.nominations ||
 			!allData.users ||
 			!allData.watchlist ||
 			!allData.categories
-		)
+		) {
 			return undefined;
+		}
 		return getRowInfo(
 			movie,
 			allData.nominations!,
@@ -94,15 +84,18 @@ function NomineeTable(): React.ReactElement {
 	});
 
 	const sortedData = React.useMemo(() => {
-		if (!tableData || tableData.some((item) => item === undefined))
+		if (!tableData || tableData.some((item) => item === undefined)) {
 			return undefined;
+		}
 		return [...(tableData as Row[])].sort((a, b) => {
-			let orderingAttr = (str: string): string | number => str;
-			if (orderBy === "categories") orderingAttr = (str: string) => str.length;
+			const orderingAttr = orderBy === "categories"
+				? (str: string) => str.length
+				: (str: string) => str;
+
 			if (order === "asc") {
-				return orderingAttr(a![orderBy]) < orderingAttr(b![orderBy]) ? -1 : 1;
+				return orderingAttr(a[orderBy]) < orderingAttr(b[orderBy]) ? -1 : 1;
 			} else {
-				return orderingAttr(b![orderBy]) < orderingAttr(a![orderBy]) ? -1 : 1;
+				return orderingAttr(b[orderBy]) < orderingAttr(a[orderBy]) ? -1 : 1;
 			}
 		});
 	}, [tableData, order, orderBy]);
@@ -182,7 +175,7 @@ function NomineeTable(): React.ReactElement {
 								<TableCell sx={{ whiteSpace: "pre-wrap" }}>
 									{row.categories}
 								</TableCell>
-								{allData.users!.map((user) => (
+								{allData.users!.map(user => (
 									<TableCell
 										key={user.userId}
 										sx={{ display: "flex" }}
@@ -212,12 +205,8 @@ function NomineeTable(): React.ReactElement {
 	);
 } // <-- Add this closing bracket
 
-//type Props = {
-//	filterWatched: WatchFilter;
-//};
 
 // Wrap the export with Suspense
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function NomineeTableWrapper() {
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
