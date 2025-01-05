@@ -13,5 +13,6 @@ export default [
   pluginReact.configs.flat.recommended,
   {rules: {
 	semi: ["error", "always"],
+	"@typescript-eslint:no-unused-vars": "warn",
   }},
 ];

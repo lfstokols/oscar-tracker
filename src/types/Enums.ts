@@ -1,7 +1,7 @@
 export enum WatchStatus {
     seen = 'seen',
     todo = 'todo',
-    blank = '',
+    blank = 'blank',
 }
 
 export enum AppTabType {
