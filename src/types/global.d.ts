@@ -12,14 +12,14 @@ declare global {
 	type UserId = string;
 	type CategoryId = string;
 
-	type RawUser = {
-		userId: UserId,
+	type User = {
+		id: UserId,
 		username: string,
 		//[other: string]: any,
 	}
 	
-	type RawMovie = {
-		movieId: MovieId,
+	type Movie = {
+		id: MovieId,
 		title: string,
 		//[other: string]: any,
 	}
@@ -31,7 +31,7 @@ declare global {
 	}
 	
 	type Category = {
-		catId: CategoryId,
+		id: CategoryId,
 		shortName:string, 
 		fullName: string, 
 		hasNote: boolean, 
@@ -49,32 +49,33 @@ declare global {
 	//type watchStatus = 'seen' | 'todo' | '';
 
 	type Preferences = {
-		shortsAreSeparate: boolean,
+		shortsAreOneFilm: boolean,
+		highlightAnimated: boolean,
 	}
 	
-	type Movie = {
-		title: string,
-		nominations: string[],
-	}
+	//type Movie = {
+	//	title: string,
+	//	nominations: string[],
+	//}
 	
 	
 	
 	type RawMap = {
-		movies: RawMovie,
-		users: RawUser,
+		movies: Movie,
+		users: User,
 		noms: Noms,
 		cats: Category,
 		watchlist: WatchNotice,
 	}
 	
-	type RawTypes = [RawMovie, RawUser, Noms, Category, WatchNotice];
+	type RawTypes = [Movie, User, Noms, Category, WatchNotice];
 	
 	type RawFromFlavor<T extends keyof RawMap> = RawMap[T];
 	
-	type Data = {
-		users: User[],
-		movies: Movie[],
-	}
+	//type Data = {
+	//	users: User[],
+	//	movies: Movie[],
+	//}
 
 	//interface ApiResponse<T> {
 	//  data: T;

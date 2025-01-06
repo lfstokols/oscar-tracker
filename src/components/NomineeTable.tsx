@@ -1,216 +1,223 @@
-import React, { Suspense, useState } from "react";
-import { WatchFilter } from "../App";
-import WatchlistCell from "./WatchlistCell";
-import useData from "../hooks/useData";
-import {getNominationCategoriesForMovie, getMovieWatchStatusForUser} from "../utils/dataSelectors";
+import React, {Suspense, useState} from 'react';
+import {WatchFilter} from '../App';
+import WatchlistCell from './WatchlistCell';
+import useData from '../hooks/useData';
 import {
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	Paper,
-	TablePagination,
-	TableSortLabel,
-} from "@mui/material";
-import { WatchStatus } from "../types/Enums";
-
+  getNominationCategoriesForMovie,
+  getMovieWatchStatusForUser,
+} from '../utils/dataSelectors';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TablePagination,
+  TableSortLabel,
+} from '@mui/material';
+import {WatchStatus} from '../types/Enums';
+import {LoadScreen} from '../App';
 //const TEST_DATA = '{ "users": [{ "username": "Logan", "watchedMovies": ["Oppenheimer"] }], "movies": [ { "title": "Oppenheimer", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Poor Things", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Killers of the Flower Moon", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Barbie", "nominations": [ "Best Picture", "Actor", "Actress" ] } ] }';
 
 const year = 2023;
 
 export type Row = {
-	title: string;
-	title_tooltip: string;
-	categories: string;
+  title: string;
+  title_tooltip: string;
+  categories: string;
 };
 
 function getRowInfo(
-	movie: RawMovie,
-	nominations: Nom[],
-	users: RawUser[],
-	watchlist: WatchNotice[],
-	categories: Category[]
+  movie: Movie,
+  nominations: Nom[],
+  users: User[],
+  watchlist: WatchNotice[],
+  categories: Category[],
 ): Row {
-	// Get nomination list for this movie
-	const nomList = getNominationCategoriesForMovie(movie.movieId, nominations, categories)
-		.map(nom => nom.shortName)
-		.join(", ");
+  // Get nomination list for this movie
+  const nomList = getNominationCategoriesForMovie(
+    movie.id,
+    nominations,
+    categories,
+  )
+    .map(nom => nom.shortName)
+    .join(', ');
 
-	// get watch status for each user
-	const watchStatuses = users.reduce(
-		(acc: Record<string, WatchStatus>, user: RawUser) => {
-			acc[user.username] = getMovieWatchStatusForUser(user.userId, movie.movieId, watchlist);
-			return acc;
-		},
-		{}
-	);
-	const row: Row = {
-		title: movie.title,
-		title_tooltip: movie.movieId,
-		categories: nomList,
-		...watchStatuses,
-	};
-	
-	return row;
+  // get watch status for each user
+  const watchStatuses = users.reduce(
+    (acc: Record<string, WatchStatus>, user: User) => {
+      acc[user.username] = getMovieWatchStatusForUser(
+        user.id,
+        movie.id,
+        watchlist,
+      );
+      return acc;
+    },
+    {},
+  );
+  const row: Row = {
+    title: movie.title,
+    title_tooltip: movie.id,
+    categories: nomList,
+    ...watchStatuses,
+  };
+
+  return row;
 }
 
-
 function NomineeTable(): React.ReactElement {
-	const [page, setPage] = useState(0);
-	const [rowsPerPage, setRowsPerPage] = useState(10);
-	const [orderBy, setOrderBy] = useState<keyof Row>("title");
-	const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [orderBy, setOrderBy] = useState<keyof Row>('title');
+  const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
-	const { isPending, isError, allData, isFetching } = useData(year);
-	
-	const tableData = allData.movies?.map((movie: RawMovie) => {
-		if (
-			!allData.nominations ||
-			!allData.users ||
-			!allData.watchlist ||
-			!allData.categories
-		) {
-			return undefined;
-		}
-		return getRowInfo(
-			movie,
-			allData.nominations!,
-			allData.users!,
-			allData.watchlist!,
-			allData.categories!
-		);
-	});
+  const {isPending, isError, allData, isFetching} = useData(year);
 
-	const sortedData = React.useMemo(() => {
-		if (!tableData || tableData.some((item) => item === undefined)) {
-			return undefined;
-		}
-		return [...(tableData as Row[])].sort((a, b) => {
-			const orderingAttr = orderBy === "categories"
-				? (str: string) => str.length
-				: (str: string) => str;
+  const tableData = allData.movies?.map((movie: Movie) => {
+    if (
+      !allData.nominations ||
+      !allData.users ||
+      !allData.watchlist ||
+      !allData.categories
+    ) {
+      return undefined;
+    }
+    return getRowInfo(
+      movie,
+      allData.nominations!,
+      allData.users!,
+      allData.watchlist!,
+      allData.categories!,
+    );
+  });
 
-			if (order === "asc") {
-				return orderingAttr(a[orderBy]) < orderingAttr(b[orderBy]) ? -1 : 1;
-			} else {
-				return orderingAttr(b[orderBy]) < orderingAttr(a[orderBy]) ? -1 : 1;
-			}
-		});
-	}, [tableData, order, orderBy]);
+  const sortedData = React.useMemo(() => {
+    if (!tableData || tableData.some(item => item === undefined)) {
+      return undefined;
+    }
+    return [...(tableData as Row[])].sort((a, b) => {
+      const orderingAttr =
+        orderBy === 'categories'
+          ? (str: string) => str.length
+          : (str: string) => str;
 
-	if (isPending) return <div>Waiting for data...</div>;
-	if (isError) return <div>Error fetching data :</div>;
+      if (order === 'asc') {
+        return orderingAttr(a[orderBy]) < orderingAttr(b[orderBy]) ? -1 : 1;
+      } else {
+        return orderingAttr(b[orderBy]) < orderingAttr(a[orderBy]) ? -1 : 1;
+      }
+    });
+  }, [tableData, order, orderBy]);
 
-	if (
-		!allData ||
-		!allData.movies ||
-		!allData.users ||
-		!allData.nominations ||
-		!allData.categories ||
-		!allData.watchlist ||
-		!tableData ||
-		!sortedData
-	)
-		return <div>No data available</div>;
+  if (isPending) return <LoadScreen />;
+  if (isError) return <div>Error fetching data :</div>;
 
-	const handleChangePage = (event: unknown, newPage: number) => {
-		setPage(newPage);
-	};
+  if (
+    !allData ||
+    !allData.movies ||
+    !allData.users ||
+    !allData.nominations ||
+    !allData.categories ||
+    !allData.watchlist ||
+    !tableData ||
+    !sortedData
+  )
+    return <div>No data available</div>;
 
-	const handleChangeRowsPerPage = (
-		event: React.ChangeEvent<HTMLInputElement>
-	) => {
-		setRowsPerPage(parseInt(event.target.value, 10));
-		setPage(0);
-	};
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
 
-	const handleSort = (property: keyof Row) => {
-		const isAsc = orderBy === property && order === "asc";
-		setOrder(isAsc ? "desc" : "asc");
-		setOrderBy(property);
-	};
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
-	const paginatedData = sortedData.slice(
-		page * rowsPerPage,
-		page * rowsPerPage + rowsPerPage
-	);
+  const handleSort = (property: keyof Row) => {
+    const isAsc = orderBy === property && order === 'asc';
+    setOrder(isAsc ? 'desc' : 'asc');
+    setOrderBy(property);
+  };
 
-	return (
-		<Paper sx={{ width: "100%", overflow: "hidden" }}>
-			<TableContainer>
-				<Table stickyHeader>
-					<TableHead>
-						<TableRow>
-							<TableCell>
-								<TableSortLabel
-									active={orderBy === "title"}
-									direction={orderBy === "title" ? order : "asc"}
-									onClick={() => handleSort("title")}
-								>
-									Film
-								</TableSortLabel>
-							</TableCell>
-							<TableCell>
-								<TableSortLabel
-									active={orderBy === "categories"}
-									direction={orderBy === "categories" ? order : "asc"}
-									onClick={() => handleSort("categories")}
-								>
-									Nominated For
-								</TableSortLabel>
-							</TableCell>
-							{allData.users.map((user) => (
-								<TableCell key={user.userId} align="center">
-									{user.username}
-								</TableCell>
-							))}
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{paginatedData.map((row, index) => (
-							<TableRow key={index} hover>
-								<TableCell title={row.title_tooltip}>{row.title}</TableCell>
-								<TableCell sx={{ whiteSpace: "pre-wrap" }}>
-									{row.categories}
-								</TableCell>
-								{allData.users!.map(user => (
-									<TableCell
-										key={user.userId}
-										sx={{ display: "flex" }}
-										align="center"
-									>
-										<WatchlistCell
-											userId={user.userId}
-											movieId={row.title_tooltip}
-										/>
-									</TableCell>
-								))}
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
-			<TablePagination
-				rowsPerPageOptions={[5, 10, 25]}
-				component="div"
-				count={tableData.length}
-				rowsPerPage={rowsPerPage}
-				page={page}
-				onPageChange={handleChangePage}
-				onRowsPerPageChange={handleChangeRowsPerPage}
-			/>
-		</Paper>
-	);
+  const paginatedData = sortedData.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage,
+  );
+
+  return (
+    <Paper sx={{width: '100%', overflow: 'hidden'}}>
+      <TableContainer>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'title'}
+                  direction={orderBy === 'title' ? order : 'asc'}
+                  onClick={() => handleSort('title')}>
+                  Film
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'categories'}
+                  direction={orderBy === 'categories' ? order : 'asc'}
+                  onClick={() => handleSort('categories')}>
+                  Nominated For
+                </TableSortLabel>
+              </TableCell>
+              {allData.users.map(user => (
+                <TableCell key={user.id} align="center">
+                  {user.username}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {paginatedData.map((row, index) => (
+              <TableRow key={index} hover>
+                <TableCell title={row.title_tooltip}>{row.title}</TableCell>
+                <TableCell sx={{whiteSpace: 'pre-wrap'}}>
+                  {row.categories}
+                </TableCell>
+                {allData.users!.map(user => (
+                  <TableCell
+                    key={user.id}
+                    sx={{display: 'flex'}}
+                    align="center">
+                    <WatchlistCell
+                      userId={user.id}
+                      movieId={row.title_tooltip}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={tableData.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
+    </Paper>
+  );
 } // <-- Add this closing bracket
-
 
 // Wrap the export with Suspense
 export default function NomineeTableWrapper() {
-	return (
-		<Suspense fallback={<div>Loading...</div>}>
-			<NomineeTable />
-		</Suspense>
-	);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NomineeTable />
+    </Suspense>
+  );
 }

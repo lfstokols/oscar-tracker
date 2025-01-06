@@ -1,38 +1,40 @@
-import { WatchStatus } from "../types/Enums";
+import {WatchStatus} from '../types/Enums';
 
 export function getMovieWatchStatusForUser(
-    userId: string,
-    movieId: string,
-    watchlist: WatchNotice[],
+  userId: string,
+  movieId: string,
+  watchlist: WatchNotice[],
 ): WatchStatus {
-    const watchNotice = watchlist
-        .slice()
-        .reverse()
-        .find(
-            watchNotice =>
-                watchNotice.movieId === movieId &&
-                watchNotice.userId === userId,
-        );
+  const watchNotice = watchlist
+    .slice()
+    .reverse()
+    .find(
+      watchNotice =>
+        watchNotice.movieId === movieId && watchNotice.userId === userId,
+    );
 
-    return watchNotice?.status ?? WatchStatus.blank;
+  return watchNotice?.status ?? WatchStatus.blank;
 }
 
 export function getNominationCategoriesForMovie(
-    movieId: String,
-    nominations: Nom[],
-    categories: Category[],
+  movieId: String,
+  nominations: Nom[],
+  categories: Category[],
 ): Category[] {
-    return nominations
-		.filter(nom => nom.movieId === movieId)
-		.map(nom => getCategoryFromID(nom.catId, categories))
-        .filter(cat => cat != null);
+  return nominations
+    .filter(nom => nom.movieId === movieId)
+    .map(nom => getCategoryFromID(nom.catId, categories))
+    .filter(cat => cat != null);
 }
 
 export function getCategoryFromID(
-    categoryID: CategoryId,
-    categories: Category[],
+  categoryID: CategoryId,
+  categories: Category[],
 ): Category | undefined {
-    // TODO: Maybe we should throw error here instead
+  // TODO: Maybe we should throw error here instead
+  const theCat = categories.find(cat => cat.id === categoryID);
+  if (theCat == null) {
     console.log('Unknown category id:', categoryID);
-    return categories.find(cat => cat.catId === categoryID);
+  }
+  return theCat;
 }

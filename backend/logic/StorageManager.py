@@ -13,7 +13,7 @@ if sys.platform.startswith("win"):
 else:
     import fcntl
 from collections.abc import Callable
-from .MyTypes import *
+from backend.logic.MyTypes import *
 from typing import Literal
 
 
