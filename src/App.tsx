@@ -10,36 +10,27 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Backdrop from "@mui/material/Backdrop";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import OscarAppContext from "./contexts/AppContext";
+import OscarAppContextProvider from "./contexts/AppContext";
+import NotificationsContextProvider from "./modules/notifications/NotificationContext";
+
 import SiteHeader from "./components/SiteHeader";
 
 const queryClient = new QueryClient();
 
 export type WatchFilter = "all" | "watched" | "unwatched";
 
-export default function App(): React.ReactElement {
-	const [filterWatched, setFilterWatched] = useState<WatchFilter>("all"); // 'all', 'watched', 'unwatched'
-
+function App(): React.ReactElement {
 	return (
-		<ErrorBoundary>
-			<Suspense fallback={<LoadScreen />}>
-				<QueryClientProvider client={queryClient}>
-					<ReactQueryDevtools />
-					<OscarAppContext>
-						<div className="App">
-							<SiteHeader />
-							<Container maxWidth="lg">
-								<Box sx={{ my: 4 }}>
-									<Suspense fallback={<div>Loading app...</div>}>
-										<NomineeTable />
-									</Suspense>
-								</Box>
-							</Container>
-						</div>
-					</OscarAppContext>
-				</QueryClientProvider>
-			</Suspense>
-		</ErrorBoundary>
+		<div className="App">
+			<SiteHeader />
+			<Container maxWidth="lg">
+				<Box sx={{ my: 4 }}>
+					<Suspense fallback={<div>Loading app...</div>}>
+						<NomineeTable />
+					</Suspense>
+				</Box>
+			</Container>
+		</div>
 	);
 }
 
@@ -52,5 +43,24 @@ function LoadScreen(): React.ReactElement {
 		>
 			<CircularProgress color="inherit" />
 		</Backdrop>
+	);
+}
+
+
+// Providers go here
+export default function AppWrapper(): React.ReactElement {
+	return (
+		<ErrorBoundary>
+			<Suspense fallback={<LoadScreen />}>
+				<QueryClientProvider client={queryClient}>
+					<ReactQueryDevtools />
+					<OscarAppContextProvider>
+						<NotificationsContextProvider>
+							<App />
+						</NotificationsContextProvider>
+					</OscarAppContextProvider>
+				</QueryClientProvider>
+			</Suspense>
+		</ErrorBoundary>
 	);
 }

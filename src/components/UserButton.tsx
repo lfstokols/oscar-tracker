@@ -8,7 +8,7 @@ import useUsers from '../hooks/useUsers';
 
 export default function UserButton():React.ReactElement {
     // hooks
-    const { activeUser, setActiveUser } = useContext(OscarAppContext);
+    const { activeUserId, setActiveUserId } = useContext(OscarAppContext);
     const userData = useUsers().users;
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -20,20 +20,25 @@ export default function UserButton():React.ReactElement {
             return acc;
         }, {})
     const handleUserClick = () => {};
-    const logout = () => setActiveUser(null);
+    const logout = () => setActiveUserId(null);
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
 		setAnchorEl(event.currentTarget);
 	};
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
-            {activeUser ? (
+            {activeUserId ? (
                 <>
-                    <Chip avatar={<Avatar>{getUsername[activeUser]?.charAt(0).toUpperCase()}</Avatar>} onClick={handleUserClick} label={getUsername[activeUser]} color="secondary"/>
+                    <Chip
+                        avatar={<Avatar>{getUsername[activeUserId]?.charAt(0).toUpperCase()}</Avatar>}
+                        onClick={handleUserClick} label={getUsername[activeUserId]}
+                        color="secondary"
+                        sx={{mr: 1}}
+                    />
                     <Button variant="contained" color="secondary" size="small" onClick={logout}>Logout</Button>
                 </>
             ) : (
                 <>
-                    <Button variant="contained" onClick={handleMenuOpen}>Login</Button>
+                    <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>Login</Button>
                     <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
                 </>
             )}

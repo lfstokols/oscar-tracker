@@ -10,7 +10,7 @@ type Props = {
 
 export default function LoginMenu({ anchorEl, setAnchorEl }:Props): React.ReactElement {
 	// Make login menu elements
-	const { setActiveUser: setActiveUser } = useContext(OscarAppContext);
+	const { setActiveUserId } = useContext(OscarAppContext);
 	const fromFetch = useData(useContext(OscarAppContext).year);
 	const handleMenuClose = () => {
 		setAnchorEl(null);
@@ -32,7 +32,13 @@ export default function LoginMenu({ anchorEl, setAnchorEl }:Props): React.ReactE
 			}}
 		>
 		{users.map((user) => (
-			<MenuItem key={user.userId} onClick={() => { setActiveUser(user.userId); handleMenuClose(); }}>
+			<MenuItem
+				key={user.userId}
+				onClick={() => { 
+					setActiveUserId(user.userId);
+					handleMenuClose();
+				}}
+			>
 				{user.username}
 			</MenuItem>
 		))}
