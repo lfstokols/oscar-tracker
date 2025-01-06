@@ -15,8 +15,7 @@ import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 //import AppTheme from "../shared-theme/AppTheme";
 import useUsers from '../../hooks/useUsers';
-import { OscarAppContext } from '../../contexts/AppContext';
-import { useContext } from 'react';
+import { useOscarAppContext } from '../../contexts/AppContext';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -82,7 +81,7 @@ export default function ActiveUserMenu(props: {
   //const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
   const { setActiveUserId, activeUserId, preferences } =
-    useContext(OscarAppContext);
+    useOscarAppContext();
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -211,7 +210,7 @@ function Preference({
   text: string;
   whichPref: keyof Preferences;
 }): React.ReactElement {
-  const { preferences, setPreferences } = React.useContext(OscarAppContext);
+  const { preferences, setPreferences } = useOscarAppContext();
   const [prefState, setPrefState] = [
     preferences[whichPref],
     (newValue: boolean) => {

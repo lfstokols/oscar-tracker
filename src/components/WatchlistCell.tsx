@@ -1,10 +1,10 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {LinearProgress} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
 import useWatchlist from '../hooks/useWatchlist';
-import {OscarAppContext} from '../contexts/AppContext';
+import {useOscarAppContext} from '../contexts/AppContext';
 import {useNotifications} from '../modules/notifications/NotificationContext';
 
 type Props = {
@@ -51,7 +51,7 @@ export default function WatchlistCell({
 
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
-  const isEditingDisabled = useContext(OscarAppContext).activeUserId !== userId;
+  const isEditingDisabled = useOscarAppContext().activeUserId !== userId;
   const remoteWatchState: WatchStatus =
     watchlist.find(item => item.movieId === movieId)?.status ??
     WatchStatus.blank;

@@ -1,9 +1,8 @@
 import {useQuery} from '@tanstack/react-query';
-import {useContext} from 'react';
-import {OscarAppContext} from '../contexts/AppContext';
+import {useOscarAppContext} from '../contexts/AppContext';
 
 export default function useMovies(): ReturnType<typeof useQuery> {
-  const {year} = useContext(OscarAppContext);
+  const {year} = useOscarAppContext();
   const results = useQuery({
     queryKey: ['movieData'],
     queryFn: async (): Promise<Movie[]> => {

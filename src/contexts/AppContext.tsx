@@ -13,19 +13,7 @@ export type OscarAppContextValue = Readonly<{
   setYear: (year: number) => void;
 }>;
 
-const DEFAULT_CONTEXT_VALUE: OscarAppContextValue = {
-  selectedTab: AppTabType.legacy,
-  setSelectedTab: (tab) => {},
-  activeUserId: null,
-  setActiveUserId: (username) => {},
-  preferences: { shortsAreOneFilm: false, highlightAnimated: false },
-  setPreferences: (pref) => {},
-  year: 2023,
-  setYear: (year) => {},
-};
-
-export const OscarAppContext: React.Context<OscarAppContextValue> =
-  React.createContext(DEFAULT_CONTEXT_VALUE);
+const OscarAppContext = React.createContext<OscarAppContextValue | null>(null);
 
 type Props = {
   children: React.ReactElement;
@@ -55,13 +43,9 @@ export default function OscarAppContextProvider(
     };
   }, [
     selectedTab,
-    setSelectedTab,
     activeUserId,
-    setActiveUserId,
     preferences,
-    setPreferences,
     year,
-    setYear,
   ]);
 
   return (
@@ -72,19 +56,20 @@ export default function OscarAppContextProvider(
   );
 }
 
-/*
-//sample usage
-const contextValue = useContext(OscarAppContext); //puts current context value into variable contextValue
-// contextValue has type OscarAppContextValue
-const activeUserId = contextValue.activeUserId
-// activeUserId has type string
+export function useOscarAppContext(): OscarAppContextValue {
+  const value = useContext(OscarAppContext);
+  if (value == null) {
+    throw new Error(
+      'Attempting to call useOscarAppContext outside of a OscarAppContextProvider'
+    );
+  }
 
-// second example
-const {activeUserId}d = useContext(OscarAppContext); //faster way to just get activeUserId
-*/
+  return value;
+}
+
 
 function CookieHandler(): React.ReactElement {
-  const { activeUserId, setActiveUserId } = useContext(OscarAppContext);
+  const { activeUserId, setActiveUserId } = useOscarAppContext();
   const EXPIRATION_DAYS = 400;
   const [isInitialised, setIsInitialised] = useState(false);
 
