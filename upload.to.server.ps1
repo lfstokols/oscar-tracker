@@ -76,3 +76,6 @@ if ($resp -eq "y") {
 	Write-Host "Cleaned up!"
 }
 Write-Host "Done!"
+
+#Write-Host "Trying something fancy..."
+#ssh $env:MY_SSH "cd $env:REMOTE_PATH && bash install.sh"

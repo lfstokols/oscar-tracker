@@ -14,7 +14,9 @@
 		"@fontsource/roboto": "",
 		"@tanstack/react-query": "^5.62.11",
 		"@tanstack/react-query-devtools": "^5.62.11",
-		"js-cookie": ""
+		"js-cookie": "",
+		"react-router-dom": "",
+		"zod": ""
 	},
 	"devDependencies": {
 		"@babel/core": "^7.23.0",
@@ -25,6 +27,7 @@
 		"@types/react": "",
 		"@types/react-dom": "",
 		"@types/js-cookie": "",
+		"@types/react-router-dom": "",
 		"@vitejs/plugin-react": "^4.2.0",
 		"eslint": "^9.17.0",
 		"eslint-plugin-react": "^7.37.3",

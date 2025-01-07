@@ -1,29 +1,40 @@
-import {useQuery} from '@tanstack/react-query';
+import {queryOptions, useQuery} from '@tanstack/react-query';
 import {useOscarAppContext} from '../contexts/AppContext';
+import {NominationAPIResponse, zNom} from '../types/APIDataSchema';
+import {NominationAPIResponseSchema} from '../types/APIDataSchema';
 
-export default function useNominations() {
-  const {year} = useOscarAppContext();
-  const results = useQuery({
-    queryKey: ['nominationData'],
-    queryFn: async (): Promise<Nom[]> => {
+const x = useQuery(nominationOptions(2023));
+
+function nominationOptions(year: number) {
+  return queryOptions({
+    queryKey: ['nominationData', year],
+    queryFn: async (): Promise<zNom[]> => {
       const params = new URLSearchParams({year: year.toString()});
       const response = await fetch(`api/nominations?${params.toString()}`, {
         method: 'GET',
       });
-      const data = await response.json();
-      if (response.ok) {
-        checkNominationData(data);
+      if (!response.ok) {
+        throw new Error(
+          `Data fetch returned error code: ${
+            response.status
+          } - ${response.json()}`,
+        );
       }
-      return data;
+      return NominationAPIResponseSchema.parse(response.json());
     },
   });
+}
+
+export default function useNominations() {
+  const {year} = useOscarAppContext();
+  const results = useQuery(nominationOptions(year));
   return results;
 }
 
 // Type guard that ensures data is Nom[]
 // Returns false if data is missing (undefined, still a Promise)
 // Throws an error if the data is present but of the wrong type
-function checkNominationData(data: unknown): data is Nom[] {
+function checkNominationData(data: unknown): data is zNom[] {
   if (data instanceof Promise) {
     console.log('Data is a Promise, this is being run too soon.');
     return false;

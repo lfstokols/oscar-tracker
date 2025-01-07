@@ -1,7 +1,9 @@
 import React from 'react';
 import {Menu, MenuItem} from '@mui/material';
 import {useOscarAppContext} from '../contexts/AppContext';
-import useData from '../hooks/useData';
+import {useMyUsers} from '../hooks/useMyQuery';
+import {LoadScreen} from '../App';
+import {Error} from '@mui/icons-material';
 
 type Props = {
   anchorEl: HTMLElement | null;
@@ -14,17 +16,17 @@ export default function LoginMenu({
 }: Props): React.ReactElement {
   // Make login menu elements
   const {setActiveUserId} = useOscarAppContext();
-  const fromFetch = useData(useOscarAppContext().year);
+  const usersPromise = useMyUsers();
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
-  if (fromFetch.isPending) {
-    return <div>Loading...</div>;
+  if (usersPromise.isPending) {
+    return <LoadScreen />;
   }
-  if (fromFetch.isError) {
-    return <div>Error: Can't load usernames</div>;
+  if (usersPromise.isError) {
+    return <Error />;
   }
-  if (!fromFetch.allData || !fromFetch.allData.users) {
+  if (!usersPromise.data) {
     return (
       <div>
         No data. It isn't possible to see this message, text Logan if you read
@@ -32,7 +34,7 @@ export default function LoginMenu({
       </div>
     );
   }
-  const users = fromFetch.allData.users;
+  const users = usersPromise.data;
   return (
     <Menu
       anchorEl={anchorEl}

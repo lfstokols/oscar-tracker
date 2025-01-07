@@ -1,5 +1,12 @@
 import {useQuery} from '@tanstack/react-query';
-
+import {
+  MovieSchema,
+  UserSchema,
+  NomSchema,
+  CategorySchema,
+  WatchNoticeSchema,
+  MovieAPIResponseSchema,
+} from '../types/APIDataSchema';
 export default function useData(year: number): {
   isPending: boolean;
   isError: boolean;
@@ -96,6 +103,8 @@ export default function useData(year: number): {
 }
 
 function mapMovie(data: unknown | undefined): Movie[] | undefined {
+  return MovieAPIResponseSchema.parse(data);
+  console.log('useData fed mapMovie this: ', data);
   if (data === undefined) return undefined;
   if (!Array.isArray(data)) throw new Error('Movie Data is not an array');
   if (!data.every(item => item.hasOwnProperty('id')))

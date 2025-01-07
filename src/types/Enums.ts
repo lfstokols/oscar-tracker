@@ -11,3 +11,11 @@ export enum AppTabType {
     byUser = 'byUser',
     loginPage = 'loginPage',
 }
+
+export enum DataFlavor {
+    movies = 'movies',
+    users = 'users',
+    nominations = 'nominations',
+    categories = 'categories',
+    watchlist = 'watchlist',
+}

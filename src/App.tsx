@@ -13,8 +13,16 @@ import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import OscarAppContextProvider from './contexts/AppContext';
 import NotificationsContextProvider from './modules/notifications/NotificationContext';
 import SiteHeader from './components/SiteHeader';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import SignUpModal from './components/userModal/SignUpModal';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      experimental_prefetchInRender: true,
+    },
+  },
+});
 
 export type WatchFilter = 'all' | 'watched' | 'unwatched';
 
@@ -44,6 +52,17 @@ export function LoadScreen(): React.ReactElement {
   );
 }
 
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />,
+  },
+  {
+    path: '/playground',
+    element: <SignUpModal />,
+  },
+]);
+
 // Providers go here
 export default function AppWrapper(): React.ReactElement {
   return (
@@ -53,6 +72,7 @@ export default function AppWrapper(): React.ReactElement {
           <ReactQueryDevtools />
           <OscarAppContextProvider>
             <NotificationsContextProvider>
+              {/*<RouterProvider router={router} />*/}
               <App />
             </NotificationsContextProvider>
           </OscarAppContextProvider>

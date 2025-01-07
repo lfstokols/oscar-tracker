@@ -1,8 +1,8 @@
 import {WatchStatus} from '../types/Enums';
 
 export function getMovieWatchStatusForUser(
-  userId: string,
-  movieId: string,
+  userId: UserId,
+  movieId: MovieId,
   watchlist: WatchNotice[],
 ): WatchStatus {
   const watchNotice = watchlist
@@ -37,4 +37,11 @@ export function getCategoryFromID(
     console.log('Unknown category id:', categoryID);
   }
   return theCat;
+}
+
+export function getUsernameFromId(
+  userId: string,
+  users: User[],
+): string | null {
+  return users.find(user => user.id === userId)?.username ?? null;
 }

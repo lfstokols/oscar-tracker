@@ -7,6 +7,7 @@ import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
 import OurWordmark from './OurWordmark';
+import Countdown from './Countdown';
 
 type Props = {};
 
@@ -48,6 +49,7 @@ export default function SiteHeader(props: Props): React.ReactElement {
           </Menu>
           <OurWordmark />
         </div>
+        <Countdown />
         <UserButton />
       </Toolbar>
     </AppBar>

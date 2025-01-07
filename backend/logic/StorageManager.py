@@ -512,7 +512,6 @@ class StorageManager:
 
 if __name__ == "__main__":
     storage = StorageManager("C:/Users/lfsto/OscarFiles/backend/database")
-    # ('C:/Users/alexa/Documents/Python/oscars2023/backend/database')
     storage.add_watchlist_entry(
         2023,
         "usr_ca512f",

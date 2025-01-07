@@ -1,4 +1,4 @@
-import React, { use, useState, useMemo, useCallback, useContext } from 'react';
+import React, {use, useState, useMemo, useCallback, useContext} from 'react';
 import NotificationToast, {
   Notification,
   NotificationType,
@@ -13,7 +13,7 @@ export type NotificationContextValue = Readonly<{
 // NotificationContext should not be exported
 const NotificationContext: React.Context<NotificationContextValue> =
   React.createContext({
-    setActiveNotification: (notif) => {},
+    setActiveNotification: notif => {},
   });
 
 type Props = {
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function NotificationContextProvider(
-  props: Props
+  props: Props,
 ): React.ReactElement {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
@@ -30,7 +30,7 @@ export default function NotificationContextProvider(
     () => ({
       setActiveNotification,
     }),
-    []
+    [],
   );
 
   return (
@@ -62,10 +62,11 @@ interface NotificationsDispatch {
  *
  * const onMutationError = () => notifications.show({type: 'error', message: 'An error occurred'});
  */
-export function useNotifications(): NotificationsDispatch {
+// ! Is p0 needed?
+export function useNotifications(p0: any): NotificationsDispatch {
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   //const { setActiveNotification } = use(NotificationContext);
-  const { setActiveNotification } = useContext(NotificationContext);
+  const {setActiveNotification} = useContext(NotificationContext);
 
   const show = useCallback(
     ({
@@ -80,8 +81,8 @@ export function useNotifications(): NotificationsDispatch {
           autoHideDurationMs === 0 ? null : autoHideDurationMs,
         key: String(new Date().getTime()),
       }),
-    []
+    [],
   );
 
-  return { show };
+  return {show};
 }

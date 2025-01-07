@@ -11,9 +11,9 @@ export default function useMovies(): ReturnType<typeof useQuery> {
         method: 'GET',
       });
       const data = await response.json();
-      if (response.ok) {
-        checkMovieData(data);
-      }
+      //if (response.ok) {
+      //  checkMovieData(data);
+      //}
       return data;
     },
   });

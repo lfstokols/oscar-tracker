@@ -1,86 +1,100 @@
-// src/types/global.d.ts
-
+import * as zodTypes from './APIDataSchema';
 declare global {
-	//type User = {
-	//	username: string,
-	//	watchedMovies: string[],
-	//}
-	
-	type DataFlavor = 'movies' | 'users' | 'nominations' | 'categoriess' | 'watchlist';
+  // * Primitive Types
+  type UserId = zodTypes.UserId;
+  type MovieId = zodTypes.MovieId;
+  type CategoryId = zodTypes.CategoryId;
+  type WatchStatus = zodTypes.WatchStatus;
 
-	type MovieId = string;
-	type UserId = string;
-	type CategoryId = string;
+  // * Object Types
+  type User = zodTypes.User;
+  type Movie = zodTypes.Movie;
+  type Nom = zodTypes.Nom;
+  type Category = zodTypes.Category;
+  type WatchNotice = zodTypes.WatchNotice;
 
-	type User = {
-		id: UserId,
-		username: string,
-		//[other: string]: any,
-	}
-	
-	type Movie = {
-		id: MovieId,
-		title: string,
-		//[other: string]: any,
-	}
-	
-	type Nom = {
-		movieId: MovieId,
-		catId: CategoryId,
-		note: string,
-	}
-	
-	type Category = {
-		id: CategoryId,
-		shortName:string, 
-		fullName: string, 
-		hasNote: boolean, 
-		isShort: boolean, 
-		grouping: string, 
-		maxNoms: number,
-	}
-	
-	type WatchNotice = {
-		userId: UserId,
-		movieId: MovieId,
-		status: WatchStatus,
-	}
-	
-	//type watchStatus = 'seen' | 'todo' | '';
+  // * Collection Types
+  type UserList = zodTypes.UserList;
+  type MovieList = zodTypes.MovieList;
+  type NomList = zodTypes.NomList;
+  type CategoryList = zodTypes.CategoryList;
+  type WatchList = zodTypes.WatchList;
 
-	type Preferences = {
-		shortsAreOneFilm: boolean,
-		highlightAnimated: boolean,
-	}
-	
-	//type Movie = {
-	//	title: string,
-	//	nominations: string[],
-	//}
-	
-	
-	
-	type RawMap = {
-		movies: Movie,
-		users: User,
-		noms: Noms,
-		cats: Category,
-		watchlist: WatchNotice,
-	}
-	
-	type RawTypes = [Movie, User, Noms, Category, WatchNotice];
-	
-	type RawFromFlavor<T extends keyof RawMap> = RawMap[T];
-	
-	//type Data = {
-	//	users: User[],
-	//	movies: Movie[],
-	//}
+  //type DataFlavor = 'movies' | 'users' | 'nominations' | 'categoriess' | 'watchlist';
 
-	//interface ApiResponse<T> {
-	//  data: T;
-	//  error?: string;
-	//}
-  }
-  
-  export {}; // Ensures this file is treated as a module
+  //type MovieId = Opaque<string, 'MovieId'>;
+  //type UserId = Opaque<string, 'UserId'>;
+  //type CategoryId = Opaque<string, 'CategoryId'>;
+
+  //  type User = {
+  //    id: UserId;
+  //    username: string;
+  //    //[other: string]: any,
+  //  };
+  //
+  //  type Movie = {
+  //    id: MovieId;
+  //    title: string;
+  //    //[other: string]: any,
+  //  };
+  //
+  //  type Nom = {
+  //    movieId: MovieId;
+  //    catId: CategoryId;
+  //    note: string;
+  //  };
+  //
+  //  type Category = {
+  //    id: CategoryId;
+  //    shortName: string;
+  //    fullName: string;
+  //    hasNote: boolean;
+  //    isShort: boolean;
+  //    grouping: string;
+  //    maxNoms: number;
+  //  };
+  //
+  //  type WatchNotice = {
+  //    userId: UserId;
+  //    movieId: MovieId;
+  //    status: WatchStatus;
+  //  };
+
+  //  export {User, Movie, Nom, Category, WatchNotice};
+
+  //type watchStatus = 'seen' | 'todo' | '';
+
+  type Preferences = {
+    shortsAreOneFilm: boolean;
+    highlightAnimated: boolean;
+  };
+
+  //type Movie = {
+  //	title: string,
+  //	nominations: string[],
+  //}
+
+  //type RawMap = {
+  //	movies: Movie,
+  //	users: User,
+  //	noms: Noms,
+  //	cats: Category,
+  //	watchlist: WatchNotice,
+  //}
+
+  //type RawTypes = [Movie, User, Noms, Category, WatchNotice];
+
+  //type RawFromFlavor<T extends keyof RawMap> = RawMap[T];
+
+  //type Data = {
+  //	users: User[],
+  //	movies: Movie[],
+  //}
+
+  //interface ApiResponse<T> {
+  //  data: T;
+  //  error?: string;
+  //}
+}
+
+export {}; // Ensures this file is treated as a module

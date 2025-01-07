@@ -1,11 +1,16 @@
 import React from 'react';
-import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
 import {LinearProgress} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
-import useWatchlist from '../hooks/useWatchlist';
+import {watchlistOptions} from '../hooks/dataOptions';
 import {useOscarAppContext} from '../contexts/AppContext';
 import {useNotifications} from '../modules/notifications/NotificationContext';
+import {WatchListSchema} from '../types/APIDataSchema';
 
 type Props = {
   movieId: MovieId;
@@ -17,9 +22,11 @@ export default function WatchlistCell({
   userId,
 }: Props): React.ReactElement {
   const queryClient = useQueryClient();
-  const notifications = useNotifications();
+  const notifications = useNotifications(null);
 
-  const watchlistData = useWatchlist();
+  const watchlistDataPromise = useSuspenseQuery(
+    watchlistOptions(useOscarAppContext().year),
+  );
 
   const mutation = useMutation({
     mutationFn: async (newState: WatchStatus) => {
@@ -31,7 +38,11 @@ export default function WatchlistCell({
       });
     },
     onSuccess: async response => {
-      return queryClient.setQueryData(['watchlistData'], await response.json());
+      return queryClient.setQueryData(
+        watchlistOptions(useOscarAppContext().year).queryKey,
+        WatchListSchema.parse(await response.json()),
+      );
+      //['watchlist'], await response.json());
       //return await queryClient.invalidateQueries({
       //	queryKey: ["watchlistData"],
       //});
@@ -43,11 +54,11 @@ export default function WatchlistCell({
       });
     },
   });
-  if (watchlistData.isPending) return <LinearProgress />;
-  if (watchlistData.isError) return <ErrorIcon />;
-  if (watchlistData.isPending || watchlistData.isError)
+  if (watchlistDataPromise.isPending) return <LinearProgress />;
+  if (watchlistDataPromise.isError) return <ErrorIcon />;
+  if (watchlistDataPromise.isPending || watchlistDataPromise.isError)
     throw new Error('This should never happen kljsf');
-  const watchlist = watchlistData.data; //as WatchNotice[]; // TODO - why is this not typed?
+  const watchlist = watchlistDataPromise.data; //as WatchNotice[]; // TODO - why is this not typed?
 
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
