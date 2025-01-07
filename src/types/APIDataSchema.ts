@@ -5,7 +5,7 @@ import {WatchStatus} from './Enums';
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
 export const MovieIdSchema = z
   .string()
-  .regex(/^movie_[a-zA-Z0-9]{6}$/)
+  .regex(/^mov_[a-zA-Z0-9]{6}$/)
   .brand<'zMovieId'>();
 export const UserIdSchema = z
   .string()
@@ -25,16 +25,16 @@ export type RawWatchStatus = z.infer<typeof RawWatchStatusSchema>;
 export const UserSchema = z.object({
   id: UserIdSchema,
   username: z.string(),
-  //email: z.string().email().optional(),
+  email: z.string().email().nullable(),
 });
 
 export const MovieSchema = z
   .object({
     id: MovieIdSchema,
     title: z.string(),
-    imdbId: z.string(),
-    'runtime(hours)': z.string().optional(),
-    'runtime(minutes)': z.number().optional(),
+    imdbId: z.string().nullable(),
+    'runtime(hours)': z.string().nullable(),
+    'runtime(minutes)': z.number().nullable(),
     numNoms: z.number().gte(1),
   })
   .passthrough();
@@ -42,7 +42,7 @@ export const MovieSchema = z
 // ! This Throws because the data doesn't have 'Id' in it!!!
 export const NomSchema = z.object({
   movieId: MovieIdSchema,
-  catId: CategoryIdSchema,
+  categoryId: CategoryIdSchema,
   note: z.string().nullable().default(''),
 });
 

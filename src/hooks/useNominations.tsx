@@ -1,14 +1,13 @@
 import {queryOptions, useQuery} from '@tanstack/react-query';
 import {useOscarAppContext} from '../contexts/AppContext';
-import {NominationAPIResponse, zNom} from '../types/APIDataSchema';
-import {NominationAPIResponseSchema} from '../types/APIDataSchema';
+import {Nom, NomListSchema} from '../types/APIDataSchema';
 
 const x = useQuery(nominationOptions(2023));
 
 function nominationOptions(year: number) {
   return queryOptions({
     queryKey: ['nominationData', year],
-    queryFn: async (): Promise<zNom[]> => {
+    queryFn: async (): Promise<Nom[]> => {
       const params = new URLSearchParams({year: year.toString()});
       const response = await fetch(`api/nominations?${params.toString()}`, {
         method: 'GET',
@@ -20,7 +19,7 @@ function nominationOptions(year: number) {
           } - ${response.json()}`,
         );
       }
-      return NominationAPIResponseSchema.parse(response.json());
+      return NomListSchema.parse(response.json());
     },
   });
 }
@@ -34,7 +33,7 @@ export default function useNominations() {
 // Type guard that ensures data is Nom[]
 // Returns false if data is missing (undefined, still a Promise)
 // Throws an error if the data is present but of the wrong type
-function checkNominationData(data: unknown): data is zNom[] {
+function checkNominationData(data: unknown): data is Nom[] {
   if (data instanceof Promise) {
     console.log('Data is a Promise, this is being run too soon.');
     return false;

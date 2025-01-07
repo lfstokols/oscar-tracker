@@ -42,29 +42,72 @@ class StorageManager:
             "cat": "categories",  # aliases from id prefixes
         }
         # Default dataframes for file creation
-        self.DEFAULT_MOVIES = pd.DataFrame(columns=["id", "title"]).set_index("id")
-        self.DEFAULT_MOVIES.astype({"title": "string"})
-        self.DEFAULT_NOMINATIONS = pd.DataFrame(columns=["movie", "category", "note"])
-        self.DEFAULT_NOMINATIONS.astype({"movie": str, "category": str, "note": str})
+        print(type(MovieColumns))
+        print(MovieColumns)
+        print(type(MovieColumns.ID))
+        print(MovieColumns.ID)
+        print(MovieColumns.ID == "id")
+        self.DEFAULT_MOVIES = pd.DataFrame(
+            columns=[col for col in MovieColumns.values()]
+        ).set_index(MovieColumns.ID)
+        self.DEFAULT_MOVIES.astype(
+            {
+                MovieColumns.TITLE: "string",
+                MovieColumns.IMDB_ID: "string",
+                MovieColumns.RUNTIME_HOURS: "string",
+                MovieColumns.RUNTIME_MINUTES: "Int64",
+                MovieColumns.NUM_NOMS: "Int64",
+            }
+        )
+        self.DEFAULT_NOMINATIONS = pd.DataFrame(
+            columns=[col for col in NomColumns.values()]
+        )
+        self.DEFAULT_NOMINATIONS.astype(
+            {
+                NomColumns.MOVIE: "string",
+                NomColumns.CATEGORY: "string",
+                NomColumns.NOTE: "string",
+            }
+        )
         self.DEFAULT_USERS = pd.DataFrame(
-            columns=["id", "username", "letterboxd", "email"]
-        ).set_index("id")
+            columns=[col for col in UserColumns.values()]
+        ).set_index(UserColumns.ID)
         self.DEFAULT_USERS.astype(
-            {"username": "string", "letterboxd": "string", "email": "string"}
+            {
+                UserColumns.NAME: "string",
+                UserColumns.LETTERBOXD: "string",
+                UserColumns.EMAIL: "string",
+            }
         )
         self.DEFAULT_CATEGORIES = pd.DataFrame(
-            columns=["id", "name", "maxNoms", "isShort", "hasNote"]
-        ).set_index("id")
+            columns=[col for col in CategoryColumns.values()]
+        ).set_index(CategoryColumns.ID)
         self.DEFAULT_CATEGORIES.astype(
-            {"name": "string", "maxNoms": int, "isShort": bool, "hasNote": bool}
+            {
+                CategoryColumns.SHORT_NAME: "string",
+                CategoryColumns.FULL_NAME: "string",
+                CategoryColumns.MAX_NOMS: "Int64",
+                CategoryColumns.IS_SHORT: "boolean",
+                CategoryColumns.HAS_NOTE: "boolean",
+                CategoryColumns.GROUPING: "string",
+            }
         )
-        self.DEFAULT_WATCHLIST = pd.DataFrame(columns=["userId", "movieId", "status"])
+        self.DEFAULT_WATCHLIST = pd.DataFrame(
+            columns=[col for col in WatchlistColumns.values()]
+        )
         self.DEFAULT_WATCHLIST.astype(
-            {"userId": "string", "movieId": "string", "status": "string"}
+            {
+                WatchlistColumns.USER: "string",
+                WatchlistColumns.MOVIE: "string",
+                WatchlistColumns.STATUS: "string",
+            }
         )
 
-    # Never, ever specify a filepath in string format. Do everything in Path objects.
-    # The initialization of the StorageManager class may take a string as input, but after that we do it all programatically.
+    # * Never, ever specify a filepath in string format. Do everything in Path objects.
+    # *  The initialization of the StorageManager class may take a string as input, but after that we do it all programatically.
+
+    # * Never, ever indicate a column name as a string literal.
+    # * Use the enum values instead.
 
     # So far I only use this inside of an `operation` function,
     # 		so I should take the existing list directly instead of reading from a file
@@ -185,6 +228,12 @@ class StorageManager:
         dtypes = pd.read_json(jfile, typ="series")
         data = data.astype(dtypes)
         if flavor_props["shape"] == "entity":
+            assert (
+                MovieColumns.ID == "id"
+                and UserColumns.ID == "id"
+                and CategoryColumns.ID == "id"
+            ), "The index field must always be called 'id'."
+            #! This hardcodes that the index field must be called 'id'
             data.set_index("id", inplace=True)
         return data
 
@@ -344,9 +393,11 @@ class StorageManager:
     def get_movies(self, year, idList=None, json=False):
         data = self.read("movies", year)
         noms = self.read("nominations", year)
-        data["numNoms"] = noms.groupby("movie").size()[data.index].fillna(0)
-        data = data.rename(columns={"runtime": "runtime(minutes)"})
-        data["runtime(hours)"] = data["runtime(minutes)"].apply(
+        data[MovieColumns.NUM_NOMS] = (
+            noms.groupby(NomColumns.MOVIE).size()[data.index].fillna(0)
+        )
+        data = data.rename(columns={MovieColumns.RUNTIME: MovieColumns.RUNTIME_MINUTES})
+        data[MovieColumns.RUNTIME_HOURS] = data[MovieColumns.RUNTIME_MINUTES].apply(
             lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None
         )
         if idList:
@@ -389,14 +440,14 @@ class StorageManager:
         else:
 
             def operation(data):
-                if movie in data["title"].tolist():
-                    movieId = data.loc[data["title"] == movie].index[0]
+                if movie in data[MovieColumns.TITLE].tolist():
+                    movieId = data.loc[data[MovieColumns.TITLE] == movie].index[0]
                     data.loc[movieId, new_data.keys()] = new_data.values()
                 else:
                     movieId = self.create_unique_id(
                         "m", year=year, existing_ids=data.index
                     )
-                    data.loc[movieId] = {"title": movie, **new_data}
+                    data.loc[movieId] = {MovieColumns.TITLE: movie, **new_data}
                 return data, movieId
 
         feedback = self.edit(operation, "movies", year)
@@ -414,15 +465,35 @@ class StorageManager:
     # 	If you didn't already add/confirm them yourself, you're doing something wrong
     # If `validate` is True, the function will at least check if there are too many nominations in a category
     def add_nomination(self, year, nomination: Nom, validate=False):
-        movie = nomination["movie"]
-        category = nomination["category"]
-        note = nomination["note"] if "note" in nomination else None
+        """Adds a nomination to the database.
+
+        Args:
+            year (str | int): The year of the nomination.
+            nomination ({dict<NomColumns, str>}): The nomination to add.
+            validate (bool, optional): Whether to validate the nomination. Defaults to False.
+
+        Raises:
+            Exception: If the nomination keys are invalid,
+                or if the nomination is too many nominations in a category,
+                or if the file is locked.
+
+        Returns:
+            None: The function does not return anything.
+        """
+        movie = nomination[NomColumns.MOVIE]
+        category = nomination[NomColumns.CATEGORY]
+        note = nomination[NomColumns.NOTE] if NomColumns.NOTE in nomination else None
         self.validate_id(movie, "m")
         self.validate_id(category, "c")
 
         def operation(data: pd.DataFrame):
             data = data._append(
-                {"movie": movie, "category": category, "note": note}, ignore_index=True
+                {
+                    NomColumns.MOVIE: movie,
+                    NomColumns.CATEGORY: category,
+                    NomColumns.NOTE: note,
+                },
+                ignore_index=True,
             )
             return data, None
 
@@ -437,9 +508,9 @@ class StorageManager:
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):
         nominations = self.read("nominations", year)
-        category_counts = nominations["category"].value_counts()
+        category_counts = nominations[NomColumns.CATEGORY].value_counts()
         cat_df = self.read("c")
-        expected_counts = cat_df["maxNoms"]
+        expected_counts = cat_df[CategoryColumns.MAX_NOMS]
         bad_cats = []
         for category, count in category_counts.items():
             if (
@@ -460,9 +531,9 @@ class StorageManager:
             # 	if user_id not in userIdList:
             # 		break
             data.loc[user_id] = {
-                "username": username,
-                "letterboxd": letterboxd,
-                "email": email,
+                UserColumns.NAME: username,
+                UserColumns.LETTERBOXD: letterboxd,
+                UserColumns.EMAIL: email,
             }
             return data, user_id
 
@@ -492,17 +563,22 @@ class StorageManager:
     def add_watchlist_entry(self, year, userId, movieId, status: WatchStatus) -> bool:
         self.validate_id(userId, "users")
         self.validate_id(movieId, "movies")
-        assert status in ["seen", "todo", "blank"], f"Invalid status '{status}'."
+        assert status in WatchStatus.__args__, f"Invalid status '{status}'."
 
         def operation(data: pd.DataFrame):
             existing_entry = data[
-                (data["userId"] == userId) & (data["movieId"] == movieId)
+                (data[WatchlistColumns.USER] == userId)
+                & (data[WatchlistColumns.MOVIE] == movieId)
             ]
             data = data.drop(existing_entry.index)
 
-            if status != "blank":
+            if status != WatchStatus.BLANK:
                 new_entry = pd.DataFrame(
-                    [{"userId": userId, "movieId": movieId, "status": status}]
+                    {
+                        WatchlistColumns.USER: userId,
+                        WatchlistColumns.MOVIE: movieId,
+                        WatchlistColumns.STATUS: status,
+                    }
                 )
                 data = pd.concat([data, new_entry], ignore_index=True)
             return data, (not existing_entry.empty)
@@ -516,5 +592,5 @@ if __name__ == "__main__":
         2023,
         "usr_ca512f",
         "mov_c037c8",
-        "seen",
+        WatchStatus.SEEN,
     )

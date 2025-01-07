@@ -1,4 +1,4 @@
-movie,category,note
+movieId,categoryId,note
 mov_3dcca2,cat_pict,
 mov_5cb73a,cat_pict,
 mov_c40735,cat_pict,

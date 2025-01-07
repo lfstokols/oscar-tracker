@@ -23,7 +23,7 @@ export function getNominationCategoriesForMovie(
 ): Category[] {
   return nominations
     .filter(nom => nom.movieId === movieId)
-    .map(nom => getCategoryFromID(nom.catId, categories))
+    .map(nom => getCategoryFromID(nom.categoryId, categories))
     .filter(cat => cat != null);
 }
 
