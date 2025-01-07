@@ -1,14 +1,12 @@
 import React, {useContext, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
-import {OscarAppContext} from '../contexts/AppContext';
-import {AppTabType} from '../types/Enums';
-import useData from '../hooks/useData';
+import {useOscarAppContext} from '../contexts/AppContext';
 import LoginMenu from './LoginMenu';
 import useUsers from '../hooks/useUsers';
 
 export default function UserButton(): React.ReactElement {
   // hooks
-  const {activeUserId, setActiveUserId} = useContext(OscarAppContext);
+  const {activeUserId, setActiveUserId} = useOscarAppContext();
   const userData = useUsers();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 

@@ -1,6 +1,6 @@
-import React, {useState, useContext} from 'react';
-import {Typography, Button, Menu, MenuItem} from '@mui/material';
-import {OscarAppContext} from '../contexts/AppContext';
+import React from 'react';
+import {Menu, MenuItem} from '@mui/material';
+import {useOscarAppContext} from '../contexts/AppContext';
 import useData from '../hooks/useData';
 
 type Props = {
@@ -13,8 +13,8 @@ export default function LoginMenu({
   setAnchorEl,
 }: Props): React.ReactElement {
   // Make login menu elements
-  const {setActiveUserId} = useContext(OscarAppContext);
-  const fromFetch = useData(useContext(OscarAppContext).year);
+  const {setActiveUserId} = useOscarAppContext();
+  const fromFetch = useData(useOscarAppContext().year);
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
