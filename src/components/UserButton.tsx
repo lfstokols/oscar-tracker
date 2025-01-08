@@ -49,7 +49,7 @@ export default function UserButton(): React.ReactElement {
         </>
       ) : (
         <>
-          <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>
+           <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>
             Login
           </Button>
           <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />

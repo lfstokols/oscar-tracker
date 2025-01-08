@@ -1,19 +1,19 @@
 import React, {useState, useMemo, useEffect, useContext} from 'react';
 import {AppTabType} from '../types/Enums';
 import Cookies from 'js-cookie';
-import {useQuery} from '@tanstack/react-query';
+import {QueryClient, useQuery, useQueryClient} from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications} from '../modules/notifications/NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
+import {EXPIRATION_DAYS} from '../types/GlobalConstants';
 
 export type OscarAppContextValue = Readonly<{
   selectedTab: AppTabType;
   setSelectedTab: (tab: AppTabType) => void;
   activeUserId: UserId | null;
-  setActiveUserId: (id: UserId | null) => void;
   activeUsername: string | null;
-  //setActiveUsername: (username: string | null) => void;
+  setActiveUserId: (id: UserId | null) => void;
   preferences: Preferences;
   setPreferences: (pref: Preferences) => void;
   year: number;
@@ -29,22 +29,42 @@ type Props = {
 export default function OscarAppContextProvider(
   props: Props,
 ): React.ReactElement {
-  const [year, setYear] = useState<number>(2023);
-  const [activeUserId, setActiveUserId] = useState<UserId | null>(null);
-  const [activeUsername, setActiveUsername] = useState<string | null>(null);
+  const DEFAULT_YEAR = 2023; // ? How ought this be set?
+  const [year, setYear] = useState<number>(DEFAULT_YEAR);  
   const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
   const [preferences, setPreferences] = useState<Preferences>({
     shortsAreOneFilm: true,
     highlightAnimated: true,
   });
-
+  
+  //* The username and userId need special handling, since they're set from cookies
+  //* Eventually the preferences will also be defaulted from pulled data
+  //* so they'll need the queryClient too. But at least the preferences don't need
+  //* to be set from two separate sources validated at runtime.
+  // TODO - Wait, can I just use TanStack to set the username and userId? It's fundamentally a cache thing, no? Hmm...
+  const queryClient = useQueryClient();
+  //* Set the default values from the cookies
+  const parsed = UserIdSchema.safeParse(Cookies.get('activeUserId'))
+  const defaultUserId = parsed.success ? parsed.data : null;
+  const defaultUsername = Cookies.get('activeUsername') ?? null;
+  //* Set the state variables with cookie values
+  const [activeUserId, setActiveUserId] = useState<UserId | null>(null);
+  const [activeUsername, setActiveUsername] = useState<string | null>(null);
+  //* Set a promise to check the username and userId are consistent with each other
+  const timeStamp = Date.now();
+  const TIME_LIMIT = 500;
+  queryClient.fetchQuery(userOptions()).then(callbackForArrivedUserList(defaultUserId, defaultUsername, setActiveUsername, EXPIRATION_DAYS, timeStamp, TIME_LIMIT));
+  //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
+  const newSetActiveUserId = upgradeSetActiveUserId(setActiveUserId, setActiveUsername, activeUsername, queryClient);
+  //* Done!
+  
   const contextValue = useMemo(() => {
     return {
       selectedTab,
       setSelectedTab,
       activeUserId,
-      setActiveUserId,
       activeUsername,
+      setActiveUserId: newSetActiveUserId, //* This one sets the username and cookies too
       preferences,
       setPreferences,
       year,
@@ -54,7 +74,7 @@ export default function OscarAppContextProvider(
 
   return (
     <OscarAppContext.Provider value={contextValue}>
-      <CookieHandler usernameSetter={setActiveUsername} />
+      {/* <CookieHandler usernameSetter={setActiveUsername} /> */}
       {props.children}
     </OscarAppContext.Provider>
   );
@@ -71,15 +91,44 @@ export function useOscarAppContext(): OscarAppContextValue {
   return value;
 }
 
+//* Deprecated, but I'm keeping it around for sentimental reasons
 function CookieHandler({
   usernameSetter,
 }: {
   usernameSetter: (username: string | null) => void;
 }): React.ReactElement {
   const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
-  const EXPIRATION_DAYS = 400;
+  // const EXPIRATION_DAYS = 400;
   const [isInitialised, setIsInitialised] = useState(false);
   const userList = useQuery(userOptions());
+  const queryClient = useQueryClient();
+
+  useEffect
+
+  queryClient.fetchQuery(userOptions()).then(data => {
+    const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
+    if (activeUsername !== suggestedUsername) {
+      console.log(
+        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
+        The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
+        Attempting to fix...`,
+      );
+      const notifications = useNotifications(null);
+      notifications.show({
+        type: 'error',
+        message:
+          'The username was incorrectly set. If it remains incorrect, reload the page.',
+        //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+      });
+      usernameSetter(suggestedUsername);
+      Cookies.set('activeUsername', suggestedUsername as string, {
+        expires: EXPIRATION_DAYS,
+      });
+    }
+  });
+  //   setIsInitialised(true);
+  //   usernameSetter(getUsernameFromId(activeUserId ?? '', data));
+  // });
 
   useEffect(() => {
     if (isInitialised) {
@@ -134,4 +183,64 @@ function CookieHandler({
   });
 
   return <></>;
+}
+
+//* returns a new version of setActiveUserId that also updates the cookie and activeUsername
+//* In principle, it shouldn't be possible to call the upgraded setActiveUserId 
+//* without the the username and both cookies also being set to match the new value
+//* The only exception would be if there is no UserList available, in which case we show an error message
+function upgradeSetActiveUserId(
+  setActiveUserId: (id: UserId | null) => void,
+  setActiveUsername: (username: string | null) => void,
+  activeUsername: string | null,
+  queryClient: QueryClient,
+): ((id: UserId | null) => void) {
+  return (id: UserId | null) => {
+    const timeStamp = Date.now();
+    setActiveUserId(id);
+    Cookies.set('activeUserId', id as string, {
+      expires: EXPIRATION_DAYS,
+  });
+
+  const TIME_LIMIT = 500; //* milliseconds
+  //* Adjust as needed, this is the allowable delay between setting
+  //* the userId and the username without showing an error
+
+  queryClient.fetchQuery(userOptions())
+    .then(data => callbackForArrivedUserList(id, activeUsername, setActiveUsername, EXPIRATION_DAYS, timeStamp, TIME_LIMIT)(data));
+  }
+}
+
+
+function callbackForArrivedUserList(
+  activeUserId: UserId | null,
+  activeUsername: string | null,
+  usernameSetter: (username: string | null) => void,
+  EXPIRATION_DAYS: number,
+  timeStamp: number,
+  timeLimit?: number,
+): ((data:UserList) => void) {
+  return (data: UserList) => {
+    const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
+    if (activeUsername !== suggestedUsername) {
+      console.log(
+        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
+        The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
+        Attempting to fix...`,
+      );
+      if (timeLimit && Date.now() - timeStamp > timeLimit) {
+        const notifications = useNotifications(null);
+        notifications.show({
+          type: 'error',
+          message:
+            'The username was incorrectly set. If it remains incorrect, reload the page.',
+          //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+        });
+        usernameSetter(suggestedUsername);
+        Cookies.set('activeUsername', suggestedUsername as string, {
+          expires: EXPIRATION_DAYS,
+        });
+      }
+    }
+  };
 }
