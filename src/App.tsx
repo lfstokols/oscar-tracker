@@ -15,6 +15,7 @@ import NotificationsContextProvider from './modules/notifications/NotificationCo
 import SiteHeader from './components/SiteHeader';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import SignUpModal from './components/userModal/SignUpModal';
+import Countdown from './components/Countdown';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,9 @@ function App(): React.ReactElement {
         <Box sx={{my: 4}}>
           <Suspense fallback={<LoadScreen />}>
             <NomineeTable />
+            <div style={{display: 'flex', justifyContent: 'center'}}>
+            <Countdown />
+            </div>
           </Suspense>
         </Box>
       </Container>

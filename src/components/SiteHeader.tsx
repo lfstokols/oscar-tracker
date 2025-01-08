@@ -8,6 +8,8 @@ import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
 import OurWordmark from './OurWordmark';
 import Countdown from './Countdown';
+import {WatchStatus} from '../types/Enums';
+import {MyFill} from './WatchlistCell';
 
 type Props = {};
 
@@ -43,13 +45,12 @@ export default function SiteHeader(props: Props): React.ReactElement {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}>Option 1</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Option 2</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Option 3</MenuItem>
+            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.seen} handleInteract={() => {}} disabled={false} /></MenuItem>
+            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.todo} handleInteract={() => {}} disabled={false} /></MenuItem>
+            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.blank} handleInteract={() => {}} disabled={false} /></MenuItem>
           </Menu>
           <OurWordmark />
         </div>
-        <Countdown />
         <UserButton />
       </Toolbar>
     </AppBar>

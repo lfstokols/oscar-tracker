@@ -1,7 +1,5 @@
-import React, {Suspense, useContext, useState} from 'react';
-import {WatchFilter} from '../App';
+import React, {Suspense, useState} from 'react';
 import WatchlistCell from './WatchlistCell';
-import useData from '../hooks/useData';
 import {
   getNominationCategoriesForMovie,
   getMovieWatchStatusForUser,
@@ -15,7 +13,6 @@ import {
   TableRow,
   Paper,
   TablePagination,
-  TableSortLabel,
 } from '@mui/material';
 import {DataFlavor, WatchStatus} from '../types/Enums';
 import {LoadScreen} from '../App';
@@ -25,11 +22,6 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import {useOscarAppContext} from '../contexts/AppContext';
-import {useMyQuery} from '../hooks/useMyQuery';
-import useUsers from '../hooks/useUsers';
-import useNominations from '../hooks/useNominations';
-import useCategories from '../hooks/useCategories';
-import useWatchlist from '../hooks/useWatchlist';
 import {
   categoryOptions,
   movieOptions,
@@ -160,67 +152,124 @@ function NomineeTable(): React.ReactElement {
   //  setOrderBy(property);
   //};
 
+  const [runtimeFormatted, setRuntimeFormatted] = useState(true);
   const paginatedData = sortedData.slice(
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage,
   );
 
   return (
-    <Paper sx={{width: '100%', overflow: 'hidden'}}>
-      <TableContainer>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{minWidth: 200}}>Film</TableCell>
-              <TableCell sx={{minWidth: 200}}>Nominated For</TableCell>
-              {users.map(user => (
-                <TableCell key={user.id} align="center">
-                  {user.username}
+    <>
+      <style>{`
+      .title-column {
+        border: 5px solid #ccc;
+      }
+      .nominations-column {
+        max-width: 300px;
+      }
+      .table-container {
+        /* Calculate height by subtracting header + countdown + padding */
+        height: calc(100vh - 310px);
+        display: flex;
+        flex-direction: column;
+      }
+      .scrollable-table {
+        flex-grow: 1;
+        overflow: auto;
+      }
+    `}</style>
+      <Paper
+        sx={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        className="table-container">
+        <TableContainer className="scrollable-table">
+          <Table stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{minWidth: 200, className: 'title-column'}}>
+                  Film
                 </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedData.map((row, index) => (
-              <TableRow key={paginatedData[index].title} hover>
-                <TableCell title={paginatedData[index].id}>
-                  {paginatedData[index].title}
+                <TableCell
+                  sx={{minWidth: 200, className: 'nominations-column'}}>
+                  Nominated For
                 </TableCell>
-                <TableCell sx={{whiteSpace: 'pre-wrap'}}>
-                  {getNominationCategoriesForMovie(
-                    paginatedData[index].id,
-                    nominations,
-                    categories,
-                  )
-                    .map(nom => nom.shortName)
-                    .join(', ')}
+                <TableCell
+                  sx={{minWidth: 200, className: 'runtime-column'}}
+                  onClick={() => setRuntimeFormatted(!runtimeFormatted)}
+                  style={{cursor: 'pointer'}}
+                  align="center"
+                  title="Click to toggle runtime format">
+                  Runtime
                 </TableCell>
                 {users.map(user => (
                   <TableCell
                     key={user.id}
-                    sx={{display: 'fill'}}
-                    align="center">
-                    <WatchlistCell
-                      userId={user.id}
-                      movieId={paginatedData[index].id}
-                    />
+                    align="center"
+                    sx={{className: 'watchlist-column'}}>
+                    {user.username}
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 25, 50]}
-        component="div"
-        count={movies.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+            </TableHead>
+            <TableBody>
+              {paginatedData.map((row, index) => (
+                <TableRow key={paginatedData[index].title} hover>
+                  <TableCell
+                    title={paginatedData[index].id}
+                    sx={{className: 'title-column'}}>
+                    {paginatedData[index].title}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      whiteSpace: 'pre-wrap',
+                      className: 'nominations-column',
+                    }}>
+                    {getNominationCategoriesForMovie(
+                      paginatedData[index].id,
+                      nominations,
+                      categories,
+                    )
+                      .map(nom => nom.shortName)
+                      .join(', ')}
+                  </TableCell>
+                  <TableCell
+                    sx={{minWidth: 200, className: 'runtime-column'}}
+                    align="center">
+                    {runtimeFormatted
+                      ? paginatedData[index]['runtime(hours)']
+                      : paginatedData[index]['runtime(minutes)']}
+                  </TableCell>
+                  {users.map(user => (
+                    <TableCell
+                      key={user.id}
+                      sx={{display: 'fill', className: 'watchlist-column'}}
+                      align="center">
+                      <WatchlistCell
+                        userId={user.id}
+                        movieId={paginatedData[index].id}
+                      />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          component="div"
+          rowsPerPageOptions={[10, 25, 50]}
+          count={-1}
+          rowsPerPage={-1}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </>
   );
 }
 

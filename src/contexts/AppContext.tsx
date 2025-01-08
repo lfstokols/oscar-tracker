@@ -1,7 +1,12 @@
-import React, {useState, useMemo, useEffect, useContext} from 'react';
+import React, {useState, useMemo, useEffect, useContext, cache} from 'react';
 import {AppTabType} from '../types/Enums';
 import Cookies from 'js-cookie';
-import {QueryClient, useQuery, useQueryClient} from '@tanstack/react-query';
+import {
+  QueryCache,
+  QueryClient,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications} from '../modules/notifications/NotificationContext';
@@ -30,13 +35,13 @@ export default function OscarAppContextProvider(
   props: Props,
 ): React.ReactElement {
   const DEFAULT_YEAR = 2023; // ? How ought this be set?
-  const [year, setYear] = useState<number>(DEFAULT_YEAR);  
+  const [year, setYear] = useState<number>(DEFAULT_YEAR);
   const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
   const [preferences, setPreferences] = useState<Preferences>({
     shortsAreOneFilm: true,
     highlightAnimated: true,
   });
-  
+
   //* The username and userId need special handling, since they're set from cookies
   //* Eventually the preferences will also be defaulted from pulled data
   //* so they'll need the queryClient too. But at least the preferences don't need
@@ -44,20 +49,48 @@ export default function OscarAppContextProvider(
   // TODO - Wait, can I just use TanStack to set the username and userId? It's fundamentally a cache thing, no? Hmm...
   const queryClient = useQueryClient();
   //* Set the default values from the cookies
-  const parsed = UserIdSchema.safeParse(Cookies.get('activeUserId'))
+  // const cookieUserId = Cookies.get('activeUserId');
+  // console.log(`cookie says ${cookieUserId}`);
+  // const parsedUserId = UserIdSchema.safeParse(cookieUserId);
+  // console.log(`zod's parser says ${parsedUserId}`);
+  // console.log(`zod's parser success? ${parsedUserId.success}`);
+  // console.log(`zod's parser data? ${parsedUserId.data}`);
+  // const defaultUserId = parsedUserId.success ? parsedUserId.data : null;
+  // console.log(`defaultUserId is ${defaultUserId}`);
+  // const cookieUsername = Cookies.get('activeUsername');
+  // console.log(`cookieUsername is ${cookieUsername}`);
+  // const defaultUsername = cookieUsername ?? null;
+  // console.log(`defaultUsername is ${defaultUsername}`);
+  const parsed = UserIdSchema.safeParse(Cookies.get('activeUserId'));
   const defaultUserId = parsed.success ? parsed.data : null;
   const defaultUsername = Cookies.get('activeUsername') ?? null;
   //* Set the state variables with cookie values
-  const [activeUserId, setActiveUserId] = useState<UserId | null>(null);
-  const [activeUsername, setActiveUsername] = useState<string | null>(null);
+  const [activeUserId, setActiveUserId] = useState<UserId | null>(defaultUserId);
+  const [activeUsername, setActiveUsername] = useState<string | null>(defaultUsername);
   //* Set a promise to check the username and userId are consistent with each other
   const timeStamp = Date.now();
-  const TIME_LIMIT = 500;
-  queryClient.fetchQuery(userOptions()).then(callbackForArrivedUserList(defaultUserId, defaultUsername, setActiveUsername, EXPIRATION_DAYS, timeStamp, TIME_LIMIT));
+  const TIME_LIMIT = 1000;
+  queryClient
+    .fetchQuery(userOptions())
+    .then(
+      callbackForArrivedUserList(
+        defaultUserId,
+        defaultUsername,
+        setActiveUsername,
+        EXPIRATION_DAYS,
+        timeStamp,
+        TIME_LIMIT,
+      ),
+    );
   //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
-  const newSetActiveUserId = upgradeSetActiveUserId(setActiveUserId, setActiveUsername, activeUsername, queryClient);
+  const newSetActiveUserId = upgradeSetActiveUserId(
+    setActiveUserId,
+    setActiveUsername,
+    activeUsername,
+    queryClient,
+  );
   //* Done!
-  
+
   const contextValue = useMemo(() => {
     return {
       selectedTab,
@@ -103,7 +136,7 @@ function CookieHandler({
   const userList = useQuery(userOptions());
   const queryClient = useQueryClient();
 
-  useEffect
+  useEffect;
 
   queryClient.fetchQuery(userOptions()).then(data => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
@@ -186,7 +219,7 @@ function CookieHandler({
 }
 
 //* returns a new version of setActiveUserId that also updates the cookie and activeUsername
-//* In principle, it shouldn't be possible to call the upgraded setActiveUserId 
+//* In principle, it shouldn't be possible to call the upgraded setActiveUserId
 //* without the the username and both cookies also being set to match the new value
 //* The only exception would be if there is no UserList available, in which case we show an error message
 function upgradeSetActiveUserId(
@@ -194,23 +227,32 @@ function upgradeSetActiveUserId(
   setActiveUsername: (username: string | null) => void,
   activeUsername: string | null,
   queryClient: QueryClient,
-): ((id: UserId | null) => void) {
+): (id: UserId | null) => void {
   return (id: UserId | null) => {
     const timeStamp = Date.now();
     setActiveUserId(id);
     Cookies.set('activeUserId', id as string, {
       expires: EXPIRATION_DAYS,
-  });
+    });
 
-  const TIME_LIMIT = 500; //* milliseconds
-  //* Adjust as needed, this is the allowable delay between setting
-  //* the userId and the username without showing an error
+    const TIME_LIMIT = 500; //* milliseconds
+    //* Adjust as needed, this is the allowable delay between setting
+    //* the userId and the username without showing an error
 
-  queryClient.fetchQuery(userOptions())
-    .then(data => callbackForArrivedUserList(id, activeUsername, setActiveUsername, EXPIRATION_DAYS, timeStamp, TIME_LIMIT)(data));
-  }
+    queryClient
+      .ensureQueryData(userOptions())
+      .then(data =>
+        callbackForArrivedUserList(
+          id,
+          activeUsername,
+          setActiveUsername,
+          EXPIRATION_DAYS,
+          timeStamp,
+          TIME_LIMIT,
+        )(data),
+      );
+  };
 }
-
 
 function callbackForArrivedUserList(
   activeUserId: UserId | null,
@@ -219,28 +261,30 @@ function callbackForArrivedUserList(
   EXPIRATION_DAYS: number,
   timeStamp: number,
   timeLimit?: number,
-): ((data:UserList) => void) {
+): (data: UserList) => void {
   return (data: UserList) => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
-    if (activeUsername !== suggestedUsername) {
+    if (
+      activeUsername !== suggestedUsername &&
+      timeLimit &&
+      Date.now() - timeStamp > timeLimit
+    ) {
       console.log(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
-        The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
-        Attempting to fix...`,
+        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
+        'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
+        'Attempting to fix...`,
       );
-      if (timeLimit && Date.now() - timeStamp > timeLimit) {
-        const notifications = useNotifications(null);
-        notifications.show({
-          type: 'error',
-          message:
-            'The username was incorrectly set. If it remains incorrect, reload the page.',
-          //* Note to self: It's also possible that the userId is invalid, but that seems less likely
-        });
-        usernameSetter(suggestedUsername);
-        Cookies.set('activeUsername', suggestedUsername as string, {
-          expires: EXPIRATION_DAYS,
-        });
-      }
+      const notifications = useNotifications(null);
+      notifications.show({
+        type: 'error',
+        message:
+          'The username was incorrectly set. If it remains incorrect, reload the page.',
+        //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+      });
     }
+    usernameSetter(suggestedUsername);
+    Cookies.set('activeUsername', suggestedUsername as string, {
+      expires: EXPIRATION_DAYS,
+    });
   };
 }

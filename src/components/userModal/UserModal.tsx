@@ -14,7 +14,6 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 //import AppTheme from "../shared-theme/AppTheme";
-import useUsers from '../../hooks/useUsers';
 import { useOscarAppContext } from '../../contexts/AppContext';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -65,13 +64,6 @@ const ActiveUserDataContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-// TODO - add a wrapper to call useUsers and get the active user's username
-// First pass:
-//const allUsersQuery = useUsers();
-//if (allUsersQuery.data[activeUser]) {
-//	const user = allUsersQuery.data[activeUser];
-//}
-// TODO - Jesus Christ, we need to get the active user's username from the context
 export default function ActiveUserMenu(props: {
   activeUsername: string;
   disableCustomTheme?: boolean;

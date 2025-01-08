@@ -1,9 +1,12 @@
 import React from 'react';
 import {Menu, MenuItem} from '@mui/material';
 import {useOscarAppContext} from '../contexts/AppContext';
-import {useMyUsers} from '../hooks/useMyQuery';
+import {Button} from '@mui/material';
+// import {useMyUsers} from '../hooks/useMyQuery';
 import {LoadScreen} from '../App';
 import {Error} from '@mui/icons-material';
+import { userOptions } from '../hooks/dataOptions';
+import { useQuery } from '@tanstack/react-query';
 
 type Props = {
   anchorEl: HTMLElement | null;
@@ -16,7 +19,7 @@ export default function LoginMenu({
 }: Props): React.ReactElement {
   // Make login menu elements
   const {setActiveUserId} = useOscarAppContext();
-  const usersPromise = useMyUsers();
+  const usersPromise = useQuery(userOptions());
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
@@ -50,10 +53,16 @@ export default function LoginMenu({
           onClick={() => {
             setActiveUserId(user.id);
             handleMenuClose();
-          }}>
+          }}
+          sx = {{ml:1}}>
           {user.username}
         </MenuItem>
       ))}
+      <MenuItem>
+        <Button variant="outlined" onClick={()=>{}} size="small" sx={{mr: 1}}>
+          Sign Up
+        </Button>
+        </MenuItem>
     </Menu>
   );
 }

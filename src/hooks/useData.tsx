@@ -5,7 +5,7 @@ import {
   NomSchema,
   CategorySchema,
   WatchNoticeSchema,
-  MovieAPIResponseSchema,
+  MovieListSchema,
 } from '../types/APIDataSchema';
 export default function useData(year: number): {
   isPending: boolean;
@@ -103,20 +103,20 @@ export default function useData(year: number): {
 }
 
 function mapMovie(data: unknown | undefined): Movie[] | undefined {
-  return MovieAPIResponseSchema.parse(data);
-  console.log('useData fed mapMovie this: ', data);
-  if (data === undefined) return undefined;
-  if (!Array.isArray(data)) throw new Error('Movie Data is not an array');
-  if (!data.every(item => item.hasOwnProperty('id')))
-    throw new Error('Movie Data does not have an id property');
-  if (!data.every(item => item.hasOwnProperty('title')))
-    throw new Error('Movie Data does not have a title property');
-  return data.map(
-    (item): Movie => ({
-      id: item.id,
-      title: item.title,
-    }),
-  );
+  return MovieListSchema.parse(data);
+  // console.log('useData fed mapMovie this: ', data);
+  // if (data === undefined) return undefined;
+  // if (!Array.isArray(data)) throw new Error('Movie Data is not an array');
+  // if (!data.every(item => item.hasOwnProperty('id')))
+  //   throw new Error('Movie Data does not have an id property');
+  // if (!data.every(item => item.hasOwnProperty('title')))
+  //   throw new Error('Movie Data does not have a title property');
+  // return data.map(
+  //   (item): Movie => ({
+  //     id: item.id,
+  //     title: item.title,
+  //   }),
+  // );
 }
 function mapNom(data: unknown | undefined): Nom[] | undefined {
   if (data === undefined) return undefined;
@@ -130,7 +130,7 @@ function mapNom(data: unknown | undefined): Nom[] | undefined {
   return data.map(
     (item): Nom => ({
       movieId: item.movie,
-      catId: item.category,
+      categoryId: item.category,
       note: item.note,
     }),
   );
@@ -146,6 +146,7 @@ function mapUser(data: unknown | undefined): User[] | undefined {
     (item): User => ({
       id: item.id,
       username: item.username,
+      email: item.email,
     }),
   );
 }

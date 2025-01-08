@@ -22,6 +22,7 @@ oscars = Blueprint(
 @oscars.route("/api/nominations", methods=["GET"])
 def get_noms():
     if not (year := request.args.get("year")):
+        print("No year provided")
         return no_year_response()
 
     return catch_file_locked_error(storage.json_read, "n", year)
@@ -30,6 +31,7 @@ def get_noms():
 @oscars.route("/api/movies", methods=["GET"])
 def get_movies():
     if not (year := request.args.get("year")):
+        print("No year provided")
         return no_year_response()
     return catch_file_locked_error(storage.get_movies, year, json=True)
 
@@ -74,6 +76,7 @@ def get_watchlist():
         if userId is None:
             userId = request.args.get("userId")
         if not (year := request.args.get("year")):
+            print("No year provided")
             return no_year_response()
         if justMe:
             # TODO - Add locked file error handling
@@ -85,8 +88,12 @@ def get_watchlist():
         movieId = request.json.get("movieId")
         status = request.json.get("status")
         if not (year := request.json.get("year")):
+            print("No year provided")
             return no_year_response()
-        storage.add_watchlist_entry(year, userId, movieId, status)
+        if storage.add_watchlist_entry(year, userId, movieId, status):
+            print("add_watchlist said True")
+        else:
+            print("add_watchlist said False")
         return jsonify(storage.json_read("w", year))
         # TODO - Figure out a pattern for file lock errors with PUT requests
 

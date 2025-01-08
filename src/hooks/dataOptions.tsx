@@ -70,11 +70,11 @@ export function watchlistOptions(year: number) {
 // * Helper functions // *
 // *
 
-function qFunction(
+function qFunction<T>(
   dFlavor: DataFlavor,
   qParams: Record<string, string>,
-  parser: (data: any) => any,
-): () => Promise<ReturnType<typeof parser>> {
+  parser: (data: any) => T,
+): () => Promise<T>{//ReturnType<typeof parser>> {
   return async () => {
     const params = new URLSearchParams(qParams);
     const response = await fetch(`api/${dFlavor}?${params.toString()}`, {

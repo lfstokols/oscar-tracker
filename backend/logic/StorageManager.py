@@ -42,11 +42,6 @@ class StorageManager:
             "cat": "categories",  # aliases from id prefixes
         }
         # Default dataframes for file creation
-        print(type(MovieColumns))
-        print(MovieColumns)
-        print(type(MovieColumns.ID))
-        print(MovieColumns.ID)
-        print(MovieColumns.ID == "id")
         self.DEFAULT_MOVIES = pd.DataFrame(
             columns=[col for col in MovieColumns.values()]
         ).set_index(MovieColumns.ID)
@@ -563,7 +558,7 @@ class StorageManager:
     def add_watchlist_entry(self, year, userId, movieId, status: WatchStatus) -> bool:
         self.validate_id(userId, "users")
         self.validate_id(movieId, "movies")
-        assert status in WatchStatus.__args__, f"Invalid status '{status}'."
+        assert status in WatchStatus.values(), f"Invalid status '{status}'."
 
         def operation(data: pd.DataFrame):
             existing_entry = data[
@@ -575,9 +570,9 @@ class StorageManager:
             if status != WatchStatus.BLANK:
                 new_entry = pd.DataFrame(
                     {
-                        WatchlistColumns.USER: userId,
-                        WatchlistColumns.MOVIE: movieId,
-                        WatchlistColumns.STATUS: status,
+                        WatchlistColumns.USER: [userId],
+                        WatchlistColumns.MOVIE: [movieId],
+                        WatchlistColumns.STATUS: [status],
                     }
                 )
                 data = pd.concat([data, new_entry], ignore_index=True)

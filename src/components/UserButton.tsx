@@ -1,14 +1,16 @@
-import React, {useContext, useState} from 'react';
+import React, {Suspense, useContext, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
 import {useOscarAppContext} from '../contexts/AppContext';
 import LoginMenu from './LoginMenu';
-import useUsers from '../hooks/useUsers';
-import {useMyUsers} from '../hooks/useMyQuery';
+import { LoadScreen } from '../App';
+import { userOptions } from '../hooks/dataOptions';
+import { useQuery } from '@tanstack/react-query';
+// import {useMyUsers} from '../hooks/useMyQuery';
 
 export default function UserButton(): React.ReactElement {
   // hooks
-  const {activeUserId, setActiveUserId} = useOscarAppContext();
-  const userDataPromise = useMyUsers();
+  const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
+  const userDataPromise = useQuery(userOptions());
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   if (userDataPromise.isPending || userDataPromise.isError) {
@@ -52,7 +54,9 @@ export default function UserButton(): React.ReactElement {
            <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>
             Login
           </Button>
-          <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
+          <Suspense fallback={<LoadScreen />}>
+            <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
+          </Suspense>
         </>
       )}
     </div>

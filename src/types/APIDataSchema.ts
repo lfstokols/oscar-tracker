@@ -6,15 +6,15 @@ export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
 export const MovieIdSchema = z
   .string()
   .regex(/^mov_[a-zA-Z0-9]{6}$/)
-  .brand<'zMovieId'>();
+  .brand<'MovieId'>();
 export const UserIdSchema = z
   .string()
   .regex(/usr_[a-zA-Z0-9]{6}/)
-  .brand<'zUserId'>();
+  .brand<'UserId'>();
 export const CategoryIdSchema = z
   .string()
   .regex(/cat_[a-z]{4}/)
-  .brand<'zCategoryId'>();
+  .brand<'CategoryId'>();
 // * Primitive Types
 export type MovieId = z.infer<typeof MovieIdSchema>;
 export type UserId = z.infer<typeof UserIdSchema>;
@@ -39,7 +39,6 @@ export const MovieSchema = z
   })
   .passthrough();
 
-// ! This Throws because the data doesn't have 'Id' in it!!!
 export const NomSchema = z.object({
   movieId: MovieIdSchema,
   categoryId: CategoryIdSchema,
@@ -62,9 +61,11 @@ export const WatchNoticeSchema = z.object({
   userId: UserIdSchema,
   movieId: MovieIdSchema,
   status: RawWatchStatusSchema.transform(status => {
-    status === RawWatchStatusSchema.enum['seen']
+    return status === RawWatchStatusSchema.enum['seen']
       ? WatchStatus.seen
-      : WatchStatus.todo;
+      : status === RawWatchStatusSchema.enum['todo']
+      ? WatchStatus.todo 
+      : WatchStatus.blank;
   }),
 });
 

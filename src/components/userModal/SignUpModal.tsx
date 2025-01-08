@@ -60,12 +60,6 @@ const ActiveUserDataContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-// TODO - add a wrapper to call useUsers and get the active user's username
-// First pass:
-//const allUsersQuery = useUsers();
-//if (allUsersQuery.data[activeUser]) {
-//	const user = allUsersQuery.data[activeUser];
-//}
 // TODO - Jesus Christ, we need to get the active user's username from the context
 export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
   const [emailError, setEmailError] = React.useState(false);

@@ -7,7 +7,7 @@ MovID = NewType("MovID", IDNum)
 UserID = NewType("UserID", IDNum)
 CatID = NewType("CatID", IDNum)
 DataFlavor = Literal["movies", "users", "nominations", "categories", "watchlist"]
-WatchStatus = Literal["seen", "todo", "blank"]
+#WatchStatus = Literal["seen", "todo", "blank"]
 
 
 # Nom = NewType('Nom', TypedDict['movie': MovID, 'category': CatID, 'note': str|None])
@@ -85,6 +85,17 @@ class UserColumns:
             v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
         ]
 
+class WatchStatus:
+    SEEN = "seen"
+    TODO = "todo"
+    BLANK = "blank"
+
+    @classmethod
+    @classmethod
+    def values(cls):
+        return [
+            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+        ]
 
 __all__ = [
     "MovID",
