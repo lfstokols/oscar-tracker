@@ -19,6 +19,7 @@ import {LoadScreen} from '../App';
 import {
   QueryErrorResetBoundary,
   useQuery,
+  useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
 import {useOscarAppContext} from '../contexts/AppContext';
@@ -27,74 +28,27 @@ import {
   movieOptions,
   nomOptions,
   userOptions,
-  watchlistOptions,
 } from '../hooks/dataOptions';
-//const TEST_DATA = '{ "users": [{ "username": "Logan", "watchedMovies": ["Oppenheimer"] }], "movies": [ { "title": "Oppenheimer", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Poor Things", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Killers of the Flower Moon", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Barbie", "nominations": [ "Best Picture", "Actor", "Actress" ] } ] }';
 
-//export type Row = {
-//  title: string;
-//  title_tooltip: string;
-//  categories: string;
-//};
-//
-//function getRowInfo(
-//  movie: Movie,
-//  nominations: Nom[],
-//  users: User[],
-//  watchlist: WatchNotice[],
-//  categories: Category[],
-//): Row {
-//  // Get nomination list for this movie
-//  const nomList = getNominationCategoriesForMovie(
-//    movie.id,
-//    nominations,
-//    categories,
-//  )
-//    .map(nom => nom.shortName)
-//    .join(', ');
-//
-//  // get watch status for each user
-//  const watchStatuses = users.reduce(
-//    (acc: Record<string, WatchStatus>, user: User) => {
-//      acc[user.username] = getMovieWatchStatusForUser(
-//        user.id,
-//        movie.id,
-//        watchlist,
-//      );
-//      return acc;
-//    },
-//    {},
-//  );
-//  const row: Row = {
-//    title: movie.title,
-//    title_tooltip: movie.id,
-//    categories: nomList,
-//    ...watchStatuses,
-//  };
-//
-//  return row;
-//}
 
 function NomineeTable(): React.ReactElement {
   const year = useOscarAppContext().year;
-    // const [page, setPage] = useState(0);
-    // const [rowsPerPage, setRowsPerPage] = useState(25);
-  //const [orderBy, setOrderBy] = useState<keyof Row>('title');
-  //const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
-  //const {isPending, isError, allData, isFetching} = useData(year);
-  const users: User[] = useSuspenseQuery(userOptions()).data;
-  const nominations: Nom[] = useSuspenseQuery(nomOptions(year)).data;
-  const categories: Category[] = useSuspenseQuery(categoryOptions()).data;
-  const watchlist: WatchNotice[] = useSuspenseQuery(
-    watchlistOptions(year),
-  ).data;
-  const movies: Movie[] = useSuspenseQuery(movieOptions(year)).data;
+  const [usersQ, nominationsQ, categoriesQ, moviesQ] = useSuspenseQueries({
+    queries: [
+      userOptions(),
+      nomOptions(year),
+      categoryOptions(),
+      movieOptions(year),
+      movieOptions(year),
+    ],
+  });
+  const users = usersQ.data;
+  const nominations = nominationsQ.data;
+  const categories = categoriesQ.data;
+  const movies = moviesQ.data;
+  
   const sortedData = movies.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
-
-
-
-
   const [runtimeFormatted, setRuntimeFormatted] = useState(true);
 
   return (
