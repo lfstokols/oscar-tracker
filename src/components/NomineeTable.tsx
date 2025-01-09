@@ -77,8 +77,8 @@ import {
 
 function NomineeTable(): React.ReactElement {
   const year = useOscarAppContext().year;
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+    // const [page, setPage] = useState(0);
+    // const [rowsPerPage, setRowsPerPage] = useState(25);
   //const [orderBy, setOrderBy] = useState<keyof Row>('title');
   //const [order, setOrder] = useState<'asc' | 'desc'>('asc');
 
@@ -90,73 +90,12 @@ function NomineeTable(): React.ReactElement {
     watchlistOptions(year),
   ).data;
   const movies: Movie[] = useSuspenseQuery(movieOptions(year)).data;
-  //const users = usersPromise.data ?? [];
-  //const nominations = nominationsPromise.data ?? [];
-  //const categories = categoriesPromise.data ?? [];
-  //const watchlist = watchlistPromise.data ?? [];
-  //const movies = moviesPromise.data ?? [];
-  //const tableData = moviesPromise.data?.map((movie: Movie) => {
-  //  if (!nominations || !users || !watchlist || !categories) {
-  //    return undefined;
-  //  }
-  //  return getRowInfo(movie, nominations, users, watchlist, categories);
-  //});
-
   const sortedData = movies.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
-  //  React.useMemo(() => {
-  //    if (!tableData || tableData.some(item => item === undefined)) {
-  //      return undefined;
-  //    }
-  //    return [...(tableData as Row[])].sort((a, b) => {
-  //      const orderingAttr =
-  //        orderBy === 'categories'
-  //|          ? (str: string) => str.length
-  //          : (str: string) => str;
-  //
-  //      if (order === 'asc') {
-  //        return orderingAttr(a[orderBy]) < orderingAttr(b[orderBy]) ? -1 : 1;
-  //      } else {
-  //        return orderingAttr(b[orderBy]) < orderingAttr(a[orderBy]) ? -1 : 1;
-  //      }
-  //    });
-  //  }, [tableData, order, orderBy]);
 
-  //if (isPending) return <LoadScreen />;
-  //if (isError) return <div>Error fetching data :</div>;
 
-  //if (
-  //  !users ||
-  //  !movies ||
-  //  !nominations ||
-  //  !categories ||
-  //  !watchlist ||
-  //  !tableData ||
-  //  !sortedData
-  //)
-  //  return <div>No data available</div>;
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  //const handleSort = (property: keyof Row) => {
-  //  const isAsc = orderBy === property && order === 'asc';
-  //  setOrder(isAsc ? 'desc' : 'asc');
-  //  setOrderBy(property);
-  //};
 
   const [runtimeFormatted, setRuntimeFormatted] = useState(true);
-  const paginatedData = sortedData.slice(
-    page * rowsPerPage,
-    page * rowsPerPage + rowsPerPage,
-  );
 
   return (
     <>
@@ -168,20 +107,24 @@ function NomineeTable(): React.ReactElement {
         max-width: 300px;
       }
       .table-container {
-        /* Calculate height by subtracting header + countdown + padding */
-        height: calc(100vh - 310px);
         display: flex;
         flex-direction: column;
       }
       .scrollable-table {
         flex-grow: 1;
         overflow: auto;
+        height: 100%;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+      }
+      .scrollable-table::-webkit-scrollbar { /* WebKit */
+        display: none;
       }
     `}</style>
       <Paper
         sx={{
           width: '100%',
-          height: '100%',
+          height: 'calc(100vh - var(--template-frame-height, 0))',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -216,12 +159,12 @@ function NomineeTable(): React.ReactElement {
               </TableRow>
             </TableHead>
             <TableBody>
-              {paginatedData.map((row, index) => (
-                <TableRow key={paginatedData[index].title} hover>
+              {sortedData.map((row, index) => (
+                <TableRow key={row.title} hover>
                   <TableCell
-                    title={paginatedData[index].id}
+                    title={row.id}
                     sx={{className: 'title-column'}}>
-                    {paginatedData[index].title}
+                    {sortedData[index].title}
                   </TableCell>
                   <TableCell
                     sx={{
@@ -229,7 +172,7 @@ function NomineeTable(): React.ReactElement {
                       className: 'nominations-column',
                     }}>
                     {getNominationCategoriesForMovie(
-                      paginatedData[index].id,
+                      sortedData[index].id,
                       nominations,
                       categories,
                     )
@@ -240,8 +183,8 @@ function NomineeTable(): React.ReactElement {
                     sx={{minWidth: 200, className: 'runtime-column'}}
                     align="center">
                     {runtimeFormatted
-                      ? paginatedData[index]['runtime(hours)']
-                      : paginatedData[index]['runtime(minutes)']}
+                      ? sortedData[index]['runtime(hours)']
+                      : sortedData[index]['runtime(minutes)']}
                   </TableCell>
                   {users.map(user => (
                     <TableCell
@@ -250,7 +193,7 @@ function NomineeTable(): React.ReactElement {
                       align="center">
                       <WatchlistCell
                         userId={user.id}
-                        movieId={paginatedData[index].id}
+                        movieId={sortedData[index].id}
                       />
                     </TableCell>
                   ))}
@@ -259,15 +202,6 @@ function NomineeTable(): React.ReactElement {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          component="div"
-          rowsPerPageOptions={[10, 25, 50]}
-          count={-1}
-          rowsPerPage={-1}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
       </Paper>
     </>
   );
@@ -277,19 +211,9 @@ function NomineeTable(): React.ReactElement {
 export default function NomineeTableWrapper() {
   return (
     <QueryErrorResetBoundary>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<LoadScreen />}>
         <NomineeTable />
       </Suspense>
     </QueryErrorResetBoundary>
   );
 }
-//function nominationOptions(
-//  year: number,
-//): import('@tanstack/react-query').UseSuspenseQueryOptions<
-//  unknown,
-//  Error,
-//  unknown,
-//  import('@tanstack/react-query').QueryKey
-//> {
-//  throw new Error('Function not implemented.');
-//}

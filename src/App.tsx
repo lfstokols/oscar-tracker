@@ -29,14 +29,35 @@ export type WatchFilter = 'all' | 'watched' | 'unwatched';
 
 function App(): React.ReactElement {
   return (
-    <div className="App">
+    <div className="App" style={{
+      height: '100vh', 
+      width: '100vw', 
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+        <style>{`
+          ::-webkit-scrollbar {
+            display: none;
+          }
+          * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+        `}</style>
       <SiteHeader />
-      <Container maxWidth="lg">
-        <Box sx={{my: 4}}>
+      <Container sx={{
+        flexGrow: 1,
+        overflow: 'auto',
+        scrollBehavior: 'smooth',
+        height: 0, // This forces the container to respect the flex layout
+        display: 'flex',
+      }} >
+        <Box sx={{my: 4,  borderRadius: 2, width: '90vw'}}>
           <Suspense fallback={<LoadScreen />}>
             <NomineeTable />
             <div style={{display: 'flex', justifyContent: 'center'}}>
-            <Countdown />
+            {/* <Countdown /> */}
             </div>
           </Suspense>
         </Box>
@@ -48,7 +69,7 @@ function App(): React.ReactElement {
 export function LoadScreen(): React.ReactElement {
   return (
     <Backdrop
-      sx={theme => ({color: '#fff', zIndex: theme.zIndex.drawer + 1})}
+      sx={theme => ({color: '#fff', zIndex: theme.zIndex.drawer + 1, flexGrow: 1})}
       open={true}
       onClick={() => {}}>
       <CircularProgress color="inherit" />
@@ -56,16 +77,16 @@ export function LoadScreen(): React.ReactElement {
   );
 }
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <App />,
-  },
-  {
-    path: '/playground',
-    element: <SignUpModal />,
-  },
-]);
+// const router = createBrowserRouter([
+//   {
+//     path: '/',
+//     element: <App />,
+//   },
+//   {
+//     path: '/playground',
+//     element: <SignUpModal />,
+//   },
+// ]);
 
 // Providers go here
 export default function AppWrapper(): React.ReactElement {

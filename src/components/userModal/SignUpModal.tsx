@@ -17,6 +17,7 @@ import { styled } from '@mui/material/styles';
 //import AppTheme from "../shared-theme/AppTheme";
 //import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import OurWordmark from '../OurWordmark';
+import Backdrop from '@mui/material/Backdrop';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -60,11 +61,16 @@ const ActiveUserDataContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
-// TODO - Jesus Christ, we need to get the active user's username from the context
-export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
+type Props = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
+
+export default function SignUpMenu({open, setOpen}: Props) {
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
+  const [usernameError, setUsernameError] = React.useState(false);
+  const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -72,6 +78,10 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
 
   const handleClose = () => {
     setOpen(false);
+  };
+
+  const handleCardClick = (event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent click from reaching the backdrop
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -101,11 +111,33 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
     return isValid;
   };
 
+  const validateUsername = () => {
+    const username = document.getElementById('username') as HTMLInputElement;
+
+    let isValid = true;
+    if (!username.value || !/^[a-zA-Z0-9]+$/.test(username.value)) {
+      setUsernameError(true);
+      setUsernameErrorMessage('Username must consist of only letters and numbers.');
+      isValid = false;
+    } else {
+      setUsernameError(false);
+      setUsernameErrorMessage('');
+    }
+    return isValid;
+  }
+
+
+
   return (
     //<AppTheme {...props}>
     //<CssBaseline enableColorScheme />
-    <ActiveUserDataContainer direction="column" justifyContent="space-between">
-      <Card variant="outlined">
+    <Backdrop
+    sx={(theme) => ({ color: '#fff', opacity: 1, zIndex: theme.zIndex.drawer + 1 })}
+    open={open}
+    onClick={handleClose}
+  >
+    {/* <ActiveUserDataContainer direction="column" justifyContent="space-between"> */}
+      <Card variant="outlined" onClick={handleCardClick}>
         <OurWordmark />
         <Typography
           component="h1"
@@ -125,9 +157,19 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
             gap: 2,
           }}
         >
+          <MyForm 
+            title="Username"
+            label="username"
+            placeholder="username"
+            error={usernameError}
+            errorMessage={usernameErrorMessage}
+          />
           <MyForm
-            emailError={emailError}
-            emailErrorMessage={emailErrorMessage}
+            title="Email"
+            label="email"
+            placeholder="your@email.com"
+            error={emailError}
+            errorMessage={emailErrorMessage}
           />
           {/*<FormControlLabel
 						control={<Checkbox value="remember" color="primary" />}
@@ -138,7 +180,7 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
             type="submit"
             fullWidth
             variant="contained"
-            onClick={validateEmail}
+            onClick={()=>{validateEmail() && validateUsername()}}
           >
             Sign Up
           </Button>
@@ -152,7 +194,7 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
 						Forgot your password?
 					</Link>*/}
         </Box>
-        <Divider>or</Divider>
+        {/* <Divider>or</Divider> */}
         {/*<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Button
             fullWidth
@@ -182,34 +224,40 @@ export default function SignUpMenu(props: { disableCustomTheme?: boolean }) {
           </Typography>
         </Box>*/}
       </Card>
-    </ActiveUserDataContainer>
+    {/* </ActiveUserDataContainer> */}
+    </Backdrop>
     //</AppTheme>
   );
 }
 
 function MyForm({
-  emailError,
-  emailErrorMessage,
+  title,
+  label,
+  placeholder,
+  error,
+  errorMessage,
 }: {
-  emailError: boolean;
-  emailErrorMessage: string;
-}) {
+  title: string;
+  label: string;
+  placeholder: string;
+  error: boolean;
+  errorMessage: string;
+}): React.ReactElement {
   return (
     <FormControl>
-      <FormLabel htmlFor="email">Email</FormLabel>
+      <FormLabel htmlFor={label}>{title}</FormLabel>
       <TextField
-        error={emailError}
-        helperText={emailErrorMessage}
-        id="email"
-        type="email"
-        name="email"
-        placeholder="your@email.com"
-        autoComplete="email"
+        error={error}
+        helperText={errorMessage}
+        id={label}
+        type='text'
+        name={label}
+        placeholder={placeholder}
         autoFocus
         required
         fullWidth
         variant="outlined"
-        color={emailError ? 'error' : 'primary'}
+        color={error ? 'error' : 'primary'}
       />
     </FormControl>
   );

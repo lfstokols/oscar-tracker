@@ -5,8 +5,9 @@ import {Button} from '@mui/material';
 // import {useMyUsers} from '../hooks/useMyQuery';
 import {LoadScreen} from '../App';
 import {Error} from '@mui/icons-material';
-import { userOptions } from '../hooks/dataOptions';
-import { useQuery } from '@tanstack/react-query';
+import {userOptions} from '../hooks/dataOptions';
+import {useQuery} from '@tanstack/react-query';
+import SignUpModal from './userModal/SignUpModal';
 
 type Props = {
   anchorEl: HTMLElement | null;
@@ -18,8 +19,9 @@ export default function LoginMenu({
   setAnchorEl,
 }: Props): React.ReactElement {
   // Make login menu elements
-  const {setActiveUserId} = useOscarAppContext();
+  const {activeUserId, setActiveUserId} = useOscarAppContext();
   const usersPromise = useQuery(userOptions());
+  const [isOpen, setIsOpen] = React.useState(false);
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
@@ -39,14 +41,17 @@ export default function LoginMenu({
   }
   const users = usersPromise.data;
   return (
+
     <Menu
+      sx={{display: 'flex'}}
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={handleMenuClose}
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'left',
-      }}>
+      }}
+      >
       {users.map(user => (
         <MenuItem
           key={user.id}
@@ -54,15 +59,22 @@ export default function LoginMenu({
             setActiveUserId(user.id);
             handleMenuClose();
           }}
-          sx = {{ml:1}}>
+          sx={{ml: 1}}>
           {user.username}
         </MenuItem>
       ))}
       <MenuItem>
-        <Button variant="outlined" onClick={()=>{}} size="small" sx={{mr: 1}}>
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setIsOpen(true);
+          }}
+          size="small"
+          sx={{mr: 1}}>
           Sign Up
         </Button>
-        </MenuItem>
+      </MenuItem>
+      <SignUpModal open={isOpen} setOpen={setIsOpen} />
     </Menu>
   );
 }

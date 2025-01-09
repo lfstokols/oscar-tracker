@@ -5,60 +5,55 @@ import LoginMenu from './LoginMenu';
 import { LoadScreen } from '../App';
 import { userOptions } from '../hooks/dataOptions';
 import { useQuery } from '@tanstack/react-query';
+import UserModal from './userModal/UserModal';
 // import {useMyUsers} from '../hooks/useMyQuery';
 
+
 export default function UserButton(): React.ReactElement {
+
+
   // hooks
   const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
-  const userDataPromise = useQuery(userOptions());
+  const [isLoggedIn, setIsLoggedIn] = useState(activeUserId !== null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  if (userDataPromise.isPending || userDataPromise.isError) {
-    return <div>Can't find username</div>;
-  }
-  const userData: User[] = userDataPromise.data;
-  const getUsername = userData.reduce((acc: Record<string, string>, user) => {
-    acc[user.id] = user.username;
-    return acc;
-  }, {});
-  const handleUserClick = () => {};
-  const logout = () => setActiveUserId(null);
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+
+  const handleModal = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+  const handleDropdown = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
-  return (
+  if (!isLoggedIn) {
+    return (
+    <>
+      <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}} 
+      >
+      Login
+    </Button>
+    <Suspense fallback={<LoadScreen />}>
+      <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
+    </Suspense>
+  </>
+  )
+}
+return (
     <div style={{display: 'flex', alignItems: 'center'}}>
-      {activeUserId ? (
         <>
           <Chip
             avatar={
               <Avatar>
-                {getUsername[activeUserId]?.charAt(0).toUpperCase()}
+                {activeUsername?.charAt(0).toUpperCase()}
               </Avatar>
             }
-            onClick={handleUserClick}
-            label={getUsername[activeUserId]}
+            onClick={handleModal}
+            label={ activeUsername}
             color="secondary"
             sx={{mr: 1}}
           />
-          <Button
-            variant="contained"
-            color="secondary"
-            size="small"
-            onClick={logout}>
-            Logout
-          </Button>
+          <UserModal state={[isMenuOpen, setIsMenuOpen]} />
         </>
-      ) : (
-        <>
-           <Button variant="contained" onClick={handleMenuOpen} sx={{mr: 1}}>
-            Login
-          </Button>
-          <Suspense fallback={<LoadScreen />}>
-            <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
-          </Suspense>
-        </>
-      )}
     </div>
   );
 }
