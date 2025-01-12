@@ -1,4 +1,4 @@
-import React, {Suspense, useState} from 'react';
+import React, {useState} from 'react';
 import WatchlistCell from './WatchlistCell';
 import {
   getNominationCategoriesForMovie,
@@ -15,12 +15,10 @@ import {
   TablePagination,
 } from '@mui/material';
 import {DataFlavor, WatchStatus} from '../types/Enums';
-import {LoadScreen} from '../components/LoadScreen';
+import DefaultCatcher from '../components/LoadScreen';
 import {
   QueryErrorResetBoundary,
-  useQuery,
   useSuspenseQueries,
-  useSuspenseQuery,
 } from '@tanstack/react-query';
 import {useOscarAppContext} from '../globalProviders/AppContext';
 import {
@@ -31,7 +29,7 @@ import {
 } from '../hooks/dataOptions';
 
 
-function NomineeTable(): React.ReactElement {
+function LegacyTable(): React.ReactElement {
   const year = useOscarAppContext().year;
 
   const [usersQ, nominationsQ, categoriesQ, moviesQ] = useSuspenseQueries({
@@ -162,12 +160,10 @@ function NomineeTable(): React.ReactElement {
 }
 
 // Wrap the export with Suspense, ErrorBoundary
-export default function NomineeTableWrapper() {
+export default function LegacyTableWrapper() {
   return (
-    <QueryErrorResetBoundary>
-      <Suspense fallback={<LoadScreen />}>
-        <NomineeTable />
-      </Suspense>
-    </QueryErrorResetBoundary>
+    <DefaultCatcher>
+      <LegacyTable />
+    </DefaultCatcher>
   );
 }

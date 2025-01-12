@@ -3,25 +3,24 @@ import {Menu, MenuItem} from '@mui/material';
 import {useOscarAppContext} from '../../globalProviders/AppContext';
 import {Button} from '@mui/material';
 // import {useMyUsers} from '../hooks/useMyQuery';
-import {LoadScreen} from '../../components/LoadScreen';
+import DefaultCatcher, {LoadScreen} from '../../components/LoadScreen';
 import {Error} from '@mui/icons-material';
 import {userOptions} from '../../hooks/dataOptions';
 import {useQuery} from '@tanstack/react-query';
-import SignUpModal from '../../features/userModal/SignUpModal';
 
 type Props = {
   anchorEl: HTMLElement | null;
   setAnchorEl: (el: HTMLElement | null) => void;
+  signupOpener: () => void;
 };
 
 export default function LoginMenu({
   anchorEl,
   setAnchorEl,
+  signupOpener,
 }: Props): React.ReactElement {
-  // Make login menu elements
-  const {activeUserId, setActiveUserId} = useOscarAppContext();
+  const {setActiveUserId} = useOscarAppContext();
   const usersPromise = useQuery(userOptions());
-  const [isOpen, setIsOpen] = React.useState(false);
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
@@ -41,7 +40,6 @@ export default function LoginMenu({
   }
   const users = usersPromise.data;
   return (
-
     <Menu
       sx={{display: 'flex'}}
       anchorEl={anchorEl}
@@ -50,31 +48,34 @@ export default function LoginMenu({
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'left',
-      }}
-      >
-      {users.map(user => (
+      }}>
+      <DefaultCatcher>
+        {users.map(user => (
+          <MenuItem
+            key={user.id}
+            onClick={() => {
+              setActiveUserId(user.id);
+              handleMenuClose();
+            }}
+            sx={{ml: 1}}>
+            {user.username}
+          </MenuItem>
+        ))}
         <MenuItem
-          key={user.id}
           onClick={() => {
-            setActiveUserId(user.id);
+            console.log('clicked Signup, callingsignupOpener');
             handleMenuClose();
-          }}
-          sx={{ml: 1}}>
-          {user.username}
+            setTimeout(signupOpener, 100);
+          }}>
+          <Button
+            variant="outlined"
+            // onClick={signupOpener}
+            size="small"
+            sx={{mr: 1}}>
+            Sign Up
+          </Button>
         </MenuItem>
-      ))}
-      <MenuItem>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            setIsOpen(true);
-          }}
-          size="small"
-          sx={{mr: 1}}>
-          Sign Up
-        </Button>
-      </MenuItem>
-      <SignUpModal open={isOpen} setOpen={setIsOpen} />
+      </DefaultCatcher>
     </Menu>
   );
 }

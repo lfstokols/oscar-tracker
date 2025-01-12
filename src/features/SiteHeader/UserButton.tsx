@@ -1,59 +1,59 @@
-import React, {Suspense, useContext, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
 import {useOscarAppContext} from '../../globalProviders/AppContext';
 import LoginMenu from './LoginMenu';
-import { LoadScreen } from '../../components/LoadScreen';
-import { userOptions } from '../../hooks/dataOptions';
-import { useQuery } from '@tanstack/react-query';
-import UserModal from '../userModal/UserModal';
-// import {useMyUsers} from '../hooks/useMyQuery';
-
+import DefaultCatcher from '../../components/LoadScreen';
+import ProfileScreen from '../userModal/ProfileScreen';
 
 export default function UserButton(): React.ReactElement {
-
-
   // hooks
-  const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
-  const [isLoggedIn, setIsLoggedIn] = useState(activeUserId !== null);
+  const {activeUserId, activeUsername} = useOscarAppContext();
+  const isLoggedIn = activeUserId !== null;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-
-  const handleModal = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const closeProfile = useCallback(() => {
+    setIsProfileOpen(false);
+  }, []);
+  const openProfile = useCallback(() => {
+    console.log('openProfile called');
+    setIsProfileOpen(true);
+  }, []);
   const handleDropdown = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
   if (!isLoggedIn) {
     return (
-    <>
-      <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}} 
-      >
-      Login
-    </Button>
-    <Suspense fallback={<LoadScreen />}>
-      <LoginMenu anchorEl={anchorEl} setAnchorEl={setAnchorEl} />
-    </Suspense>
-  </>
-  )
-}
-return (
-    <div style={{display: 'flex', alignItems: 'center'}}>
+      <>
+        <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}}>
+          Login
+        </Button>
+        <DefaultCatcher>
+          <LoginMenu
+            anchorEl={anchorEl}
+            setAnchorEl={setAnchorEl}
+            signupOpener={openProfile}
+          />
+        </DefaultCatcher>
+        <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
+      </>
+    );
+  }
+  else {
+    return (
+      <div style={{display: 'flex', alignItems: 'center'}}>
         <>
           <Chip
-            avatar={
-              <Avatar>
-                {activeUsername?.charAt(0).toUpperCase()}
-              </Avatar>
-            }
-            onClick={handleModal}
-            label={ activeUsername}
+            avatar={<Avatar>{activeUsername?.charAt(0).toUpperCase()}</Avatar>}
+            onClick={openProfile}
+            label={activeUsername}
             color="secondary"
             sx={{mr: 1}}
           />
-          <UserModal state={[isMenuOpen, setIsMenuOpen]} />
+          <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
+          {/* <UserModal closer={closeProfile} /> */}
         </>
-    </div>
-  );
+      </div>
+    );
+  }
 }

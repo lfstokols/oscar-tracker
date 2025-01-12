@@ -1,20 +1,15 @@
-import React, {useState} from 'react';
-import NomineeTable from './features/NomineeTable';
+import React from 'react';
+import LegacyTable from './features/LegacyTable';
 import {Suspense} from 'react';
-import UserControls from './features/UserControls';
-import ErrorBoundary from './components/ErrorBoundary';
+import DefaultCatcher from './components/LoadScreen';
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
-import Backdrop from '@mui/material/Backdrop';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import OscarAppContextProvider from './globalProviders/AppContext';
 import NotificationsContextProvider from './globalProviders/NotificationContext';
 import SiteHeader from './features/SiteHeader/SiteHeader';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
-import SignUpModal from './features/userModal/SignUpModal';
 import Countdown from './components/Countdown';
 import {LoadScreen} from './components/LoadScreen';
 const queryClient = new QueryClient({
@@ -55,7 +50,7 @@ function App(): React.ReactElement {
       }} >
         <Box sx={{my: 4,  borderRadius: 2, width: '90vw'}}>
           <Suspense fallback={<LoadScreen />}>
-            <NomineeTable />
+            <LegacyTable />
             <div style={{display: 'flex', justifyContent: 'center'}}>
             {/* <Countdown /> */}
             </div>
@@ -82,8 +77,7 @@ function App(): React.ReactElement {
 // Providers go here
 export default function AppWrapper(): React.ReactElement {
   return (
-    <ErrorBoundary>
-      <Suspense fallback={<LoadScreen />}>
+    <DefaultCatcher>
         <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools />
           <OscarAppContextProvider>
@@ -93,7 +87,6 @@ export default function AppWrapper(): React.ReactElement {
             </NotificationsContextProvider>
           </OscarAppContextProvider>
         </QueryClientProvider>
-      </Suspense>
-    </ErrorBoundary>
+    </DefaultCatcher>
   );
 }
