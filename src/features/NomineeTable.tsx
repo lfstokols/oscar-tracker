@@ -15,14 +15,14 @@ import {
   TablePagination,
 } from '@mui/material';
 import {DataFlavor, WatchStatus} from '../types/Enums';
-import {LoadScreen} from '../App';
+import {LoadScreen} from '../components/LoadScreen';
 import {
   QueryErrorResetBoundary,
   useQuery,
   useSuspenseQueries,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import {useOscarAppContext} from '../contexts/AppContext';
+import {useOscarAppContext} from '../globalProviders/AppContext';
 import {
   categoryOptions,
   movieOptions,

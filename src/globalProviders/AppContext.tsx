@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
-import {useNotifications} from '../modules/notifications/NotificationContext';
+import {useNotifications, NotificationsDispatch} from '../globalProviders/NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
 import {EXPIRATION_DAYS} from '../types/GlobalConstants';
 
@@ -70,6 +70,7 @@ export default function OscarAppContextProvider(
   //* Set a promise to check the username and userId are consistent with each other
   const timeStamp = Date.now();
   const TIME_LIMIT = 1000;
+  const notifications = useNotifications();
   queryClient
     .fetchQuery(userOptions())
     .then(
@@ -78,12 +79,13 @@ export default function OscarAppContextProvider(
         defaultUsername,
         setActiveUsername,
         EXPIRATION_DAYS,
+        notifications,
         timeStamp,
         TIME_LIMIT,
       ),
     );
   //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
-  const newSetActiveUserId = upgradeSetActiveUserId(
+  const newSetActiveUserId = useUpgradeSetActiveUserId(
     setActiveUserId,
     setActiveUsername,
     activeUsername,
@@ -146,7 +148,7 @@ function CookieHandler({
         The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
         Attempting to fix...`,
       );
-      const notifications = useNotifications(null);
+      const notifications = useNotifications();
       notifications.show({
         type: 'error',
         message:
@@ -205,7 +207,7 @@ function CookieHandler({
       console.log(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
       );
-      const notifications = useNotifications(null);
+      const notifications = useNotifications();
       notifications.show({
         type: 'error',
         message:
@@ -222,12 +224,13 @@ function CookieHandler({
 //* In principle, it shouldn't be possible to call the upgraded setActiveUserId
 //* without the the username and both cookies also being set to match the new value
 //* The only exception would be if there is no UserList available, in which case we show an error message
-function upgradeSetActiveUserId(
+function useUpgradeSetActiveUserId(
   setActiveUserId: (id: UserId | null) => void,
   setActiveUsername: (username: string | null) => void,
   activeUsername: string | null,
   queryClient: QueryClient,
 ): (id: UserId | null) => void {
+  const notifications = useNotifications();
   return (id: UserId | null) => {
     const timeStamp = Date.now();
     setActiveUserId(id);
@@ -247,6 +250,7 @@ function upgradeSetActiveUserId(
           activeUsername,
           setActiveUsername,
           EXPIRATION_DAYS,
+          notifications,
           timeStamp,
           TIME_LIMIT,
         )(data),
@@ -259,6 +263,7 @@ function callbackForArrivedUserList(
   activeUsername: string | null,
   usernameSetter: (username: string | null) => void,
   EXPIRATION_DAYS: number,
+  notifications: NotificationsDispatch,
   timeStamp: number,
   timeLimit?: number,
 ): (data: UserList) => void {
@@ -274,7 +279,6 @@ function callbackForArrivedUserList(
         'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
         'Attempting to fix...`,
       );
-      const notifications = useNotifications(null);
       notifications.show({
         type: 'error',
         message:

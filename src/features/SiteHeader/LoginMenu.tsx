@@ -1,13 +1,13 @@
 import React from 'react';
 import {Menu, MenuItem} from '@mui/material';
-import {useOscarAppContext} from '../contexts/AppContext';
+import {useOscarAppContext} from '../../globalProviders/AppContext';
 import {Button} from '@mui/material';
 // import {useMyUsers} from '../hooks/useMyQuery';
-import {LoadScreen} from '../App';
+import {LoadScreen} from '../../components/LoadScreen';
 import {Error} from '@mui/icons-material';
-import {userOptions} from '../hooks/dataOptions';
+import {userOptions} from '../../hooks/dataOptions';
 import {useQuery} from '@tanstack/react-query';
-import SignUpModal from './userModal/SignUpModal';
+import SignUpModal from '../../features/userModal/SignUpModal';
 
 type Props = {
   anchorEl: HTMLElement | null;

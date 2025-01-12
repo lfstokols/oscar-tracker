@@ -8,8 +8,8 @@ import {LinearProgress, Tooltip} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
 import {watchlistOptions} from '../hooks/dataOptions';
-import {useOscarAppContext} from '../contexts/AppContext';
-import {useNotifications} from '../modules/notifications/NotificationContext';
+import {useOscarAppContext} from '../globalProviders/AppContext';
+import {useNotifications} from '../globalProviders/NotificationContext';
 import {WatchListSchema} from '../types/APIDataSchema';
 
 type Props = {
@@ -22,7 +22,7 @@ export default function WatchlistCell({
   userId,
 }: Props): React.ReactElement {
   const queryClient = useQueryClient();
-  const notifications = useNotifications(null);
+  const notifications = useNotifications();
 
   const watchlistDataPromise = useSuspenseQuery(
     watchlistOptions(useOscarAppContext().year),

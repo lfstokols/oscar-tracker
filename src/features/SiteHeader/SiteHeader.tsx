@@ -6,10 +6,10 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
-import OurWordmark from './OurWordmark';
-import Countdown from './Countdown';
-import {WatchStatus} from '../types/Enums';
-import {MyFill} from './WatchlistCell';
+import OurWordmark from '../../components/OurWordmark';
+import Countdown from '../../components/Countdown';
+import {WatchStatus} from '../../types/Enums';
+import {MyFill} from '../../features/WatchlistCell';
 
 type Props = {};
 

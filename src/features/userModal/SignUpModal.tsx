@@ -16,7 +16,7 @@ import { styled } from '@mui/material/styles';
 //import { GoogleIcon, FacebookIcon, SitemarkIcon } from './CustomIcons';
 //import AppTheme from "../shared-theme/AppTheme";
 //import ColorModeSelect from '../shared-theme/ColorModeSelect';
-import OurWordmark from '../OurWordmark';
+import OurWordmark from '../../components/OurWordmark';
 import Backdrop from '@mui/material/Backdrop';
 
 const Card = styled(MuiCard)(({ theme }) => ({

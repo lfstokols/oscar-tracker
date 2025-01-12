@@ -14,7 +14,7 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import {styled} from '@mui/material/styles';
 //import AppTheme from "../shared-theme/AppTheme";
-import {useOscarAppContext} from '../../contexts/AppContext';
+import {useOscarAppContext} from '../../globalProviders/AppContext';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -22,7 +22,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import IconButton from '@mui/material/IconButton';
 import Backdrop from '@mui/material/Backdrop';
-import OurWordmark from '../OurWordmark';
+import OurWordmark from '../../components/OurWordmark';
 
 const Card = styled(MuiCard)(({theme}) => ({
   display: 'flex',

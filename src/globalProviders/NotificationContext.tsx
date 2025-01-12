@@ -2,7 +2,7 @@ import React, {use, useState, useMemo, useCallback, useContext} from 'react';
 import NotificationToast, {
   Notification,
   NotificationType,
-} from './NotificationToast';
+} from '../components/NotificationToast';
 
 const DEFAULT_HIDE_DURATION_MS = 6000; // 6 seconds
 
@@ -50,7 +50,7 @@ interface NotificationDispatchArgs {
   autoHideDurationMs?: number;
 }
 
-interface NotificationsDispatch {
+export interface NotificationsDispatch {
   show: (args: NotificationDispatchArgs) => void;
 }
 
@@ -62,8 +62,7 @@ interface NotificationsDispatch {
  *
  * const onMutationError = () => notifications.show({type: 'error', message: 'An error occurred'});
  */
-// ! Is p0 needed?
-export function useNotifications(p0: any): NotificationsDispatch {
+export function useNotifications(): NotificationsDispatch {
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   //const { setActiveNotification } = use(NotificationContext);
   const {setActiveNotification} = useContext(NotificationContext);

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import NomineeTable from './components/NomineeTable';
+import NomineeTable from './features/NomineeTable';
 import {Suspense} from 'react';
-import UserControls from './components/UserControls';
+import UserControls from './features/UserControls';
 import ErrorBoundary from './components/ErrorBoundary';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
@@ -10,13 +10,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
-import OscarAppContextProvider from './contexts/AppContext';
-import NotificationsContextProvider from './modules/notifications/NotificationContext';
-import SiteHeader from './components/SiteHeader';
+import OscarAppContextProvider from './globalProviders/AppContext';
+import NotificationsContextProvider from './globalProviders/NotificationContext';
+import SiteHeader from './features/SiteHeader/SiteHeader';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
-import SignUpModal from './components/userModal/SignUpModal';
+import SignUpModal from './features/userModal/SignUpModal';
 import Countdown from './components/Countdown';
-
+import {LoadScreen} from './components/LoadScreen';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -66,16 +66,7 @@ function App(): React.ReactElement {
   );
 }
 
-export function LoadScreen(): React.ReactElement {
-  return (
-    <Backdrop
-      sx={theme => ({color: '#fff', zIndex: theme.zIndex.drawer + 1, flexGrow: 1})}
-      open={true}
-      onClick={() => {}}>
-      <CircularProgress color="inherit" />
-    </Backdrop>
-  );
-}
+
 
 // const router = createBrowserRouter([
 //   {

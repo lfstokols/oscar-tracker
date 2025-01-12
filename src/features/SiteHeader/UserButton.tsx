@@ -1,11 +1,11 @@
 import React, {Suspense, useContext, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
-import {useOscarAppContext} from '../contexts/AppContext';
+import {useOscarAppContext} from '../../globalProviders/AppContext';
 import LoginMenu from './LoginMenu';
-import { LoadScreen } from '../App';
-import { userOptions } from '../hooks/dataOptions';
+import { LoadScreen } from '../../components/LoadScreen';
+import { userOptions } from '../../hooks/dataOptions';
 import { useQuery } from '@tanstack/react-query';
-import UserModal from './userModal/UserModal';
+import UserModal from '../userModal/UserModal';
 // import {useMyUsers} from '../hooks/useMyQuery';
 
 
