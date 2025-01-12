@@ -25,5 +25,5 @@ def catch_file_locked_error(func, *args, **kwargs):
             print(
                 f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
             )
-            return {"error": "File is locked, please try again later"}, 423
+            return {"error": "File is locked, please try again later", 'retryable': 'true'}, 423
         raise

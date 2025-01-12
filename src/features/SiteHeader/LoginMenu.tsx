@@ -63,9 +63,8 @@ export default function LoginMenu({
         ))}
         <MenuItem
           onClick={() => {
-            console.log('clicked Signup, callingsignupOpener');
             handleMenuClose();
-            setTimeout(signupOpener, 100);
+            signupOpener();
           }}>
           <Button
             variant="outlined"

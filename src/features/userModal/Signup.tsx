@@ -3,6 +3,11 @@ import TitleLine, { boxStyle } from './Formatting';
 import TextEntry from './DataEntryField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { useNotifications } from '../../globalProviders/NotificationContext';
+import { addUserOnSuccess, onError } from '../../hooks/mutationOptions';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { addUserMutationFn } from '../../hooks/mutationOptions';
+import { useOscarAppContext } from '../../globalProviders/AppContext';
 
 type Props = {
   closer:()=>void;
@@ -13,15 +18,27 @@ export default function SignUp({closer}: Props) {
   const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+  const notifications = useNotifications();
+  const queryClient = useQueryClient(); // TODO - move this to a global provider?
+  const setActiveUserId = useOscarAppContext().setActiveUserId;
+  const mutation = useMutation({
+    mutationFn: addUserMutationFn(),
+    onSuccess: addUserOnSuccess(queryClient, setActiveUserId),
+    onError: onError('Failed to create user.', notifications),
+  });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (emailError) {
+    if (emailError || usernameError) {
       event.preventDefault();
       return;
     }
+
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
+    mutation.mutate({
+      username: data.get('username') as string,
+      data: {
+        email: data.get('email') as string,
+      },
     });
     closer();
   };
@@ -66,7 +83,8 @@ export default function SignUp({closer}: Props) {
           component="form"
           onSubmit={handleSubmit}
           noValidate
-          sx={boxStyle}>
+          sx={boxStyle}
+        >
           <TextEntry
             title="Username"
             label="username"
@@ -81,19 +99,16 @@ export default function SignUp({closer}: Props) {
             error={emailError}
             errorMessage={emailErrorMessage}
           />
-          {/*<FormControlLabel
-						control={<Checkbox value="remember" color="primary" />}
-						label="Remember me"
-					/>
-					<ForgotPassword open={open} handleClose={handleClose} />*/}
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
             onClick={() => {
-              validateEmail() && validateUsername();
-            }}>
+              validateEmail();
+              validateUsername();
+            }}
+          >
             Sign Up
           </Button>
         </Box>

@@ -16,7 +16,6 @@ export default function UserButton(): React.ReactElement {
     setIsProfileOpen(false);
   }, []);
   const openProfile = useCallback(() => {
-    console.log('openProfile called');
     setIsProfileOpen(true);
   }, []);
   const handleDropdown = (event: React.MouseEvent<HTMLElement>) => {

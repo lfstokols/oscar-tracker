@@ -8,6 +8,7 @@ import {LinearProgress, Tooltip} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
 import {watchlistOptions} from '../hooks/dataOptions';
+import {onError, onSuccess, updateWatchlistMutationFn} from '../hooks/mutationOptions';
 import {useOscarAppContext} from '../globalProviders/AppContext';
 import {useNotifications} from '../globalProviders/NotificationContext';
 import {WatchListSchema} from '../types/APIDataSchema';
@@ -29,32 +30,15 @@ export default function WatchlistCell({
   );
   const year = useOscarAppContext().year;
   const mutation = useMutation({
-    mutationFn: async (newState: WatchStatus) => {
-      const body = JSON.stringify({movieId, status: newState, year: 2023});
-      return await fetch('api/watchlist', {
-        method: 'PUT',
-        body,
-        headers: {'Content-Type': 'application/json'},
-      });
-    },
-    onSuccess: async response => {
-      return queryClient.setQueryData(
-        watchlistOptions(year).queryKey,
-        WatchListSchema.parse(await response.json()),
-      );
-      //['watchlist'], await response.json());
-      //return await queryClient.invalidateQueries({
-      //	queryKey: ["watchlistData"],
-      //});
-    },
-    onError: async response => {
-      console.log(response);
-      notifications.show({
-        type: 'error',
-        message: 'Failed to update watch status.',
-      });
-    },
+    mutationFn: updateWatchlistMutationFn(movieId, year),
+    onSuccess: onSuccess(
+      watchlistOptions(year).queryKey,
+      WatchListSchema.parse,
+      queryClient,
+    ),
+    onError: onError('Failed to update watch status.', notifications),
   });
+
   if (watchlistDataPromise.isPending) return <LinearProgress />;
   if (watchlistDataPromise.isError) return <ErrorIcon />;
   const watchlist = watchlistDataPromise.data; //as WatchNotice[];

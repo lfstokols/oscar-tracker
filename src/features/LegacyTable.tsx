@@ -38,7 +38,6 @@ function LegacyTable(): React.ReactElement {
       nomOptions(year),
       categoryOptions(),
       movieOptions(year),
-      movieOptions(year),
     ],
   });
   const users = usersQ.data;

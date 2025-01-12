@@ -42,9 +42,16 @@ def get_users():
     if request.method == "GET":
         return catch_file_locked_error(storage.json_read, "u")
     elif request.method == "POST":
-        # Expects a username, possibly a letterboxd and/or email
+        # Expects a body with a username field
+        # Any other fields in body will be added to the user
         username = request.json.get("username")
-        return catch_file_locked_error(storage.add_user, username)
+        output = catch_file_locked_error(storage.add_user, username)
+        if type(output) == tuple(dict, int):
+            return output
+        newUserId = output
+        storage.update_user(newUserId, request.json)
+        newState = storage.json_read("u")
+        return jsonify({"userId": newUserId, "users": newState})
     elif request.method == "PUT":
         # Expects any dictionary of user data
         storage.update_user(userId, request.json)
@@ -90,10 +97,7 @@ def get_watchlist():
         if not (year := request.json.get("year")):
             print("No year provided")
             return no_year_response()
-        if storage.add_watchlist_entry(year, userId, movieId, status):
-            print("add_watchlist said True")
-        else:
-            print("add_watchlist said False")
+        storage.add_watchlist_entry(year, userId, movieId, status)
         return jsonify(storage.json_read("w", year))
         # TODO - Figure out a pattern for file lock errors with PUT requests
 

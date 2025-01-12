@@ -60,7 +60,6 @@ type Props = {
 
 function ProfileScreenContents({closeModal}: {closeModal: () => void}) {
   const {activeUserId} = useOscarAppContext();
-  console.log('activeUserId', activeUserId);
   if (!activeUserId) {
     return <SignUp closer={closeModal} />;
   } else {
@@ -69,7 +68,6 @@ function ProfileScreenContents({closeModal}: {closeModal: () => void}) {
 }
 
 export default function ProfileScreen({open, closeModal}: Props) {
-  console.log('ProfileScreen loading');
   return (
     <Modal
       open={open}

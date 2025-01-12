@@ -1,5 +1,6 @@
 # from datetime import time
 # from time import sleep
+from datetime import time
 import random
 from pathlib import Path
 import re
@@ -14,13 +15,14 @@ else:
     import fcntl
 from collections.abc import Callable
 from backend.logic.MyTypes import *
-from typing import Literal
+from typing import Literal, IO, Any
 
 
 class StorageManager:
     def __init__(self, database_directory):
         self.dir = Path(database_directory)
-        self.retry_interval = 0.1
+        self.should_retry = True
+        self.retry_interval = 30 # ms
         self.max_retries = 10
         # Flavor info
         self.flavor_list: dict[DataFlavor] = [
@@ -327,15 +329,41 @@ class StorageManager:
             # 	else:
             # 		fcntl.flock(file.fileno(), fcntl.LOCK_UN)
 
+    def retry_file_access(self, filepath: Path, mode, operation: Callable[[tuple[IO[Any], IO[Any]]], any], **kwargs):
+        """
+        Wraps a function to retry file access if the file is locked.
+        `operation` is a function that takes a tuple of file objects as input and returns the output of the operation.
+        should_retry is a boolean that determines if the function should retry if the file is locked.
+        retry_interval is the time to wait between retries in milliseconds.
+        max_retries is the maximum number of retries.
+        """
+        should_retry = kwargs.get("should_retry", self.should_retry)
+        max_retries = kwargs.get("max_retries", self.max_retries)
+        retry_interval = kwargs.get("retry_interval", self.retry_interval)
+        for i in range(max_retries):
+            try:
+                with self.file_access(filepath, mode) as files:
+                    output = operation(files)
+                return output
+            except OSError as e:
+                if e.errno == 13 and should_retry:
+                    print(f"File {filepath} is locked. Retrying...")
+                    time.sleep(retry_interval / 1000)
+                else:
+                    raise
+        print(f"Unable to open file {filepath} after {self.max_retries} retries.")
+        raise OSError(13, "File is locked, please try again later")
+
     def read(self, flavor, year=None, **kwargs):
         filename = self.get_filename(flavor, year)
-        try:
-            with self.file_access(filename, **kwargs) as files:
-                data = self.files_to_df(files, flavor)
-            return data
-        except Exception as e:
-            print(f"Unable to load data from {filename}.")
-            raise
+        return self.retry_file_access(filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs)
+        # try:
+        #     with self.file_access(filename) as files:
+        #         data = self.files_to_df(files, flavor)
+        #     return data
+        # except Exception as e:
+        #     print(f"Unable to load data from {filename}.")
+        #     raise
 
     def json_read(self, flavor, year=None, **kwargs):
         df = self.read(flavor, year, **kwargs)
@@ -352,15 +380,21 @@ class StorageManager:
         **kwargs,
     ):
         filename = self.get_filename(flavor, year)
-        try:
-            with self.file_access(filename, "r+", **kwargs) as files:
-                old_data = self.files_to_df(files, flavor)
-                new_data, feedback = operation(old_data)
-                self.df_to_files(new_data, files)
+        def full_operation(files):
+            old_data = self.files_to_df(files, flavor)
+            new_data, feedback = operation(old_data)
+            self.df_to_files(new_data, files)
             return feedback
-        except Exception as e:
-            print(f"Unable to write data to {filename}.")
-            raise
+        return self.retry_file_access(filename, "r+", full_operation, **kwargs)
+        # try:
+        #     with self.file_access(filename, "r+") as files:
+        #         old_data = self.files_to_df(files, flavor)
+        #         new_data, feedback = operation(old_data)
+        #         self.df_to_files(new_data, files)
+        #     return feedback
+        # except Exception as e:
+        #     print(f"Unable to write data to {filename}.")
+        #     raise
 
     def delete(self, flavor, year="test"):
         filename = self.get_filename(flavor, year)
@@ -516,7 +550,7 @@ class StorageManager:
                 bad_cats.append(category)
         return bad_cats
 
-    def add_user(self, username, letterboxd=None, email=None):
+    def add_user(self, username, letterboxd=None, email=None) -> UserID:
         userIdList = self.read("users").index.tolist()
 
         def operation(data: pd.DataFrame):
