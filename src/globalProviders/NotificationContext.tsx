@@ -17,7 +17,7 @@ const NotificationContext: React.Context<NotificationContextValue> =
   });
 
 type Props = {
-  children: React.ReactElement;
+  children: React.ReactNode;
 };
 
 export default function NotificationContextProvider(
