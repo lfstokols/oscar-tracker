@@ -11,7 +11,7 @@ import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from '../globalProviders/NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
-import {EXPIRATION_DAYS} from '../types/GlobalConstants';
+import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
 
 export type OscarAppContextValue = Readonly<{
   selectedTab: AppTabType;
@@ -34,7 +34,6 @@ type Props = {
 export default function OscarAppContextProvider(
   props: Props,
 ): React.ReactElement {
-  const DEFAULT_YEAR = 2023; // ? How ought this be set?
   const [year, setYear] = useState<number>(DEFAULT_YEAR);
   const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
   const [preferences, setPreferences] = useState<Preferences>({

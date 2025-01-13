@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material/styles';
 import { red } from '@mui/material/colors';
 
 // A custom theme for this app
-const theme = createTheme({
+export default {
   cssVariables: true,
   palette: {
     primary: {
@@ -15,6 +15,4 @@ const theme = createTheme({
       main: red.A400,
     },
   },
-});
-
-export default theme;
+} satisfies Parameters<typeof createTheme>[0];
