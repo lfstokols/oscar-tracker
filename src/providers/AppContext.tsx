@@ -9,7 +9,7 @@ import {
 } from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
-import {useNotifications, NotificationsDispatch} from '../globalProviders/NotificationContext';
+import {useNotifications, NotificationsDispatch} from './NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
 import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
 
@@ -64,8 +64,12 @@ export default function OscarAppContextProvider(
   const defaultUserId = parsed.success ? parsed.data : null;
   const defaultUsername = Cookies.get('activeUsername') ?? null;
   //* Set the state variables with cookie values
-  const [activeUserId, setActiveUserId] = useState<UserId | null>(defaultUserId);
-  const [activeUsername, setActiveUsername] = useState<string | null>(defaultUsername);
+  const [activeUserId, setActiveUserId] = useState<UserId | null>(
+    defaultUserId,
+  );
+  const [activeUsername, setActiveUsername] = useState<string | null>(
+    defaultUsername,
+  );
   //* Set a promise to check the username and userId are consistent with each other
   const timeStamp = Date.now();
   const TIME_LIMIT = 1000;

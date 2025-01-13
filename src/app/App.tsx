@@ -1,7 +1,7 @@
 import React from 'react';
 import DefaultCatcher from '../components/LoadScreen';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
-import SiteHeader from '../features/SiteHeader/SiteHeader';
+import SiteHeader from '../features/siteHeader/SiteHeader';
 import AppProvider from './AppProvider';
 import AppContent from './AppContent';
 

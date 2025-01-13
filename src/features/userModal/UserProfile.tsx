@@ -1,8 +1,8 @@
 import React from 'react';
-import {useOscarAppContext} from '../../globalProviders/AppContext';
-import TitleLine, {Divider, boxStyle} from './Formatting';
+import {useOscarAppContext} from '../../providers/AppContext';
+import TitleLine, {Divider, boxStyle} from './Common';
 import TextEntry from './DataEntryField';
-import {useNotifications} from '../../globalProviders/NotificationContext';
+import {useNotifications} from '../../providers/NotificationContext';
 import {
   Box,
   Typography,

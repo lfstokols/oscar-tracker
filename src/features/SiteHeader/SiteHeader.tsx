@@ -9,7 +9,7 @@ import UserButton from './UserButton';
 import OurWordmark from '../../components/OurWordmark';
 import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
-import {MyFill} from '../../features/WatchlistCell';
+import {MyFill} from '../WatchlistCell';
 import YearSelector from './YearSelector';
 
 type Props = {};
@@ -46,9 +46,27 @@ export default function SiteHeader(props: Props): React.ReactElement {
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.seen} handleInteract={() => {}} disabled={false} /></MenuItem>
-            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.todo} handleInteract={() => {}} disabled={false} /></MenuItem>
-            <MenuItem onClick={handleMenuClose}><MyFill watchstate={WatchStatus.blank} handleInteract={() => {}} disabled={false} /></MenuItem>
+            <MenuItem onClick={handleMenuClose}>
+              <MyFill
+                watchstate={WatchStatus.seen}
+                handleInteract={() => {}}
+                disabled={false}
+              />
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose}>
+              <MyFill
+                watchstate={WatchStatus.todo}
+                handleInteract={() => {}}
+                disabled={false}
+              />
+            </MenuItem>
+            <MenuItem onClick={handleMenuClose}>
+              <MyFill
+                watchstate={WatchStatus.blank}
+                handleInteract={() => {}}
+                disabled={false}
+              />
+            </MenuItem>
           </Menu>
           <OurWordmark />
         </div>

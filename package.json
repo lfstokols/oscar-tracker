@@ -28,6 +28,7 @@
 		"@types/react-dom": "",
 		"@types/js-cookie": "",
 		"@types/react-router-dom": "",
+		"@types/node": "",
 		"@vitejs/plugin-react": "^4.2.0",
 		"eslint": "^9.17.0",
 		"eslint-plugin-react": "^7.37.3",

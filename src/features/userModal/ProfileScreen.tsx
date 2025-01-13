@@ -4,8 +4,8 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import {styled} from '@mui/material/styles';
 import OurWordmark from '../../components/OurWordmark';
-import {useOscarAppContext} from '../../globalProviders/AppContext';
-import SignUp from './Signup';
+import {useOscarAppContext} from '../../providers/AppContext';
+import SignUp from './SignupForm';
 import UserProfile from './UserProfile';
 
 const Card = styled(MuiCard)(({theme}) => ({

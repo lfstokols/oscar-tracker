@@ -1,7 +1,7 @@
 import OscarAppContextProvider, {
   useOscarAppContext,
-} from '../globalProviders/AppContext';
-import NotificationsContextProvider from '../globalProviders/NotificationContext';
+} from '../providers/AppContext';
+import NotificationsContextProvider from '../providers/NotificationContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CssBaseline} from '@mui/material';

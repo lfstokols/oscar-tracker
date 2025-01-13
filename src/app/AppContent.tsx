@@ -1,7 +1,7 @@
 import React from 'react';
 import Container from '@mui/material/Container';
 import Box from '@mui/material/Box';
-import {useOscarAppContext} from '../globalProviders/AppContext';
+import {useOscarAppContext} from '../providers/AppContext';
 import {AppTabType} from '../types/Enums';
 import HomeTab from './routes/HomeTab';
 

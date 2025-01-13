@@ -1,16 +1,16 @@
 import React from 'react';
-import TitleLine, { boxStyle } from './Formatting';
+import TitleLine, {boxStyle} from './Common';
 import TextEntry from './DataEntryField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { useNotifications } from '../../globalProviders/NotificationContext';
-import { addUserOnSuccess, onError } from '../../hooks/mutationOptions';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { addUserMutationFn } from '../../hooks/mutationOptions';
-import { useOscarAppContext } from '../../globalProviders/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
+import {addUserOnSuccess, onError} from '../../hooks/mutationOptions';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
+import {addUserMutationFn} from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
 
 type Props = {
-  closer:()=>void;
+  closer: () => void;
 };
 
 export default function SignUp({closer}: Props) {
@@ -78,40 +78,34 @@ export default function SignUp({closer}: Props) {
 
   return (
     <>
-        <TitleLine title="Create an Account" />
-        <Box
-          component="form"
-          onSubmit={handleSubmit}
-          noValidate
-          sx={boxStyle}
-        >
-          <TextEntry
-            title="Username"
-            label="username"
-            placeholder="username"
-            error={usernameError}
-            errorMessage={usernameErrorMessage}
-          />
-          <TextEntry
-            title="Email"
-            label="email"
-            placeholder="your@email.com"
-            error={emailError}
-            errorMessage={emailErrorMessage}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              validateEmail();
-              validateUsername();
-            }}
-          >
-            Sign Up
-          </Button>
-        </Box>
+      <TitleLine title="Create an Account" />
+      <Box component="form" onSubmit={handleSubmit} noValidate sx={boxStyle}>
+        <TextEntry
+          title="Username"
+          label="username"
+          placeholder="username"
+          error={usernameError}
+          errorMessage={usernameErrorMessage}
+        />
+        <TextEntry
+          title="Email"
+          label="email"
+          placeholder="your@email.com"
+          error={emailError}
+          errorMessage={emailErrorMessage}
+        />
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            validateEmail();
+            validateUsername();
+          }}>
+          Sign Up
+        </Button>
+      </Box>
     </>
   );
 }

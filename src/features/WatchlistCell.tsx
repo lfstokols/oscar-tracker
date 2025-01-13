@@ -8,9 +8,13 @@ import {LinearProgress, Tooltip} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
 import {watchlistOptions} from '../hooks/dataOptions';
-import {onError, onSuccess, updateWatchlistMutationFn} from '../hooks/mutationOptions';
-import {useOscarAppContext} from '../globalProviders/AppContext';
-import {useNotifications} from '../globalProviders/NotificationContext';
+import {
+  onError,
+  onSuccess,
+  updateWatchlistMutationFn,
+} from '../hooks/mutationOptions';
+import {useOscarAppContext} from '../providers/AppContext';
+import {useNotifications} from '../providers/NotificationContext';
 import {WatchListSchema} from '../types/APIDataSchema';
 
 type Props = {
@@ -47,8 +51,8 @@ export default function WatchlistCell({
   //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
   const isEditingDisabled = useOscarAppContext().activeUserId !== userId;
   const remoteWatchState: WatchStatus =
-    watchlist.find(item => item.movieId === movieId && item.userId === userId)?.status ??
-    WatchStatus.blank;
+    watchlist.find(item => item.movieId === movieId && item.userId === userId)
+      ?.status ?? WatchStatus.blank;
   const localWatchState = mutation.isPending
     ? mutation.variables
     : remoteWatchState;
@@ -98,7 +102,11 @@ type FillProps = {
   handleInteract: () => void;
   disabled?: boolean;
 };
-export function MyFill({watchstate, handleInteract, disabled}: FillProps): React.ReactElement {
+export function MyFill({
+  watchstate,
+  handleInteract,
+  disabled,
+}: FillProps): React.ReactElement {
   return (
     <div
       onClick={handleInteract}

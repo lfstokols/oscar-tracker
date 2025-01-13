@@ -20,14 +20,13 @@ import {
   QueryErrorResetBoundary,
   useSuspenseQueries,
 } from '@tanstack/react-query';
-import {useOscarAppContext} from '../globalProviders/AppContext';
+import {useOscarAppContext} from '../providers/AppContext';
 import {
   categoryOptions,
   movieOptions,
   nomOptions,
   userOptions,
 } from '../hooks/dataOptions';
-
 
 function LegacyTable(): React.ReactElement {
   const year = useOscarAppContext().year;
@@ -44,7 +43,7 @@ function LegacyTable(): React.ReactElement {
   const nominations = nominationsQ.data;
   const categories = categoriesQ.data;
   const movies = moviesQ.data;
-  
+
   const sortedData = movies.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
   const [runtimeFormatted, setRuntimeFormatted] = useState(true);
 
@@ -112,9 +111,7 @@ function LegacyTable(): React.ReactElement {
             <TableBody>
               {sortedData.map((row, index) => (
                 <TableRow key={row.title} hover>
-                  <TableCell
-                    title={row.id}
-                    sx={{className: 'title-column'}}>
+                  <TableCell title={row.id} sx={{className: 'title-column'}}>
                     {sortedData[index].title}
                   </TableCell>
                   <TableCell

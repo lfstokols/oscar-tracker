@@ -1,6 +1,6 @@
 import React, {useCallback, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
-import {useOscarAppContext} from '../../globalProviders/AppContext';
+import {useOscarAppContext} from '../../providers/AppContext';
 import LoginMenu from './LoginMenu';
 import DefaultCatcher from '../../components/LoadScreen';
 import ProfileScreen from '../userModal/ProfileScreen';
@@ -37,8 +37,7 @@ export default function UserButton(): React.ReactElement {
         <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
       </>
     );
-  }
-  else {
+  } else {
     return (
       <div style={{display: 'flex', alignItems: 'center'}}>
         <>

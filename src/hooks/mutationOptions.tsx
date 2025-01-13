@@ -1,5 +1,5 @@
 import {QueryClient} from '@tanstack/react-query';
-import {NotificationsDispatch} from '../globalProviders/NotificationContext';
+import {NotificationsDispatch} from '../providers/NotificationContext';
 import {UserIdSchema, UserListSchema, UserSchema} from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
@@ -70,9 +70,6 @@ export function addUserOnSuccess(
     const newId = UserIdSchema.parse(data.userId);
     const newState = UserListSchema.parse(data.users);
     setActiveUserId(newId);
-    queryClient.setQueryData(
-      userOptions().queryKey,
-      newState,
-    );
+    queryClient.setQueryData(userOptions().queryKey, newState);
   };
 }

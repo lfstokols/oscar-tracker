@@ -1,6 +1,6 @@
 import React from 'react';
 import {Menu, MenuItem} from '@mui/material';
-import {useOscarAppContext} from '../../globalProviders/AppContext';
+import {useOscarAppContext} from '../../providers/AppContext';
 import {Button} from '@mui/material';
 // import {useMyUsers} from '../hooks/useMyQuery';
 import DefaultCatcher, {LoadScreen} from '../../components/LoadScreen';

@@ -78,7 +78,10 @@ def compute_user_completion_stats(userId, watchlist, movies):
             ][WatchlistColumns.MOVIE]].\
             sum()
         todo_watchtime = movies[MovieColumns.RUNTIME_MINUTES].\
-            loc[watchlist.loc[userId==userId & watchlist.loc[userId==WatchlistColumns.TODO]]].\
+            loc[watchlist[
+                (watchlist[WatchlistColumns.USER] == userId) & 
+                (watchlist[WatchlistColumns.STATUS] == WatchStatus.TODO)
+            ][WatchlistColumns.MOVIE]].\
             sum()
     else:
         seen_watchtime = None
