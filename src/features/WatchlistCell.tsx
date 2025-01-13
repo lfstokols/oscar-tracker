@@ -47,7 +47,7 @@ export default function WatchlistCell({
   //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
   const isEditingDisabled = useOscarAppContext().activeUserId !== userId;
   const remoteWatchState: WatchStatus =
-    watchlist.find(item => item.movieId === movieId)?.status ??
+    watchlist.find(item => item.movieId === movieId && item.userId === userId)?.status ??
     WatchStatus.blank;
   const localWatchState = mutation.isPending
     ? mutation.variables

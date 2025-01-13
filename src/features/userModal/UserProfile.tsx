@@ -2,6 +2,7 @@ import React from 'react';
 import {useOscarAppContext} from '../../globalProviders/AppContext';
 import TitleLine, {Divider, boxStyle} from './Formatting';
 import TextEntry from './DataEntryField';
+import {useNotifications} from '../../globalProviders/NotificationContext';
 import {
   Box,
   Typography,
@@ -21,8 +22,12 @@ type Props = {
 export default function UserProfile({closer}: Props) {
   const {setActiveUserId, activeUserId, preferences, activeUsername} =
     useOscarAppContext();
-
+  const notifications = useNotifications();
   const handleLogout = () => {
+    notifications.show({
+      type: 'success',
+      message: 'Logged out',
+    });
     setActiveUserId(null);
     closer();
   };

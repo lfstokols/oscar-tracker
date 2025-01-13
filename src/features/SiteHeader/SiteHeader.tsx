@@ -10,6 +10,7 @@ import OurWordmark from '../../components/OurWordmark';
 import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../../features/WatchlistCell';
+import YearSelector from './YearSelector';
 
 type Props = {};
 
@@ -51,7 +52,10 @@ export default function SiteHeader(props: Props): React.ReactElement {
           </Menu>
           <OurWordmark />
         </div>
-        <UserButton />
+        <div style={{display: 'flex', gap: '5vw'}}>
+          <YearSelector />
+          <UserButton />
+        </div>
       </Toolbar>
     </AppBar>
   );

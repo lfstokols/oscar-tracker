@@ -29,7 +29,9 @@ function App(): React.ReactElement {
       width: '100vw', 
       overflow: 'hidden',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      paddingBottom: '10px',
+
     }}>
         <style>{`
           ::-webkit-scrollbar {

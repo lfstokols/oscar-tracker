@@ -1,5 +1,7 @@
 import time
 from flask import jsonify
+import numpy as np
+import pandas as pd
 
 
 def no_year_response():
@@ -27,3 +29,9 @@ def catch_file_locked_error(func, *args, **kwargs):
             )
             return {"error": "File is locked, please try again later", 'retryable': 'true'}, 423
         raise
+
+def df_to_jsonable(storage, df: pd.DataFrame, flavor) -> list[dict]:
+    if storage.flavor_props(flavor)["shape"] == "entity":
+        df = df.reset_index()
+    df = df.replace({np.nan: None})
+    return df.to_dict(orient="records")

@@ -123,6 +123,7 @@ class StorageManager:
         except:
             raise Exception("Invalid type. Must be 'movie' or 'user'.")
 
+        tries = 0
         while tries < 100:
             if flavor == "movies":
                 first_digits = f"{(year-1927)%256:02x}" if str(year).isdigit() else "00"
@@ -138,6 +139,7 @@ class StorageManager:
 
     # Converts flavor from alias
     # Throws on invalid flavor
+    #@staticmethod
     def format_flavor(self, flavor) -> DataFlavor:
         assert flavor in self.flavor_aliases.keys(), f"Invalid flavor '{flavor}'."
         return self.flavor_aliases[flavor]
@@ -243,12 +245,6 @@ class StorageManager:
         index = self.flavor_props(flavor)["shape"] == "entity"
         data.to_csv(tfile, index=index, lineterminator="\n")
         data.dtypes.apply(str).to_json(jfile)
-
-    def df_to_jsonable(self, df: pd.DataFrame, flavor) -> list[dict]:
-        if self.flavor_props(flavor)["shape"] == "entity":
-            df = df.reset_index()
-        df = df.replace({np.nan: None})
-        return df.to_dict(orient="records")
 
     @contextmanager
     def file_access(self, filepath: Path, mode="r", **kwargs):
@@ -419,120 +415,15 @@ class StorageManager:
 
         self.edit(operation, flavor, year)
 
-    def get_movies(self, year, idList=None, json=False):
-        data = self.read("movies", year)
-        noms = self.read("nominations", year)
-        data[MovieColumns.NUM_NOMS] = (
-            noms.groupby(NomColumns.MOVIE).size()[data.index].fillna(0)
-        )
-        data = data.rename(columns={MovieColumns.RUNTIME: MovieColumns.RUNTIME_MINUTES})
-        data[MovieColumns.RUNTIME_HOURS] = data[MovieColumns.RUNTIME_MINUTES].apply(
-            lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None
-        )
-        if idList:
-            data = data.loc[idList]
-        if json:
-            return self.df_to_jsonable(data, "movies")
-        return data
 
-    # Adds a new movie to the database, or updates an existing one
-    # `movie` is usually the id of the movie to update
-    # If try_title_lookup, then `movie` is interpreted as the title of the movie
-    # 		In that case, the id of the movie is returned (whether it was found or created)
-    # `new_data` is a dictionary of new data to add or update
-    def update_movie(
-        self, movie, year, new_data: dict = {}, try_title_lookup=False
-    ) -> MovID | bool:
-        for val in new_data.values():
-            if "," in str(val):
-                print(
-                    f"There's a comma in the data. That could mess up the CSV file, "
-                    "but I think pandas deals with it automatically.\n"
-                    "Continuing for now, but check if you corrupted the data and figure out a fix if so.\n"
-                    f"Weird data: {str(val)}"
-                )
-        if not try_title_lookup:
-            movieId = movie
-            try:
-                self.validate_id(movieId, "m")
-            except:
-                raise (
-                    f"Invalid movie id '{movieId}'.\n"
-                    "Did you mean to send a title? Consider try_title_lookup=True."
-                )
 
-            def operation(data):
-                was_there = movieId in data.index
-                data.loc[movieId, new_data.keys()] = new_data.values()
-                return data, was_there
 
-        else:
-
-            def operation(data):
-                if movie in data[MovieColumns.TITLE].tolist():
-                    movieId = data.loc[data[MovieColumns.TITLE] == movie].index[0]
-                    data.loc[movieId, new_data.keys()] = new_data.values()
-                else:
-                    movieId = self.create_unique_id(
-                        "m", year=year, existing_ids=data.index
-                    )
-                    data.loc[movieId] = {MovieColumns.TITLE: movie, **new_data}
-                return data, movieId
-
-        feedback = self.edit(operation, "movies", year)
-        # print(f"utils line 183, feedback={feedback}, type={type(feedback)}")
-        return feedback
 
     def blank_test_data(self):
         self.delete("movies", year="test")
         self.delete("nominations", year="test")
 
-    # Note: This function does not check if the nomination already exists in the database
-    # 	If there's a possibliity of duplicates, you've done something wrong
-    # Checks if `movie`, `category` are formatted as IDs
-    # Does NOT check if they actually exist in the database
-    # 	If you didn't already add/confirm them yourself, you're doing something wrong
-    # If `validate` is True, the function will at least check if there are too many nominations in a category
-    def add_nomination(self, year, nomination: Nom, validate=False):
-        """Adds a nomination to the database.
 
-        Args:
-            year (str | int): The year of the nomination.
-            nomination ({dict<NomColumns, str>}): The nomination to add.
-            validate (bool, optional): Whether to validate the nomination. Defaults to False.
-
-        Raises:
-            Exception: If the nomination keys are invalid,
-                or if the nomination is too many nominations in a category,
-                or if the file is locked.
-
-        Returns:
-            None: The function does not return anything.
-        """
-        movie = nomination[NomColumns.MOVIE]
-        category = nomination[NomColumns.CATEGORY]
-        note = nomination[NomColumns.NOTE] if NomColumns.NOTE in nomination else None
-        self.validate_id(movie, "m")
-        self.validate_id(category, "c")
-
-        def operation(data: pd.DataFrame):
-            data = data._append(
-                {
-                    NomColumns.MOVIE: movie,
-                    NomColumns.CATEGORY: category,
-                    NomColumns.NOTE: note,
-                },
-                ignore_index=True,
-            )
-            return data, None
-
-        if validate:
-            bad_cats = self.validate_nomination_list(year)
-            if bad_cats:
-                raise Exception(
-                    f"Too many nominations in these categories: {bad_cats}."
-                )
-        self.edit(operation, "nominations", year)
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):
@@ -550,69 +441,7 @@ class StorageManager:
                 bad_cats.append(category)
         return bad_cats
 
-    def add_user(self, username, letterboxd=None, email=None) -> UserID:
-        userIdList = self.read("users").index.tolist()
 
-        def operation(data: pd.DataFrame):
-            user_id = self.create_unique_id("users", existing_ids=userIdList)
-            # while True:
-            # 	user_id = create_unique_id('user')
-            # 	if user_id not in userIdList:
-            # 		break
-            data.loc[user_id] = {
-                UserColumns.NAME: username,
-                UserColumns.LETTERBOXD: letterboxd,
-                UserColumns.EMAIL: email,
-            }
-            return data, user_id
-
-        return self.edit(operation, "users")
-
-    def update_user(self, userId, new_data: dict):
-        self.validate_id(userId, "users")
-
-        def operation(data: pd.DataFrame):
-            assert userId in data.index, f"User '{userId}' not found."
-            if not all([x in data.columns for x in new_data.keys()]):
-                raise Exception(f"Invalid columns in new data: {new_data.keys()}.")
-            data.loc[userId, new_data.keys()] = new_data.values()
-            return data, None
-
-        return self.edit(operation, "users")
-
-    def delete_user(self, userId):
-        def operation(data: pd.DataFrame):
-            data = data.drop(userId)
-            return data, None
-
-        return self.edit(operation, "users")
-
-    # Deletes existing entry if it exists
-    # returns True if the entry already existed, False if it didn't
-    def add_watchlist_entry(self, year, userId, movieId, status: WatchStatus) -> bool:
-        self.validate_id(userId, "users")
-        self.validate_id(movieId, "movies")
-        assert status in WatchStatus.values(), f"Invalid status '{status}'."
-
-        def operation(data: pd.DataFrame):
-            existing_entry = data[
-                (data[WatchlistColumns.USER] == userId)
-                & (data[WatchlistColumns.MOVIE] == movieId)
-            ]
-            data = data.drop(existing_entry.index)
-
-            if status != WatchStatus.BLANK:
-                new_entry = pd.DataFrame(
-                    {
-                        WatchlistColumns.USER: [userId],
-                        WatchlistColumns.MOVIE: [movieId],
-                        WatchlistColumns.STATUS: [status],
-                    }
-                )
-                data = pd.concat([data, new_entry], ignore_index=True)
-            return data, (not existing_entry.empty)
-
-        return self.edit(operation, "watchlist", year)
 
 
 if __name__ == "__main__":

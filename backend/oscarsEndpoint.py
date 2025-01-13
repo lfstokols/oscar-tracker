@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 from backend.logic.utils import catch_file_locked_error, no_year_response
 from logic.StorageManager import StorageManager
+import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
 from logic.MyTypes import *
 
 storage = StorageManager(os.path.join(os.path.dirname(__file__), "database"))
@@ -33,31 +35,31 @@ def get_movies():
     if not (year := request.args.get("year")):
         print("No year provided")
         return no_year_response()
-    return catch_file_locked_error(storage.get_movies, year, json=True)
+    return catch_file_locked_error(pr.get_movies, storage, year, json=True)
 
 
 @oscars.route("/api/users", methods=["GET", "POST", "PUT", "DELETE"])
 def get_users():
     userId = request.cookies.get("userId")
     if request.method == "GET":
-        return catch_file_locked_error(storage.json_read, "u")
+        return catch_file_locked_error(pr.get_users, storage, json=True)
     elif request.method == "POST":
         # Expects a body with a username field
         # Any other fields in body will be added to the user
         username = request.json.get("username")
-        output = catch_file_locked_error(storage.add_user, username)
-        if type(output) == tuple(dict, int):
+        output = catch_file_locked_error(mu.add_user, storage, username)
+        if type(output) == tuple[dict, int]:
             return output
         newUserId = output
-        storage.update_user(newUserId, request.json)
-        newState = storage.json_read("u")
+        mu.update_user(storage, newUserId, request.json)
+        newState = pr.get_users(storage, json=True)
         return jsonify({"userId": newUserId, "users": newState})
     elif request.method == "PUT":
         # Expects any dictionary of user data
-        storage.update_user(userId, request.json)
+        mu.update_user(storage, userId, request.json)
         return
     elif request.method == "DELETE":
-        storage.delete_user(userId)
+        mu.delete_user(storage, userId)
         return
 
 
