@@ -10,14 +10,17 @@ export default function App(): React.ReactElement {
     <DefaultCatcher>
       <AppProvider>
         <ReactQueryDevtools />
-        <div className="App" style={{
-          height: '100vh',
-          width: '100vw', 
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-            <style>{`
+        <div
+          className="App"
+          style={{
+            height: '100vh',
+            width: '100vw',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            paddingBottom: '10px',
+          }}>
+          <style>{`
               ::-webkit-scrollbar {
                 display: none;
               }
@@ -33,6 +36,3 @@ export default function App(): React.ReactElement {
     </DefaultCatcher>
   );
 }
-
-
-
