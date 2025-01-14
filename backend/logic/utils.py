@@ -13,7 +13,9 @@ def no_year_response():
 
 # FYI: errno 13 is the error number for permission denied, which includes file locking issues
 # Code 423 is the HTTP status code for "Locked". Srsly, that exists.
-def catch_file_locked_error(func: Callable[..., Any], *args, **kwargs) -> tuple[Any, int]:
+def catch_file_locked_error(
+    func: Callable[..., Any], *args, **kwargs
+) -> tuple[Any, int]:
     """
     Wraps a function to catch file locking errors and return a 423 status code.
 
@@ -30,8 +32,12 @@ def catch_file_locked_error(func: Callable[..., Any], *args, **kwargs) -> tuple[
             print(
                 f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
             )
-            return {"error": "File is locked, please try again later", 'retryable': 'true'}, 423
+            return {
+                "error": "File is locked, please try again later",
+                "retryable": "true",
+            }, 423
         raise
+
 
 def df_to_jsonable(df: pd.DataFrame, flavor: str) -> list[dict]:
     flavor = flv.format_flavor(flavor)
@@ -39,6 +45,7 @@ def df_to_jsonable(df: pd.DataFrame, flavor: str) -> list[dict]:
         df = df.reset_index()
     df = df.replace({np.nan: None})
     return df.to_dict(orient="records")
+
 
 def has_flag(request: Request, arg: str) -> bool:
     """

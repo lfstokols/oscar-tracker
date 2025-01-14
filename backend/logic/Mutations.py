@@ -20,12 +20,15 @@ def add_user(storage, username, letterboxd=None, email=None) -> UserID:
 
     return storage.edit(operation, "users")
 
+
 def update_user(storage, userId, new_data: dict):
     storage.validate_id(userId, "users")
 
     def operation(data: pd.DataFrame):
         assert userId in data.index, f"User '{userId}' not found."
-        assert not ('id' in new_data.keys() or 'userId' in new_data.keys()), "Cannot update user id"
+        assert not (
+            "id" in new_data.keys() or "userId" in new_data.keys()
+        ), "Cannot update user id"
         if not all([x in data.columns for x in new_data.keys()]):
             raise Exception(f"Invalid columns in new data: {new_data.keys()}.")
         data.loc[userId, new_data.keys()] = new_data.values()
@@ -33,12 +36,14 @@ def update_user(storage, userId, new_data: dict):
 
     return storage.edit(operation, "users")
 
+
 def delete_user(storage, userId):
     def operation(data: pd.DataFrame):
         data = data.drop(userId)
         return data, None
 
     return storage.edit(operation, "users")
+
 
 # Deletes existing entry if it exists
 # returns True if the entry already existed, False if it didn't
@@ -66,6 +71,7 @@ def add_watchlist_entry(storage, year, userId, movieId, status: WatchStatus) -> 
         return data, (not existing_entry.empty)
 
     return storage.edit(operation, "watchlist", year)
+
 
 # Note: This function does not check if the nomination already exists in the database
 # 	If there's a possibliity of duplicates, you've done something wrong
@@ -109,12 +115,12 @@ def add_nomination(storage, year, nomination: Nom, validate=False):
     if validate:
         bad_cats = storage.validate_nomination_list(year)
         if bad_cats:
-            raise Exception(
-                f"Too many nominations in these categories: {bad_cats}."
-            )
+            raise Exception(f"Too many nominations in these categories: {bad_cats}.")
     storage.edit(operation, "nominations", year)
 
     # Adds a new movie to the database, or updates an existing one
+
+
 # `movie` is usually the id of the movie to update
 # If try_title_lookup, then `movie` is interpreted as the title of the movie
 # 		In that case, the id of the movie is returned (whether it was found or created)

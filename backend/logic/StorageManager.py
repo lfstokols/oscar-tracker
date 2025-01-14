@@ -18,13 +18,13 @@ from typing import Literal, IO, Any
 import backend.logic.Flavors as flv
 import backend.logic.utils as utils
 
-class StorageManager:
 
+class StorageManager:
 
     def __init__(self, database_directory):
         self.dir = Path(database_directory)
         self.should_retry = True
-        self.retry_interval = 30 # ms
+        self.retry_interval = 30  # ms
         self.max_retries = 10
 
         # Default dataframes for file creation
@@ -119,8 +119,6 @@ class StorageManager:
             "Unable to create unique ID. Erroring out to avoid infinite loop."
         )
 
-
-
     # Returns the filenames for the data of a certain flavor and year
     # Value is tuple, (.csv, .json)
     def get_filename(self, flavor, year=None) -> tuple[Path, Path]:
@@ -137,8 +135,6 @@ class StorageManager:
             filename = filename / year
         filenames = filename / f"table_{flavor}.csv", filename / f"table_{flavor}.json"
         return filenames
-
-
 
     # Checks if an ID is valid for a certain flavor
     def validate_id(self, id, flavor=None):
@@ -272,7 +268,13 @@ class StorageManager:
             # 	else:
             # 		fcntl.flock(file.fileno(), fcntl.LOCK_UN)
 
-    def retry_file_access(self, filepath: Path, mode, operation: Callable[[tuple[IO[Any], IO[Any]]], any], **kwargs):
+    def retry_file_access(
+        self,
+        filepath: Path,
+        mode,
+        operation: Callable[[tuple[IO[Any], IO[Any]]], any],
+        **kwargs,
+    ):
         """
         Wraps a function to retry file access if the file is locked.
         `operation` is a function that takes a tuple of file objects as input and returns the output of the operation.
@@ -299,7 +301,9 @@ class StorageManager:
 
     def read(self, flavor, year=None, **kwargs):
         filename = self.get_filename(flavor, year)
-        return self.retry_file_access(filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs)
+        return self.retry_file_access(
+            filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs
+        )
         # try:
         #     with self.file_access(filename) as files:
         #         data = self.files_to_df(files, flavor)
@@ -323,11 +327,13 @@ class StorageManager:
         **kwargs,
     ):
         filename = self.get_filename(flavor, year)
+
         def full_operation(files):
             old_data = self.files_to_df(files, flavor)
             new_data, feedback = operation(old_data)
             self.df_to_files(new_data, files)
             return feedback
+
         return self.retry_file_access(filename, "r+", full_operation, **kwargs)
         # try:
         #     with self.file_access(filename, "r+") as files:
@@ -362,15 +368,9 @@ class StorageManager:
 
         self.edit(operation, flavor, year)
 
-
-
-
-
     def blank_test_data(self):
         self.delete("movies", year="test")
         self.delete("nominations", year="test")
-
-
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):
@@ -387,8 +387,6 @@ class StorageManager:
             ):
                 bad_cats.append(category)
         return bad_cats
-
-
 
 
 if __name__ == "__main__":

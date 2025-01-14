@@ -51,7 +51,9 @@ def get_users():
             year = request.args.get("year", None)
             if year is None:
                 return no_year_response()
-            return catch_file_locked_error(pr.get_user_completion_data, storage, year=year, json=True)
+            return catch_file_locked_error(
+                pr.get_user_completion_data, storage, year=year, json=True
+            )
         return catch_file_locked_error(pr.get_users, storage, json=True)
     elif request.method == "POST":
         # Expects a body with a username field

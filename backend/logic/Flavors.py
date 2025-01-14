@@ -10,9 +10,7 @@ flavor_list: dict[DataFlavor] = [
     "watchlist",
 ]
 flavor_aliases = {
-    **{
-        flavor: flavor for flavor in flavor_list
-    },  # Each flavor is its own alias
+    **{flavor: flavor for flavor in flavor_list},  # Each flavor is its own alias
     **{
         flavor[:1]: flavor for flavor in flavor_list
     },  # First letter of each flavor is an alias
@@ -21,11 +19,13 @@ flavor_aliases = {
     "cat": "categories",  # aliases from id prefixes
 }
 
+
 # Converts flavor from alias
 # Throws on invalid flavor
 def format_flavor(flavor: str) -> DataFlavor:
     assert flavor in flavor_aliases.keys(), f"Invalid flavor '{flavor}'."
     return flavor_aliases[flavor]
+
 
 def flavor_props(
     flavor_indic, is_filename=False
