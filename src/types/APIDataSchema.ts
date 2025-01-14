@@ -97,10 +97,10 @@ export const MyUserDataSchema = UserSchema.extend({
 
 export const UserStatsSchema = UserSchema.extend({
   username: z.string().nullable(),
-  numSeen: z.number().nullable().transform(n => n ?? 0),
-  numTodo: z.number().nullable().transform(n => n ?? 0),
-  seenWatchtime: z.number().nullable().transform(n => n ?? 0),
-  todoWatchtime: z.number().nullable().transform(n => n ?? 0),
+  numSeen: z.number().nullable().default(0),
+  numTodo: z.number().nullable().default(0),
+  seenWatchtime: z.number().nullable().default(0),
+  todoWatchtime: z.number().nullable().default(0),
 });
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;

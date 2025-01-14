@@ -78,7 +78,10 @@ export default function UserStatsTable(): React.ReactElement {
   );
 }
 
-function minutesToHours(minutes: number): string {
+function minutesToHours(minutes: number | null): string {
+  if (minutes === null) {
+    return '00:00';
+  }
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
   return `${hours}:${formatNumber(remainingMinutes)}`;

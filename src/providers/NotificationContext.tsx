@@ -3,8 +3,7 @@ import NotificationToast, {
   Notification,
   NotificationType,
 } from '../components/NotificationToast';
-
-const DEFAULT_HIDE_DURATION_MS = 6000; // 6 seconds
+import {DEFAULT_HIDE_DURATION_MS} from '../config/GlobalConstants';
 
 export type NotificationContextValue = Readonly<{
   setActiveNotification: (notif: Notification | null) => void;
