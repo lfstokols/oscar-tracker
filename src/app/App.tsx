@@ -10,6 +10,7 @@ export default function App(): React.ReactElement {
     <DefaultCatcher>
       <AppProvider>
         <ReactQueryDevtools />
+        {/* <style>{`@import url('./scrollbar.css');`}</style> */}
         <div
           className="App"
           style={{
@@ -20,7 +21,6 @@ export default function App(): React.ReactElement {
             flexDirection: 'column',
             paddingBottom: '12px',
           }}>
-            <style>{scrollbarStyle}</style>
           <SiteHeader />
           <AppContent />
         </div>
@@ -29,32 +29,31 @@ export default function App(): React.ReactElement {
   );
 }
 
+// const scrollbarStyle = `
+//   /* For WebKit browsers */
+// ::-webkit-scrollbar {
+//   width: 8px; /* Width of the scrollbar */
+//   height: 8px; /* Height of the horizontal scrollbar */
+// }
 
-const scrollbarStyle = `
-  /* For WebKit browsers */
-::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
-  height: 8px; /* Height of the horizontal scrollbar */
-}
+// ::-webkit-scrollbar-thumb {
+//   background-color: #888; /* Scrollbar color */
+//   border-radius: 10px; /* Rounded edges */
+//   border: 2px solid transparent; /* Optional space around thumb */
+// }
 
-::-webkit-scrollbar-thumb {
-  background-color: #888; /* Scrollbar color */
-  border-radius: 10px; /* Rounded edges */
-  border: 2px solid transparent; /* Optional space around thumb */
-}
+// ::-webkit-scrollbar-thumb:hover {
+//   background-color: #555; /* Darker shade when hovered */
+// }
 
-::-webkit-scrollbar-thumb:hover {
-  background-color: #555; /* Darker shade when hovered */
-}
+// ::-webkit-scrollbar-track {
+//   background-color: #f0f0f0; /* Background of the scrollbar track */
+//   border-radius: 10px; /* Match the thumb */
+// }
 
-::-webkit-scrollbar-track {
-  background-color: #f0f0f0; /* Background of the scrollbar track */
-  border-radius: 10px; /* Match the thumb */
-}
-
-/* For Firefox */
-* {
-  scrollbar-width: thin; /* Makes the scrollbar thinner */
-  scrollbar-color: #888 #f0f0f0; /* Thumb and track colors */
-}
-`;
+// /* For Firefox */
+// * {
+//   scrollbar-width: thin; /* Makes the scrollbar thinner */
+//   scrollbar-color: #888 #f0f0f0; /* Thumb and track colors */
+// }
+// `;

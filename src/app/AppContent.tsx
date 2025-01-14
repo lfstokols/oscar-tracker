@@ -4,6 +4,7 @@ import Box from '@mui/material/Box';
 import {useOscarAppContext} from '../providers/AppContext';
 import {AppTabType} from '../types/Enums';
 import HomeTab from './routes/HomeTab';
+import UserTab from './routes/UserTab';
 
 export default function AppContent(): React.ReactElement {
   const {selectedTab} = useOscarAppContext();
@@ -11,6 +12,10 @@ export default function AppContent(): React.ReactElement {
   switch (selectedTab) {
     case AppTabType.legacy:
       currentTab = <HomeTab />;
+      break;
+    case AppTabType.byUser:
+      currentTab = <UserTab />;
+      break;
   }
 
   return (

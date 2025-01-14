@@ -2,27 +2,27 @@ import React, {useState} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
 import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
 import OurWordmark from '../../components/OurWordmark';
 import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
-import {MyFill} from '../WatchlistCell';
+import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
+import TabDrawer from '../tabDrawer/TabDrawer';
 
 type Props = {};
 
 export default function SiteHeader(props: Props): React.ReactElement {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleDrawerOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setOpenDrawer(true);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handleDrawerClose = () => {
+    setOpenDrawer(false);
   };
 
   return (
@@ -30,50 +30,25 @@ export default function SiteHeader(props: Props): React.ReactElement {
       <Toolbar
         sx={{
           display: 'flex',
-          flexDirection: 'row',
+          // flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <div style={{display: 'flex', alignItems: 'center'}}>
+        <Stack direction="row" alignItems="center">
           <IconButton
             edge="start"
             color="inherit"
             aria-label="menu"
-            onClick={handleMenuOpen}>
+            onClick={handleDrawerOpen}>
             <MenuIcon />
           </IconButton>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}>
-              <MyFill
-                watchstate={WatchStatus.seen}
-                handleInteract={() => {}}
-                disabled={false}
-              />
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
-              <MyFill
-                watchstate={WatchStatus.todo}
-                handleInteract={() => {}}
-                disabled={false}
-              />
-            </MenuItem>
-            <MenuItem onClick={handleMenuClose}>
-              <MyFill
-                watchstate={WatchStatus.blank}
-                handleInteract={() => {}}
-                disabled={false}
-              />
-            </MenuItem>
-          </Menu>
+          <TabDrawer open={openDrawer} onClose={handleDrawerClose} />
           <OurWordmark />
-        </div>
-        <div style={{display: 'flex', gap: '5vw'}}>
+        </Stack>
+        <Stack direction="row" alignItems="center" gap="12px">
           <YearSelector />
           <UserButton />
-        </div>
+        </Stack>
       </Toolbar>
     </AppBar>
   );

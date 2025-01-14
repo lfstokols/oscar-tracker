@@ -1,11 +1,11 @@
 import {Suspense} from 'react';
-import LegacyTable from '../../features/legacyTable/LegacyTable';
+import UserStatsTable from '../../features/userStatsTable/UserStatsTable';
 import {LoadScreen} from '../../components/LoadScreen';
 
-export default function HomeTab(): React.ReactElement {
+export default function UserTab(): React.ReactElement {
   return (
     <Suspense fallback={<LoadScreen />}>
-      <LegacyTable />
+      <UserStatsTable />
       <div style={{display: 'flex', justifyContent: 'center'}}>
         {/* <Countdown /> */}
       </div>

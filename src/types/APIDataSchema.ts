@@ -95,4 +95,15 @@ export const MyUserDataSchema = UserSchema.extend({
   propic: z.string().url().nullable(),
 });
 
+export const UserStatsSchema = UserSchema.extend({
+  username: z.string().nullable(),
+  numSeen: z.number().nullable().transform(n => n ?? 0),
+  numTodo: z.number().nullable().transform(n => n ?? 0),
+  seenWatchtime: z.number().nullable().transform(n => n ?? 0),
+  todoWatchtime: z.number().nullable().transform(n => n ?? 0),
+});
+
 export type MyUserData = z.infer<typeof MyUserDataSchema>;
+export type UserStats = z.infer<typeof UserStatsSchema>;
+export const UserStatsListSchema = z.array(UserStatsSchema);
+export type UserStatsList = z.infer<typeof UserStatsListSchema>;

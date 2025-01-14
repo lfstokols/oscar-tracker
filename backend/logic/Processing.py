@@ -172,8 +172,9 @@ def get_user_completion_data(storage: StorageManager, year, json=False):
     watchlist = storage.read("watchlist", year)
     movies = storage.read("movies", year)
     newdata = compute_user_completion_stats(watchlist, movies)
+    # Rename index to match users DataFrame before concatenating
+    newdata.index.name = "id"
     data = pd.concat([users, newdata], axis="columns")
-    print(data)
     if json:
         return utils.df_to_jsonable(data, "users")
     return data

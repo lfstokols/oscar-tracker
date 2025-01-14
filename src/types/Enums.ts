@@ -6,10 +6,10 @@ export enum WatchStatus {
 
 export enum AppTabType {
     legacy = 'legacy',
-    byMovie = 'byMovie',
+    // byMovie = 'byMovie',
     byCategory = 'byCategory',
     byUser = 'byUser',
-    loginPage = 'loginPage',
+    // loginPage = 'loginPage',
 }
 
 export enum DataFlavor {

@@ -8,6 +8,7 @@ import {
   UserListSchema,
   WatchListSchema,
   MyUserDataSchema,
+  UserStatsListSchema,
 } from '../types/APIDataSchema';
 
 // * Nominations // *
@@ -39,6 +40,18 @@ export function myUserDataOptions(userId: UserId) {
       DataFlavor.users,
       {myData: 'true'},
       MyUserDataSchema.parse,
+    ),
+    retry: retryFunction,
+  });
+}
+
+export function userStatsOptions(year: number | string) {
+  return queryOptions({
+    queryKey: ['userStats', year.toString()],
+    queryFn: qFunction(
+      DataFlavor.users,
+      {completionData: 'true', year: year.toString()},
+      UserStatsListSchema.parse,
     ),
     retry: retryFunction,
   });

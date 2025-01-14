@@ -3,7 +3,7 @@ import WatchlistCell from './WatchlistCell';
 import {
   getNominationCategoriesForMovie,
   getMovieWatchStatusForUser,
-} from '../utils/dataSelectors';
+} from '../../utils/dataSelectors';
 import {
   Table,
   TableBody,
@@ -14,19 +14,19 @@ import {
   Paper,
   TablePagination,
 } from '@mui/material';
-import {DataFlavor, WatchStatus} from '../types/Enums';
-import DefaultCatcher from '../components/LoadScreen';
+import {DataFlavor, WatchStatus} from '../../types/Enums';
+import DefaultCatcher from '../../components/LoadScreen';
 import {
   QueryErrorResetBoundary,
   useSuspenseQueries,
 } from '@tanstack/react-query';
-import {useOscarAppContext} from '../providers/AppContext';
+import {useOscarAppContext} from '../../providers/AppContext';
 import {
   categoryOptions,
   movieOptions,
   nomOptions,
   userOptions,
-} from '../hooks/dataOptions';
+} from '../../hooks/dataOptions';
 
 function LegacyTable(): React.ReactElement {
   const year = useOscarAppContext().year;

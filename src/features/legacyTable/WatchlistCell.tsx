@@ -6,16 +6,16 @@ import {
 } from '@tanstack/react-query';
 import {LinearProgress, Tooltip} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
-import {WatchStatus} from '../types/Enums';
-import {watchlistOptions} from '../hooks/dataOptions';
+import {WatchStatus} from '../../types/Enums';
+import {watchlistOptions} from '../../hooks/dataOptions';
 import {
   onMutateError,
   updateCacheOnSuccess,
   updateWatchlistMutationFn,
-} from '../hooks/mutationOptions';
-import {useOscarAppContext} from '../providers/AppContext';
-import {useNotifications} from '../providers/NotificationContext';
-import {WatchListSchema} from '../types/APIDataSchema';
+} from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
+import {WatchListSchema} from '../../types/APIDataSchema';
 
 type Props = {
   movieId: MovieId;
