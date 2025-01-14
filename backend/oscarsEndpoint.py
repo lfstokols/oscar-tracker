@@ -3,6 +3,8 @@ from flask import Blueprint, send_from_directory, request, jsonify, abort
 # from flask_cors import CORS
 import os
 from pathlib import Path
+
+import requests
 from backend.logic.utils import catch_file_locked_error, no_year_response, has_flag
 from logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
@@ -40,10 +42,9 @@ def get_movies():
 
 @oscars.route("/api/users", methods=["GET", "POST", "PUT", "DELETE"])
 def get_users():
-    userId = request.cookies.get("userId", None)
+    userId = request.cookies.get("activeUserId", None)
     if request.method == "GET":
         if has_flag(request, "myData") and userId:
-            print("has_flag(myData) and has userId", userId)
             return catch_file_locked_error(
                 pr.get_my_user_data, storage, userId, json=True
             )
@@ -67,10 +68,10 @@ def get_users():
         newState = pr.get_users(storage, json=True)
         return jsonify({"userId": newUserId, "users": newState})
     elif request.method == "PUT":
-        # Expects any dictionary of user data
+        # * Expects any dictionary of user data
         mu.update_user(storage, userId, request.json)
         newState = pr.get_my_user_data(storage, userId, json=True)
-        return jsonify({"userId": userId, "users": newState})
+        return jsonify(newState)
     elif request.method == "DELETE":
         mu.delete_user(storage, userId)
         newState = pr.get_users(storage, json=True)
@@ -116,6 +117,21 @@ def get_watchlist():
         storage.add_watchlist_entry(year, userId, movieId, status)
         return jsonify(storage.json_read("w", year))
         # TODO - Figure out a pattern for file lock errors with PUT requests
+
+
+@oscars.route("/api/letterboxd/search", methods=["GET"])
+def letterboxd_search():
+    """
+    Just a proxy for letterboxd.com search
+    The search term is passed as a query parameter,
+    and the results from letterboxd.com/s/search/members/<search_term>
+    are returned.
+    The results come in as html and are returned as html.
+    """
+    search_term = request.args.get("searchTerm")
+    url = f"https://letterboxd.com/s/search/members/{search_term}"
+    response = requests.get(url)
+    return response.text
 
 
 # Serve React App

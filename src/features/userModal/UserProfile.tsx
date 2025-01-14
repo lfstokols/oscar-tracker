@@ -1,7 +1,7 @@
 import React from 'react';
 import {useOscarAppContext} from '../../providers/AppContext';
 import TitleLine, {Divider, boxStyle} from './Common';
-import TextEntry from './DataEntryField';
+import ErrorIcon from '@mui/icons-material/Error';
 import {useNotifications} from '../../providers/NotificationContext';
 import {
   Box,
@@ -13,9 +13,14 @@ import {
   ListItemIcon,
   Checkbox,
   Button,
+  Stack,
 } from '@mui/material';
 import LetterboxdField from './letterboxd/LetterboxdField';
 import DefaultCatcher from '../../components/LoadScreen';
+import UserAvatar from '../../components/userAvatar';
+import UserDataField from './UserDataField';
+import {useSuspenseQuery} from '@tanstack/react-query';
+import {myUserDataOptions} from '../../hooks/dataOptions';
 
 type Props = {
   closer: () => void;
@@ -24,6 +29,13 @@ type Props = {
 export default function UserProfile({closer}: Props) {
   const {setActiveUserId, activeUserId, preferences, activeUsername} =
     useOscarAppContext();
+  if (!activeUserId || !activeUsername) {
+    throw new Error(
+      `Opened full user profile, even though activeUserId or activeUsername is null.
+      activeUserId: ${activeUserId}, activeUsername: ${activeUsername}`,
+    );
+  }
+  const myUserData = useSuspenseQuery(myUserDataOptions(activeUserId)).data;
   const notifications = useNotifications();
   const handleLogout = () => {
     notifications.show({
@@ -36,9 +48,20 @@ export default function UserProfile({closer}: Props) {
 
   return (
     <>
-      <TitleLine title="User Profile" />
-      <Box component="form" noValidate sx={boxStyle}>
+      <TitleLine title={activeUsername ?? 'User Profile'} />
+      <UserAvatar userId={activeUserId} username={activeUsername} />
+      <Box component="menu" sx={boxStyle}>
         <DefaultCatcher>
+          <UserDataField
+            label="Username"
+            value={myUserData?.username ?? 'Not Set'}
+            editableComponent={placeholderEditableComponent}
+          />
+          <UserDataField
+            label="Email"
+            value={myUserData?.email ?? 'Not Set'}
+            editableComponent={placeholderEditableComponent}
+          />
           <LetterboxdField />
         </DefaultCatcher>
       </Box>
@@ -46,10 +69,6 @@ export default function UserProfile({closer}: Props) {
       <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>
         <Typography sx={{textAlign: 'center'}}>Preferences:</Typography>
         <List sx={{width: '100%', maxWidth: 360, bgcolor: 'background.paper'}}>
-          <Preference
-            text="Count each 'shorts' category as a single film for counting purposes"
-            whichPref="shortsAreOneFilm"
-          />
           <Preference
             text="Treat each 'shorts' category as a single film when calculating cumulative stats"
             whichPref="shortsAreOneFilm"
@@ -107,5 +126,14 @@ function Preference({
         <ListItemText id={whichPref} primary={text} />
       </ListItemButton>
     </ListItem>
+  );
+}
+
+function placeholderEditableComponent({onCancel}: {onCancel: () => void}) {
+  return (
+    <Stack direction="row" spacing={2}>
+      <ErrorIcon />
+      <Button onClick={onCancel}>Cancel</Button>
+    </Stack>
   );
 }

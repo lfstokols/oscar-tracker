@@ -92,6 +92,7 @@ export type CategoryList = z.infer<typeof CategoryListSchema>;
 export const MyUserDataSchema = UserSchema.extend({
   letterboxd: z.string().nullable(),
   email: z.string().email().nullable(),
+  propic: z.string().url().nullable(),
 });
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;

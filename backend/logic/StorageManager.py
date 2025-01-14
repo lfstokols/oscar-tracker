@@ -1,4 +1,3 @@
-from datetime import time
 from time import sleep
 import random
 from pathlib import Path
@@ -293,7 +292,7 @@ class StorageManager:
             except OSError as e:
                 if e.errno == 13 and should_retry:
                     print(f"File {filepath} is locked. Retrying...")
-                    time.sleep(retry_interval / 1000)
+                    sleep(retry_interval / 1000)
                 else:
                     raise
         print(f"Unable to open file {filepath} after {self.max_retries} retries.")

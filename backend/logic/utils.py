@@ -53,4 +53,6 @@ def has_flag(request: Request, arg: str) -> bool:
     is "true" (case insensitive)
     """
     value = request.args.get(arg, "false").lower()
-    return value == "true"
+    output = value == "true"
+    # print(f"has_flag will return {output}")
+    return output

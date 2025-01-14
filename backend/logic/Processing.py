@@ -60,14 +60,19 @@ def get_users(storage: StorageManager, idList: list[UserID] | None = None, json=
     return data
 
 
-def get_my_user_data(storage: StorageManager, userId: UserID, json=False) -> dict:
-    print("get_my_user_data", userId)
+def get_my_user_data(
+    storage: StorageManager, userId: UserID, json=False
+) -> pd.DataFrame | dict:
     data = storage.read("users")
-    data = data.loc[userId].to_dict()
+    data = data.loc[[userId]]
     assert data is not None, "User not found <in get_my_user_data>"
-    data[DerivedUserColumns.PROFILE_PIC] = get_user_propic(data[UserColumns.LETTERBOXD])
+    data[DerivedUserColumns.PROFILE_PIC] = get_user_propic(
+        data.at[userId, UserColumns.LETTERBOXD]
+    )
     if json:
-        return utils.df_to_jsonable(data, "users")
+        output = utils.df_to_jsonable(data, "users")
+        assert len(output) == 1, f"Expected 1 user, got {len(output)}"
+        return output[0]
     return data
 
 

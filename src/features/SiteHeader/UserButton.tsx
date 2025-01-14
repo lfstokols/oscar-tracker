@@ -4,6 +4,7 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import LoginMenu from './LoginMenu';
 import DefaultCatcher from '../../components/LoadScreen';
 import ProfileScreen from '../userModal/ProfileScreen';
+import UserAvatar from '../../components/userAvatar';
 
 export default function UserButton(): React.ReactElement {
   // hooks
@@ -42,7 +43,12 @@ export default function UserButton(): React.ReactElement {
       <div style={{display: 'flex', alignItems: 'center'}}>
         <>
           <Chip
-            avatar={<Avatar>{activeUsername?.charAt(0).toUpperCase()}</Avatar>}
+            avatar={
+              <UserAvatar
+                userId={activeUserId}
+                username={activeUsername ?? ' '}
+              />
+            }
             onClick={openProfile}
             label={activeUsername}
             color="secondary"
