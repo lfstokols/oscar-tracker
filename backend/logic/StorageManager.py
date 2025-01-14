@@ -1,6 +1,5 @@
-# from datetime import time
-# from time import sleep
 from datetime import time
+from time import sleep
 import random
 from pathlib import Path
 import re
@@ -16,33 +15,18 @@ else:
 from collections.abc import Callable
 from backend.logic.MyTypes import *
 from typing import Literal, IO, Any
-
+import backend.logic.Flavors as flv
+import backend.logic.utils as utils
 
 class StorageManager:
+
+
     def __init__(self, database_directory):
         self.dir = Path(database_directory)
         self.should_retry = True
         self.retry_interval = 30 # ms
         self.max_retries = 10
-        # Flavor info
-        self.flavor_list: dict[DataFlavor] = [
-            "movies",
-            "users",
-            "nominations",
-            "categories",
-            "watchlist",
-        ]
-        self.flavor_aliases = {
-            **{
-                flavor: flavor for flavor in self.flavor_list
-            },  # Each flavor is its own alias
-            **{
-                flavor[:1]: flavor for flavor in self.flavor_list
-            },  # First letter of each flavor is an alias
-            "mov": "movies",
-            "usr": "users",
-            "cat": "categories",  # aliases from id prefixes
-        }
+
         # Default dataframes for file creation
         self.DEFAULT_MOVIES = pd.DataFrame(
             columns=[col for col in MovieColumns.values()]
@@ -51,9 +35,7 @@ class StorageManager:
             {
                 MovieColumns.TITLE: "string",
                 MovieColumns.IMDB_ID: "string",
-                MovieColumns.RUNTIME_HOURS: "string",
-                MovieColumns.RUNTIME_MINUTES: "Int64",
-                MovieColumns.NUM_NOMS: "Int64",
+                MovieColumns.RUNTIME: "Int64",
             }
         )
         self.DEFAULT_NOMINATIONS = pd.DataFrame(
@@ -111,9 +93,9 @@ class StorageManager:
     def create_unique_id(
         self, flavor: DataFlavor, existing_ids, year=None
     ) -> MovID | UserID:
-        flavor = self.format_flavor(flavor)
+        flavor = flv.format_flavor(flavor)
         assert (
-            self.flavor_props(flavor)["shape"] == "entity"
+            flv.flavor_props(flavor)["shape"] == "entity"
         ), f"Flavor '{flavor}' doesn't have IDs."
         assert (
             flavor != "categories"
@@ -137,20 +119,15 @@ class StorageManager:
             "Unable to create unique ID. Erroring out to avoid infinite loop."
         )
 
-    # Converts flavor from alias
-    # Throws on invalid flavor
-    #@staticmethod
-    def format_flavor(self, flavor) -> DataFlavor:
-        assert flavor in self.flavor_aliases.keys(), f"Invalid flavor '{flavor}'."
-        return self.flavor_aliases[flavor]
+
 
     # Returns the filenames for the data of a certain flavor and year
     # Value is tuple, (.csv, .json)
     def get_filename(self, flavor, year=None) -> tuple[Path, Path]:
         # Format inputs
-        flavor = self.format_flavor(flavor)
+        flavor = flv.format_flavor(flavor)
 
-        is_annual = self.flavor_props(flavor)["annual"]
+        is_annual = flv.flavor_props(flavor)["annual"]
         if is_annual:
             assert year is not None
         year = str(year)
@@ -161,44 +138,14 @@ class StorageManager:
         filenames = filename / f"table_{flavor}.csv", filename / f"table_{flavor}.json"
         return filenames
 
-    # 'flavor_indic' can be a DataFlavor or a Path object
-    # if 'is_filename=False', then function WILL throw on invalid flavor
-    # 'shape' tells you if the flavor in question refers to an edge list or an entity list
-    # 		An entity list has each row as a separate entity, with an ID column,
-    # 			and the rest of the columns represent attributes
-    # 		An edge list has no ID column. The first two columns are IDs for the related entities,
-    # 			and the remaining columns are properties of that relationship
-    # 'static' tells you if the flavor is a static table that should not be edited
-    # 'annual' tells you if the tables exist only once or if there are copies in each year folder
-    def flavor_props(
-        self, flavor_indic, is_filename=False
-    ) -> dict[Literal["shape", "static", "annual"], str | bool]:
-        props = {"shape": None, "static": False, "annual": True}
-        if is_filename:
-            file = flavor_indic
-            name = file.name
-            for flv in self.flavor_list:
-                if flv in name:
-                    flavor = flv
-        else:
-            flavor = self.format_flavor(flavor_indic)
-        # After this point, `flavor` is a string of type DataFlavor
-        if flavor in ["nominations", "watchlist"]:
-            props["shape"] = "edge"
-        else:
-            props["shape"] = "entity"
-        if flavor in ["categories", "c"]:
-            props["static"] = True
-        if flavor in ["categories", "users"]:
-            props["annual"] = False
-        return props
+
 
     # Checks if an ID is valid for a certain flavor
     def validate_id(self, id, flavor=None):
         if flavor:
-            flavor = self.format_flavor(flavor)
+            flavor = flv.format_flavor(flavor)
         else:
-            flavor = self.format_flavor(id[:2])
+            flavor = flv.format_flavor(id[:2])
         if flavor == "movies":
             assert (
                 re.match(r"^mov_[0-9a-fA-F]{6}$", id) != None
@@ -215,13 +162,13 @@ class StorageManager:
             raise Exception(f"Invalid flavor '{flavor}' for ID number.")
 
     def flavor_from_file(self, file: Path) -> DataFlavor:
-        for flavor in self.flavor_list:
+        for flavor in flv.flavor_list:
             if flavor in file.name:
                 return flavor
         raise Exception(f"File {file} does not correspond to a known flavor.")
 
     def files_to_df(self, files, flavor) -> pd.DataFrame:
-        flavor_props = self.flavor_props(flavor)
+        flavor_props = flv.flavor_props(flavor)
         tfile, jfile = files
         data = pd.read_csv(tfile)  # , na_values='NaN')
         dtypes = pd.read_json(jfile, typ="series")
@@ -242,7 +189,7 @@ class StorageManager:
             file.seek(0)
             file.truncate()
         flavor = self.flavor_from_file(tfile)
-        index = self.flavor_props(flavor)["shape"] == "entity"
+        index = flv.flavor_props(flavor)["shape"] == "entity"
         data.to_csv(tfile, index=index, lineterminator="\n")
         data.dtypes.apply(str).to_json(jfile)
 
@@ -363,7 +310,7 @@ class StorageManager:
 
     def json_read(self, flavor, year=None, **kwargs):
         df = self.read(flavor, year, **kwargs)
-        return self.df_to_jsonable(df, flavor)
+        return utils.df_to_jsonable(df, flavor)
 
     # Applies an operation to the data in the file
     # `operation` is a function that takes a pandas DataFrame as input and returns two outputs:
@@ -394,7 +341,7 @@ class StorageManager:
 
     def delete(self, flavor, year="test"):
         filename = self.get_filename(flavor, year)
-        flavor = self.format_flavor(flavor)
+        flavor = flv.format_flavor(flavor)
         with self.file_access(filename, "w") as files:
             if flavor == "movies":
                 self.df_to_files(self.DEFAULT_MOVIES, files)

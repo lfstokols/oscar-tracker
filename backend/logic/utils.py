@@ -1,7 +1,10 @@
+from collections.abc import Callable
 import time
-from flask import jsonify
+from typing import Any
+from flask import jsonify, Request
 import numpy as np
 import pandas as pd
+import backend.logic.Flavors as flv
 
 
 def no_year_response():
@@ -10,7 +13,7 @@ def no_year_response():
 
 # FYI: errno 13 is the error number for permission denied, which includes file locking issues
 # Code 423 is the HTTP status code for "Locked". Srsly, that exists.
-def catch_file_locked_error(func, *args, **kwargs):
+def catch_file_locked_error(func: Callable[..., Any], *args, **kwargs) -> tuple[Any, int]:
     """
     Wraps a function to catch file locking errors and return a 423 status code.
 
@@ -21,7 +24,7 @@ def catch_file_locked_error(func, *args, **kwargs):
                 jsonify(func(*args, **kwargs))
     """
     try:
-        return jsonify(func(*args, **kwargs))
+        return jsonify(func(*args, **kwargs)), 200
     except OSError as e:
         if e.errno == 13:
             print(
@@ -30,8 +33,17 @@ def catch_file_locked_error(func, *args, **kwargs):
             return {"error": "File is locked, please try again later", 'retryable': 'true'}, 423
         raise
 
-def df_to_jsonable(storage, df: pd.DataFrame, flavor) -> list[dict]:
-    if storage.flavor_props(flavor)["shape"] == "entity":
+def df_to_jsonable(df: pd.DataFrame, flavor: str) -> list[dict]:
+    flavor = flv.format_flavor(flavor)
+    if flv.flavor_props(flavor)["shape"] == "entity":
         df = df.reset_index()
     df = df.replace({np.nan: None})
     return df.to_dict(orient="records")
+
+def has_flag(request: Request, arg: str) -> bool:
+    """
+    returns true if the argument is present and its value
+    is "true" (case insensitive)
+    """
+    value = request.args.get(arg, "false").lower()
+    return value == "true"

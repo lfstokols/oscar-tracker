@@ -3,7 +3,7 @@ from flask import Blueprint, send_from_directory, request, jsonify, abort
 # from flask_cors import CORS
 import os
 from pathlib import Path
-from backend.logic.utils import catch_file_locked_error, no_year_response
+from backend.logic.utils import catch_file_locked_error, no_year_response, has_flag
 from logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
@@ -40,16 +40,26 @@ def get_movies():
 
 @oscars.route("/api/users", methods=["GET", "POST", "PUT", "DELETE"])
 def get_users():
-    userId = request.cookies.get("userId")
+    userId = request.cookies.get("userId", None)
     if request.method == "GET":
+        if has_flag(request, "myData") and userId:
+            print("has_flag(myData) and has userId", userId)
+            return catch_file_locked_error(
+                pr.get_my_user_data, storage, userId, json=True
+            )
+        if has_flag(request, "completionData"):
+            year = request.args.get("year", None)
+            if year is None:
+                return no_year_response()
+            return catch_file_locked_error(pr.get_user_completion_data, storage, year=year, json=True)
         return catch_file_locked_error(pr.get_users, storage, json=True)
     elif request.method == "POST":
         # Expects a body with a username field
         # Any other fields in body will be added to the user
         username = request.json.get("username")
-        output = catch_file_locked_error(mu.add_user, storage, username)
-        if type(output) == tuple[dict, int]:
-            return output
+        output, status = catch_file_locked_error(mu.add_user, storage, username)
+        if status != 200:
+            return output, status
         newUserId = output
         mu.update_user(storage, newUserId, request.json)
         newState = pr.get_users(storage, json=True)
@@ -57,10 +67,12 @@ def get_users():
     elif request.method == "PUT":
         # Expects any dictionary of user data
         mu.update_user(storage, userId, request.json)
-        return
+        newState = pr.get_my_user_data(storage, userId, json=True)
+        return jsonify({"userId": userId, "users": newState})
     elif request.method == "DELETE":
         mu.delete_user(storage, userId)
-        return
+        newState = pr.get_users(storage, json=True)
+        return jsonify({"users": newState})
 
 
 @oscars.route("/api/categories", methods=["GET"])

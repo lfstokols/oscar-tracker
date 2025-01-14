@@ -18,17 +18,9 @@ export default function App(): React.ReactElement {
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
-            paddingBottom: '10px',
+            paddingBottom: '12px',
           }}>
-          <style>{`
-              ::-webkit-scrollbar {
-                display: none;
-              }
-              * {
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-              }
-            `}</style>
+            <style>{scrollbarStyle}</style>
           <SiteHeader />
           <AppContent />
         </div>
@@ -36,3 +28,33 @@ export default function App(): React.ReactElement {
     </DefaultCatcher>
   );
 }
+
+
+const scrollbarStyle = `
+  /* For WebKit browsers */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the horizontal scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888; /* Scrollbar color */
+  border-radius: 10px; /* Rounded edges */
+  border: 2px solid transparent; /* Optional space around thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darker shade when hovered */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f0f0f0; /* Background of the scrollbar track */
+  border-radius: 10px; /* Match the thumb */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin; /* Makes the scrollbar thinner */
+  scrollbar-color: #888 #f0f0f0; /* Thumb and track colors */
+}
+`;

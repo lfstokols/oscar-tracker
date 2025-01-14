@@ -10,6 +10,13 @@ DataFlavor = Literal["movies", "users", "nominations", "categories", "watchlist"
 #WatchStatus = Literal["seen", "todo", "blank"]
 
 
+class myEnum:
+    @classmethod
+    def values(cls):
+        return [
+            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+        ]
+
 # Nom = NewType('Nom', TypedDict['movie': MovID, 'category': CatID, 'note': str|None])
 class Nom(TypedDict):
     movieId: MovID
@@ -17,20 +24,22 @@ class Nom(TypedDict):
     note: NotRequired[str | None]
 
 
-class MovieColumns:
+class MovieColumns(myEnum):
     ID = "id"
     TITLE = "title"
     IMDB_ID = "imdbId"
     RUNTIME = "runtime"  # This is removed before reaching frontend
+
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
+
+class DerivedMovieColumns(MovieColumns):
     RUNTIME_HOURS = "runtime(hours)"
     RUNTIME_MINUTES = "runtime(minutes)"
     NUM_NOMS = "numNoms"
-
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
 
 
 class NomColumns:
@@ -85,6 +94,13 @@ class UserColumns:
             v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
         ]
 
+class DerivedUserColumns(UserColumns):
+    PROFILE_PIC = "propic"
+    NUM_SEEN = "numSeen"
+    NUM_TODO = "numTodo"
+    SEEN_WATCHTIME = "seenWatchtime"
+    TODO_WATCHTIME = "todoWatchtime"
+
 class WatchStatus:
     SEEN = "seen"
     TODO = "todo"
@@ -106,8 +122,10 @@ __all__ = [
     "IDNum",
     "WatchStatus",
     "MovieColumns",
+    "DerivedMovieColumns",
     "NomColumns",
     "CategoryColumns",
     "WatchlistColumns",
     "UserColumns",
+    "DerivedUserColumns",
 ]

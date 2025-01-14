@@ -25,7 +25,6 @@ export type RawWatchStatus = z.infer<typeof RawWatchStatusSchema>;
 export const UserSchema = z.object({
   id: UserIdSchema,
   username: z.string(),
-  email: z.string().email().nullable(),
 });
 
 export const MovieSchema = z
@@ -89,3 +88,10 @@ export type UserList = z.infer<typeof UserListSchema>;
 export type MovieList = z.infer<typeof MovieListSchema>;
 export type NomList = z.infer<typeof NomListSchema>;
 export type CategoryList = z.infer<typeof CategoryListSchema>;
+
+export const MyUserDataSchema = UserSchema.extend({
+  letterboxd: z.string().nullable(),
+  email: z.string().email().nullable(),
+});
+
+export type MyUserData = z.infer<typeof MyUserDataSchema>;

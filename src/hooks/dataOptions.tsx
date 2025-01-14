@@ -7,6 +7,7 @@ import {
   NomListSchema,
   UserListSchema,
   WatchListSchema,
+  MyUserDataSchema,
 } from '../types/APIDataSchema';
 
 // * Nominations // *
@@ -27,6 +28,18 @@ export function userOptions() {
   return queryOptions({
     queryKey: ['users'],
     queryFn: qFunction(DataFlavor.users, {}, UserListSchema.parse),
+    retry: retryFunction,
+  });
+}
+
+export function myUserDataOptions(userId: UserId) {
+  return queryOptions({
+    queryKey: ['myUserData', userId],
+    queryFn: qFunction(
+      DataFlavor.users,
+      {myData: 'true'},
+      MyUserDataSchema.parse,
+    ),
     retry: retryFunction,
   });
 }
@@ -74,7 +87,8 @@ function qFunction<T>(
   dFlavor: DataFlavor,
   qParams: Record<string, string>,
   parser: (data: any) => T,
-): () => Promise<T>{//ReturnType<typeof parser>> {
+): () => Promise<T> {
+  //ReturnType<typeof parser>> {
   return async () => {
     const params = new URLSearchParams(qParams);
     const response = await fetch(`api/${dFlavor}?${params.toString()}`, {

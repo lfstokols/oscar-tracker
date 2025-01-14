@@ -14,6 +14,8 @@ import {
   Checkbox,
   Button,
 } from '@mui/material';
+import LetterboxdField from './letterboxd/LetterboxdField';
+import DefaultCatcher from '../../components/LoadScreen';
 
 type Props = {
   closer: () => void;
@@ -36,13 +38,9 @@ export default function UserProfile({closer}: Props) {
     <>
       <TitleLine title="User Profile" />
       <Box component="form" noValidate sx={boxStyle}>
-        <TextEntry
-          title="Letterboxd"
-          label="letterboxd_username"
-          placeholder="your username here"
-          error={false}
-          errorMessage=""
-        />
+        <DefaultCatcher>
+          <LetterboxdField />
+        </DefaultCatcher>
       </Box>
       <Divider />
       <Box sx={{display: 'flex', flexDirection: 'column', gap: 2}}>

@@ -9,8 +9,8 @@ import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../types/Enums';
 import {watchlistOptions} from '../hooks/dataOptions';
 import {
-  onError,
-  onSuccess,
+  onMutateError,
+  updateCacheOnSuccess,
   updateWatchlistMutationFn,
 } from '../hooks/mutationOptions';
 import {useOscarAppContext} from '../providers/AppContext';
@@ -35,12 +35,12 @@ export default function WatchlistCell({
   const year = useOscarAppContext().year;
   const mutation = useMutation({
     mutationFn: updateWatchlistMutationFn(movieId, year),
-    onSuccess: onSuccess(
+    onSuccess: updateCacheOnSuccess(
       watchlistOptions(year).queryKey,
       WatchListSchema.parse,
       queryClient,
     ),
-    onError: onError('Failed to update watch status.', notifications),
+    onError: onMutateError('Failed to update watch status.', notifications),
   });
 
   if (watchlistDataPromise.isPending) return <LinearProgress />;

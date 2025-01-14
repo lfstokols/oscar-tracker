@@ -4,7 +4,7 @@ import TextEntry from './DataEntryField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import {useNotifications} from '../../providers/NotificationContext';
-import {addUserOnSuccess, onError} from '../../hooks/mutationOptions';
+import {addUserOnSuccess, onMutateError} from '../../hooks/mutationOptions';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {addUserMutationFn} from '../../hooks/mutationOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
@@ -24,7 +24,7 @@ export default function SignUp({closer}: Props) {
   const mutation = useMutation({
     mutationFn: addUserMutationFn(),
     onSuccess: addUserOnSuccess(queryClient, setActiveUserId),
-    onError: onError('Failed to create user.', notifications),
+    onError: onMutateError('Failed to create user.', notifications),
   });
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

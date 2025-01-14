@@ -25,6 +25,7 @@ def update_user(storage, userId, new_data: dict):
 
     def operation(data: pd.DataFrame):
         assert userId in data.index, f"User '{userId}' not found."
+        assert not ('id' in new_data.keys() or 'userId' in new_data.keys()), "Cannot update user id"
         if not all([x in data.columns for x in new_data.keys()]):
             raise Exception(f"Invalid columns in new data: {new_data.keys()}.")
         data.loc[userId, new_data.keys()] = new_data.values()

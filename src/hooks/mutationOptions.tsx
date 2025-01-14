@@ -1,6 +1,11 @@
 import {QueryClient} from '@tanstack/react-query';
 import {NotificationsDispatch} from '../providers/NotificationContext';
-import {UserIdSchema, UserListSchema, UserSchema} from '../types/APIDataSchema';
+import {
+  MyUserDataSchema,
+  UserIdSchema,
+  UserListSchema,
+  UserSchema,
+} from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
 
@@ -8,7 +13,7 @@ import {userOptions} from './dataOptions';
 // * Genera Stuff // *
 
 // *
-export function onSuccess<T>(
+export function updateCacheOnSuccess<T>(
   queryKey: any,
   parser: (data: any) => T,
   queryClient: QueryClient,
@@ -18,7 +23,10 @@ export function onSuccess<T>(
   };
 }
 
-export function onError(message: string, notifications: NotificationsDispatch) {
+export function onMutateError(
+  message: string,
+  notifications: NotificationsDispatch,
+) {
   return async (response: Response) => {
     console.log(response);
     notifications.show({
@@ -50,7 +58,7 @@ export function addUserMutationFn() {
     data,
   }: {
     username: string;
-    data: Partial<z.input<typeof UserSchema>>;
+    data: Partial<z.input<typeof MyUserDataSchema>>;
   }) => {
     const body = JSON.stringify({username, ...data});
     return await fetch('api/users', {
@@ -71,5 +79,16 @@ export function addUserOnSuccess(
     const newState = UserListSchema.parse(data.users);
     setActiveUserId(newId);
     queryClient.setQueryData(userOptions().queryKey, newState);
+  };
+}
+
+export function updateUserMutationFn() {
+  return async (data: Partial<z.input<typeof MyUserDataSchema>>): Promise<Response> => {
+    const body = JSON.stringify(data);
+    return await fetch('api/users', {
+      method: 'PUT',
+      body,
+      headers: {'Content-Type': 'application/json'},
+    });
   };
 }
