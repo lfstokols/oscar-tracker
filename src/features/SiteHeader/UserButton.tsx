@@ -1,10 +1,11 @@
-import React, {useCallback, useState} from 'react';
+import React, {Suspense, useCallback, useState} from 'react';
 import {Chip, Button, Avatar} from '@mui/material';
 import {useOscarAppContext} from '../../providers/AppContext';
 import LoginMenu from './LoginMenu';
 import DefaultCatcher from '../../components/LoadScreen';
 import ProfileScreen from '../userModal/ProfileScreen';
 import UserAvatar from '../../components/userAvatar';
+import {QueryErrorResetBoundary} from '@tanstack/react-query/build/legacy/QueryErrorResetBoundary';
 
 export default function UserButton(): React.ReactElement {
   // hooks
@@ -28,13 +29,11 @@ export default function UserButton(): React.ReactElement {
         <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}}>
           Login
         </Button>
-        <DefaultCatcher>
-          <LoginMenu
-            anchorEl={anchorEl}
-            setAnchorEl={setAnchorEl}
-            signupOpener={openProfile}
-          />
-        </DefaultCatcher>
+        <LoginMenu
+          anchorEl={anchorEl}
+          setAnchorEl={setAnchorEl}
+          signupOpener={openProfile}
+        />
         <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
       </>
     );

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {Suspense, useState} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
@@ -11,6 +11,8 @@ import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
 import TabDrawer from '../tabDrawer/TabDrawer';
+import Skeleton from '@mui/material/Skeleton';
+import Cookies from 'js-cookie';
 
 type Props = {};
 
@@ -47,7 +49,14 @@ export default function SiteHeader(props: Props): React.ReactElement {
         </Stack>
         <Stack direction="row" alignItems="center" gap="12px">
           <YearSelector />
-          <UserButton />
+          <Suspense
+            fallback={
+              <Avatar>
+                {Cookies.get('activeUserId')?.charAt(0).toUpperCase()}
+              </Avatar>
+            }>
+            <UserButton />
+          </Suspense>
         </Stack>
       </Toolbar>
     </AppBar>

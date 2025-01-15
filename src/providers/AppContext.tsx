@@ -77,7 +77,7 @@ export default function OscarAppContextProvider(
   queryClient
     .fetchQuery(userOptions())
     .then(
-      callbackForArrivedUserList(
+      getCallbackForArrivedUserList(
         defaultUserId,
         defaultUsername,
         setActiveUsername,
@@ -247,8 +247,8 @@ function useUpgradeSetActiveUserId(
 
     queryClient
       .ensureQueryData(userOptions())
-      .then(data =>
-        callbackForArrivedUserList(
+      .then(
+        getCallbackForArrivedUserList(
           id,
           activeUsername,
           setActiveUsername,
@@ -256,15 +256,15 @@ function useUpgradeSetActiveUserId(
           notifications,
           timeStamp,
           TIME_LIMIT,
-        )(data),
+        ),
       );
   };
 }
 
-function callbackForArrivedUserList(
+function getCallbackForArrivedUserList(
   activeUserId: UserId | null,
   activeUsername: string | null,
-  usernameSetter: (username: string | null) => void,
+  setUsername: (username: string | null) => void,
   EXPIRATION_DAYS: number,
   notifications: NotificationsDispatch,
   timeStamp: number,
@@ -289,7 +289,7 @@ function callbackForArrivedUserList(
         //* Note to self: It's also possible that the userId is invalid, but that seems less likely
       });
     }
-    usernameSetter(suggestedUsername);
+    setUsername(suggestedUsername);
     Cookies.set('activeUsername', suggestedUsername as string, {
       expires: EXPIRATION_DAYS,
     });

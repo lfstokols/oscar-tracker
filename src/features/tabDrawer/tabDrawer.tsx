@@ -41,7 +41,9 @@ export default function TabDrawer({
   };
   const DrawerList = (
     <Box sx={{width: 250}} role="presentation" onClick={onClose}>
-      <Typography variant="h4">Tabs</Typography>
+      <Typography variant="h4" sx={{ml: 8}}>
+        Tabs
+      </Typography>
       <Divider />
       <List>
         {Object.values(AppTabType).map((tab: AppTabType) => (
