@@ -95,8 +95,10 @@ export default function ProfileScreen({open, closeModal}: Props) {
           backgroundColor: 'tertiary.main',
           borderRadius: '2ch',
         }}>
-        <OurWordmark />
-        <ProfileScreenContents closeModal={closeModal} />
+        <ActiveUserDataContainer>
+          <OurWordmark />
+          <ProfileScreenContents closeModal={closeModal} />
+        </ActiveUserDataContainer>
       </Card>
     </Modal>
   );

@@ -14,6 +14,9 @@ tsconfig.json export-ignore
 src/ export-ignore
 fyi/ export-ignore
 
+# Database (remote is source of truth)
+backend/database/ export-ignore
+
 ## EOL to unix, force conversion
 
 # Force LF for all text files

@@ -13,7 +13,7 @@ else:
     import fcntl
 from collections.abc import Callable
 from backend.logic.MyTypes import *
-from typing import Literal, IO, Any
+from typing import Literal, IO, Any, overload
 import backend.logic.Flavors as flv
 import backend.logic.utils as utils
 
@@ -89,6 +89,13 @@ class StorageManager:
 
     # So far I only use this inside of an `operation` function,
     # 		so I should take the existing list directly instead of reading from a file
+    @overload
+    def create_unique_id(
+        self, flavor: Literal["movies"], existing_ids, year: int | str
+    ) -> MovID: ...
+    @overload
+    def create_unique_id(self, flavor: Literal["users"], existing_ids) -> UserID: ...
+
     def create_unique_id(
         self, flavor: DataFlavor, existing_ids, year=None
     ) -> MovID | UserID:
@@ -99,6 +106,8 @@ class StorageManager:
         assert (
             flavor != "categories"
         ), "Category IDs are static. You can't create new ones."
+        if flv.flavor_props(flavor)["annual"]:
+            assert year is not None
         try:
             id_prefix = {"movies": "mov_", "users": "usr_"}[flavor]
         except:
@@ -189,7 +198,7 @@ class StorageManager:
         data.dtypes.apply(str).to_json(jfile)
 
     @contextmanager
-    def file_access(self, filepath: Path, mode="r", **kwargs):
+    def file_access(self, filepath: tuple[Path, Path], mode="r", **kwargs):
         assert mode in ["r", "w", "r+", "x"]
         if mode == "w":
             mode = "r+"
@@ -269,9 +278,9 @@ class StorageManager:
 
     def retry_file_access(
         self,
-        filepath: Path,
+        filepath: tuple[Path, Path],
         mode,
-        operation: Callable[[tuple[IO[Any], IO[Any]]], any],
+        operation: Callable[[tuple[IO[Any], IO[Any]]], Any],
         **kwargs,
     ):
         """
@@ -298,7 +307,7 @@ class StorageManager:
         print(f"Unable to open file {filepath} after {self.max_retries} retries.")
         raise OSError(13, "File is locked, please try again later")
 
-    def read(self, flavor, year=None, **kwargs):
+    def read(self, flavor, year=None, **kwargs) -> pd.DataFrame:
         filename = self.get_filename(flavor, year)
         return self.retry_file_access(
             filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs
@@ -311,7 +320,7 @@ class StorageManager:
         #     print(f"Unable to load data from {filename}.")
         #     raise
 
-    def json_read(self, flavor, year=None, **kwargs):
+    def json_read(self, flavor, year=None, **kwargs) -> list[dict]:
         df = self.read(flavor, year, **kwargs)
         return utils.df_to_jsonable(df, flavor)
 
@@ -320,7 +329,7 @@ class StorageManager:
     # 		a pandas DataFrame, and feedback to the function caller
     def edit(
         self,
-        operation: Callable[[pd.DataFrame], tuple[pd.DataFrame, any]],
+        operation: Callable[[pd.DataFrame], tuple[pd.DataFrame, Any]],
         flavor,
         year=None,
         **kwargs,
@@ -390,9 +399,5 @@ class StorageManager:
 
 if __name__ == "__main__":
     storage = StorageManager("C:/Users/lfsto/OscarFiles/backend/database")
-    storage.add_watchlist_entry(
-        2023,
-        "usr_ca512f",
-        "mov_c037c8",
-        WatchStatus.SEEN,
-    )
+    print(storage.read("users"))
+    print(storage.read("users", json=True))

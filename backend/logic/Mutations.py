@@ -1,16 +1,14 @@
 import pandas as pd
+from backend.logic.StorageManager import StorageManager
 from backend.logic.MyTypes import *
+from typing import Any
 
 
-def add_user(storage, username, letterboxd=None, email=None) -> UserID:
+def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> UserID:
     userIdList = storage.read("users").index.tolist()
 
     def operation(data: pd.DataFrame):
         user_id = storage.create_unique_id("users", existing_ids=userIdList)
-        # while True:
-        # 	user_id = create_unique_id('user')
-        # 	if user_id not in userIdList:
-        # 		break
         data.loc[user_id] = {
             UserColumns.NAME: username,
             UserColumns.LETTERBOXD: letterboxd,
@@ -102,14 +100,14 @@ def add_nomination(storage, year, nomination: Nom, validate=False):
     storage.validate_id(category, "c")
 
     def operation(data: pd.DataFrame):
-        data = data._append(
+        newEntry = pd.DataFrame(
             {
                 NomColumns.MOVIE: movie,
                 NomColumns.CATEGORY: category,
                 NomColumns.NOTE: note,
-            },
-            ignore_index=True,
+            }
         )
+        data = pd.concat([data, newEntry], ignore_index=True)
         return data, None
 
     if validate:
@@ -126,7 +124,7 @@ def add_nomination(storage, year, nomination: Nom, validate=False):
 # 		In that case, the id of the movie is returned (whether it was found or created)
 # `new_data` is a dictionary of new data to add or update
 def update_movie(
-    storage, movie, year, new_data: dict = {}, try_title_lookup=False
+    storage, movie, year, new_data: dict[str, Any] = {}, try_title_lookup=False
 ) -> MovID | bool:
     for val in new_data.values():
         if "," in str(val):
@@ -141,7 +139,7 @@ def update_movie(
         try:
             storage.validate_id(movieId, "m")
         except:
-            raise (
+            raise Exception(
                 f"Invalid movie id '{movieId}'.\n"
                 "Did you mean to send a title? Consider try_title_lookup=True."
             )

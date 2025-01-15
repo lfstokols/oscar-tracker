@@ -89,6 +89,7 @@ export type MovieList = z.infer<typeof MovieListSchema>;
 export type NomList = z.infer<typeof NomListSchema>;
 export type CategoryList = z.infer<typeof CategoryListSchema>;
 
+// * Extended Schemas
 export const MyUserDataSchema = UserSchema.extend({
   letterboxd: z.string().nullable(),
   email: z.string().email().nullable(),
@@ -97,13 +98,17 @@ export const MyUserDataSchema = UserSchema.extend({
 
 export const UserStatsSchema = UserSchema.extend({
   username: z.string().nullable(),
-  numSeen: z.number().nullable().default(0),
-  numTodo: z.number().nullable().default(0),
+  numSeenFeature: z.number().nullable().default(0),
+  numSeenShort: z.number().nullable().default(0),
+  numTodoFeature: z.number().nullable().default(0),
+  numTodoShort: z.number().nullable().default(0),
   seenWatchtime: z.number().nullable().default(0),
   todoWatchtime: z.number().nullable().default(0),
+  numMultinomsSeen: z.number().nullable().default(0),
+  numMultinomsTodo: z.number().nullable().default(0),
 });
+export const UserStatsListSchema = z.array(UserStatsSchema);
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;
 export type UserStats = z.infer<typeof UserStatsSchema>;
-export const UserStatsListSchema = z.array(UserStatsSchema);
 export type UserStatsList = z.infer<typeof UserStatsListSchema>;

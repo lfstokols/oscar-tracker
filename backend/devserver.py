@@ -10,9 +10,13 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 load_dotenv(Path(__file__).parent.parent / ".env")
-RUN_DEBUG = os.getenv("RUN_DEBUG")
-DEVSERVER_PORT = os.getenv("DEVSERVER_PORT")
-print(f"The port should be {DEVSERVER_PORT}.")
+try:
+    RUN_DEBUG = (os.getenv("RUN_DEBUG") or "").lower() == "true"
+    DEVSERVER_PORT = int(os.getenv("DEVSERVER_PORT"))
+    print(f"The port should be {DEVSERVER_PORT}.")
+except Exception as e:
+    print(f"The .env file is missing or has an error: {e}")
+    raise
 
 app = Flask(__name__)
 

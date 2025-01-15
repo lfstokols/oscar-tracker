@@ -7,3 +7,9 @@ export const EXPIRATION_DAYS = 400;
 
 //* Default time to diplay notification toast
 export const DEFAULT_HIDE_DURATION_MS = 4000; // 4 seconds
+
+//* Numbers related to short films
+//* I'm hardcoding these for now, because as far as I know they've
+//* never actually changed
+export const NUM_SHORT_CATEGORIES = 3;
+export const NUM_SHORT_FILMS_PER_CATEGORY = 5;

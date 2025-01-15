@@ -83,10 +83,24 @@ export function addUserOnSuccess(
 }
 
 export function updateUserMutationFn() {
-  return async (data: Partial<z.input<typeof MyUserDataSchema>>): Promise<Response> => {
+  return async (
+    data: Partial<z.input<typeof MyUserDataSchema>>,
+  ): Promise<Response> => {
     const body = JSON.stringify(data);
     return await fetch('api/users', {
       method: 'PUT',
+      body,
+      headers: {'Content-Type': 'application/json'},
+    });
+  };
+}
+
+export function deleteUserMutationFn() {
+  return async (userId: UserId) => {
+    const params = new URLSearchParams({userId});
+    const body = JSON.stringify({userId, delete: true, forRealsies: true});
+    return await fetch(`api/users?${params.toString()}`, {
+      method: 'DELETE',
       body,
       headers: {'Content-Type': 'application/json'},
     });

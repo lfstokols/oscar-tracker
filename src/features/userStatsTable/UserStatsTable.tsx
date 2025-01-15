@@ -1,57 +1,42 @@
 import {useSuspenseQuery} from '@tanstack/react-query';
 import React from 'react';
 import {Table, TableHead, TableRow, TableCell, TableBody} from '@mui/material';
-import {userStatsOptions} from '../../hooks/dataOptions';
+import {movieOptions, userStatsOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {UserStats} from '../../types/APIDataSchema';
+import {
+  NUM_SHORT_CATEGORIES,
+  NUM_SHORT_FILMS_PER_CATEGORY,
+} from '../../config/GlobalConstants';
 
 export default function UserStatsTable(): React.ReactElement {
   const year = useOscarAppContext().year;
   const userStats = useSuspenseQuery(userStatsOptions(year)).data;
+  const {shortsAreOneFilm} = useOscarAppContext().preferences;
+  const numMoviesTotal = useSuspenseQuery(movieOptions(year)).data.length;
+  const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
+  const numMoviesFeature = numMoviesTotal - numMoviesShort;
 
-  // const rows = Object.keys(userStats[0]).filter(
-  //   key => key !== 'id' && key !== 'username',
-  // );
-  const rows: (keyof UserStats)[] = [
-    'numSeen',
-    'numTodo',
-    'seenWatchtime',
-    'todoWatchtime',
-  ];
-
-  // const rowDisplayNames: Record<(typeof rows)[number], string> = {
-  //   numSeen: 'Movies Seen',
-  //   numTodo: 'Movies Left to Watch',
-  //   seenWatchtime: 'Total Watchtime Completed',
-  //\   todoWatchtime: 'Total Watchtime Remaining',
-  // };
-
-  function getRowDisplayName(row: string) {
-    switch (row) {
-      case 'numSeen':
-        return 'Movies Seen';
-      case 'numTodo':
-        return 'Movies Left to Watch';
-      case 'seenWatchtime':
-        return 'Total Watchtime Completed';
-      case 'todoWatchtime':
-        return 'Total Watchtime Remaining';
-      default:
-        return 'Error';
-    }
+  function makeRow(title: string, values: (user: UserStats) => string) {
+    return (
+      <TableRow key={title}>
+        <TableCell>{title}</TableCell>
+        {userStats.map(user => (
+          <TableCell key={user.id}>{values(user)}</TableCell>
+        ))}
+      </TableRow>
+    );
   }
 
-  function getRowValue(row: string, user: UserStats) {
-    switch (row) {
-      case 'seenWatchtime':
-      case 'todoWatchtime':
-        return minutesToHours(user[row]);
-      case 'numSeen':
-      case 'numTodo':
-        return user[row] + '/??';
-      default:
-        return 'Error';
-    }
+  function makeFraction(
+    numFeature: number,
+    numShort: number,
+    shortsAreOneFilm: boolean,
+  ) {
+    const ratio = shortsAreOneFilm ? NUM_SHORT_FILMS_PER_CATEGORY : 1;
+    const numerator = numFeature + numShort / ratio;
+    const denominator = numMoviesFeature + numMoviesShort / ratio;
+    return `${numerator}/${denominator}`;
   }
 
   return (
@@ -65,14 +50,26 @@ export default function UserStatsTable(): React.ReactElement {
         </TableRow>
       </TableHead>
       <TableBody>
-        {rows.map(row => (
-          <TableRow key={row}>
-            <TableCell>{getRowDisplayName(row)}</TableCell>
-            {userStats.map(user => (
-              <TableCell key={user.id}>{getRowValue(row, user)}</TableCell>
-            ))}
-          </TableRow>
-        ))}
+        {makeRow('Movies Seen', user =>
+          makeFraction(
+            user.numSeenFeature ?? 0,
+            user.numSeenShort ?? 0,
+            shortsAreOneFilm,
+          ),
+        )}
+        {makeRow('Movies Left to Watch', user =>
+          makeFraction(
+            user.numTodoFeature ?? 0,
+            user.numTodoShort ?? 0,
+            shortsAreOneFilm,
+          ),
+        )}
+        {makeRow('Total Watchtime Completed', user =>
+          minutesToHours(user.seenWatchtime),
+        )}
+        {makeRow('Total Watchtime Remaining', user =>
+          minutesToHours(user.todoWatchtime),
+        )}
       </TableBody>
     </Table>
   );

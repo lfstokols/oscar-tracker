@@ -14,14 +14,28 @@ import {
   Checkbox,
   Button,
   Stack,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import LetterboxdField from './letterboxd/LetterboxdField';
 import DefaultCatcher from '../../components/LoadScreen';
 import UserAvatar from '../../components/userAvatar';
 import UserDataField from './UserDataField';
-import {useSuspenseQuery} from '@tanstack/react-query';
-import {myUserDataOptions} from '../../hooks/dataOptions';
-
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from '@tanstack/react-query';
+import {myUserDataOptions, userOptions} from '../../hooks/dataOptions';
+import {
+  deleteUserMutationFn,
+  onMutateError,
+  updateCacheOnSuccess,
+} from '../../hooks/mutationOptions';
+import {UserListSchema} from '../../types/APIDataSchema';
 type Props = {
   closer: () => void;
 };
@@ -37,6 +51,19 @@ export default function UserProfile({closer}: Props) {
   }
   const myUserData = useSuspenseQuery(myUserDataOptions(activeUserId)).data;
   const notifications = useNotifications();
+  const queryClient = useQueryClient();
+  const deletionMutation = useMutation({
+    mutationFn: deleteUserMutationFn(),
+    onSuccess: () => {
+      updateCacheOnSuccess(
+        userOptions().queryKey,
+        UserListSchema.parse,
+        queryClient,
+      );
+      setActiveUserId(null);
+    },
+    onError: onMutateError('Failed to delete account', notifications),
+  });
   const handleLogout = () => {
     notifications.show({
       type: 'success',
@@ -44,6 +71,24 @@ export default function UserProfile({closer}: Props) {
     });
     setActiveUserId(null);
     closer();
+  };
+  const [deleteDialogIsOpen, setDeleteDialogIsOpen] = React.useState(false);
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogIsOpen(false);
+  };
+  const handleDelete = () => {
+    setDeleteDialogIsOpen(true);
+  };
+  const handleDeleteConfirmed = () => {
+    deletionMutation.mutate(activeUserId);
+    if (deletionMutation.isSuccess) {
+      notifications.show({
+        type: 'success',
+        message: 'Account deleted',
+      });
+      setDeleteDialogIsOpen(false);
+      closer();
+    }
   };
 
   return (
@@ -76,14 +121,37 @@ export default function UserProfile({closer}: Props) {
         </List>
       </Box>
       <Divider />
-      <Button
-        variant="outlined"
-        size="small"
-        sx={{width: '100%'}}
-        color="error"
-        onClick={handleLogout}>
-        Logout
-      </Button>
+      <Stack spacing={2}>
+        <Button
+          variant="outlined"
+          size="small"
+          sx={{width: '100%'}}
+          color="warning"
+          onClick={handleLogout}>
+          Logout
+        </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          color="error"
+          sx={{width: '100%'}}
+          onClick={handleDelete}>
+          Delete Account
+        </Button>
+      </Stack>
+      <Dialog open={deleteDialogIsOpen} onClose={handleCloseDeleteDialog}>
+        <DialogTitle>Delete Account</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete your account? This action is
+            irreversible.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog}>Cancel</Button>
+          <Button onClick={handleDeleteConfirmed}>Delete</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -133,6 +201,7 @@ function placeholderEditableComponent({onCancel}: {onCancel: () => void}) {
   return (
     <Stack direction="row" spacing={2}>
       <ErrorIcon />
+      <Typography>This is a placeholder, lol</Typography>
       <Button onClick={onCancel}>Cancel</Button>
     </Stack>
   );

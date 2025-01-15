@@ -11,10 +11,15 @@ import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from logic.MyTypes import *
 
-storage = StorageManager(os.path.join(os.path.dirname(__file__), "database"))
+
+project_root_directory = Path(__file__).parent.parent
+storage = StorageManager(project_root_directory / "backend" / "database")
 
 oscars = Blueprint(
-    "oscars", __name__, static_folder="../dist/", static_url_path="/oscars/"
+    "oscars",
+    __name__,
+    static_folder=project_root_directory / "dist",
+    static_url_path="/oscars/",
 )
 # CORS(oscars)  # Enable CORS for all routes
 
@@ -73,6 +78,17 @@ def get_users():
         newState = pr.get_my_user_data(storage, userId, json=True)
         return jsonify(newState)
     elif request.method == "DELETE":
+        cookie_id = request.cookies.get("activeUserId")
+        param_id = request.args.get("userId")
+        body_id = request.json.get("userId")
+        if not (request.json.get("forRealsies") and request.json.get("delete")):
+            print(
+                "Tried to delete user without 'delete: true' and 'forRealsies: true' in body"
+            )
+            return jsonify({"error": "Must confirm deletion"}), 400
+        if not (cookie_id == param_id and cookie_id == body_id):
+            print("Tried to delete user with mismatching ids")
+            return jsonify({"error": "Mismatching ids"}), 400
         mu.delete_user(storage, userId)
         newState = pr.get_users(storage, json=True)
         return jsonify({"users": newState})

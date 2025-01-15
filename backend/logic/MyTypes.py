@@ -99,8 +99,10 @@ class UserColumns:
 
 class DerivedUserColumns(UserColumns):
     PROFILE_PIC = "propic"
-    NUM_SEEN = "numSeen"
-    NUM_TODO = "numTodo"
+    NUM_SEEN_SHORT = "numSeenShort"
+    NUM_SEEN_FEATURE = "numSeenFeature"
+    NUM_TODO_SHORT = "numTodoShort"
+    NUM_TODO_FEATURE = "numTodoFeature"
     SEEN_WATCHTIME = "seenWatchtime"
     TODO_WATCHTIME = "todoWatchtime"
 
@@ -116,6 +118,16 @@ class WatchStatus:
         return [
             v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
         ]
+
+
+class Grouping(myEnum):
+    BigThree = "Big Three"
+    Acting = "Acting"
+    Filmkraft = "Technical (Filmkraft)"
+    Art = "Technical (Art)"
+    Audio = "Technical (Audio)"
+    BestInClass = "Best in Class"
+    Short = "Short"
 
 
 __all__ = [
