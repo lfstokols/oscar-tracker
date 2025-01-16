@@ -1,14 +1,24 @@
 from collections.abc import Callable
+import re
 import time
 from typing import Any
 from flask import jsonify, Request
 import numpy as np
 import pandas as pd
+from backend.data_management.schemas import Flavor
+from backend.logic.StorageManager import StorageManager
 import backend.logic.Flavors as flv
+from backend.logic.MyTypes import UserColumns, UserID
 
 
 def no_year_response():
-    return (jsonify({"error": "No year provided"}), 400)
+    return (jsonify({"error": "No year provided"}), 422)
+
+
+class YearError(Exception):
+    def __init__(self, message: str = "No year provided in API call"):
+        self.message = message
+        super().__init__(self.message)
 
 
 # FYI: errno 13 is the error number for permission denied, which includes file locking issues
@@ -39,7 +49,11 @@ def catch_file_locked_error(
         raise
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: str) -> list[dict]:
+def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
+    """
+    Converts a pandas DataFrame to a list of dictionaries.
+    It's not a json, but it's easily castable to json.
+    """
     flavor = flv.format_flavor(flavor)
     if flv.flavor_props(flavor)["shape"] == "entity":
         df = df.reset_index()
@@ -56,3 +70,15 @@ def has_flag(request: Request, arg: str) -> bool:
     output = value == "true"
     # print(f"has_flag will return {output}")
     return output
+
+
+def get_active_user_id(storage: StorageManager, request: Request) -> UserID | None:
+    active_user_id = request.cookies.get("activeUserId")
+    if active_user_id is None:
+        return None
+    if not re.fullmatch(r"^usr_[0-9a-fA-F]{6}$", active_user_id):
+        return None
+    users = storage.read("users")
+    if active_user_id not in users.index:
+        return None
+    return UserID(active_user_id)

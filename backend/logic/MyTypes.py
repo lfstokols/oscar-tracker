@@ -28,8 +28,10 @@ class Nom(TypedDict):
 class MovieColumns(myEnum):
     ID = "id"
     TITLE = "title"
-    IMDB_ID = "imdbId"
+    Imdb_ID = "ImdbId"
+    MovieDB_ID = "movieDbId"
     RUNTIME = "runtime"  # This is removed before reaching frontend
+    POSTER_PATH = "posterPath"
 
     # @classmethod
     # def values(cls):
@@ -39,24 +41,24 @@ class MovieColumns(myEnum):
 
 
 class DerivedMovieColumns(MovieColumns):
-    RUNTIME_HOURS = "runtime(hours)"
-    RUNTIME_MINUTES = "runtime(minutes)"
+    RUNTIME_HOURS = "runtime_hours"
+    RUNTIME_MINUTES = "runtime_minutes"
     NUM_NOMS = "numNoms"
 
 
-class NomColumns:
+class NomColumns(myEnum):
     MOVIE = "movieId"
     CATEGORY = "categoryId"
     NOTE = "note"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class CategoryColumns:
+class CategoryColumns(myEnum):
     ID = "id"
     SHORT_NAME = "shortName"
     FULL_NAME = "fullName"
@@ -65,36 +67,36 @@ class CategoryColumns:
     GROUPING = "grouping"
     MAX_NOMS = "maxNoms"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class WatchlistColumns:
+class WatchlistColumns(myEnum):
     MOVIE = "movieId"
     USER = "userId"
     STATUS = "status"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class UserColumns:
+class UserColumns(myEnum):
     ID = "id"
     NAME = "username"
     LETTERBOXD = "letterboxd"
     EMAIL = "email"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
 class DerivedUserColumns(UserColumns):
@@ -107,17 +109,16 @@ class DerivedUserColumns(UserColumns):
     TODO_WATCHTIME = "todoWatchtime"
 
 
-class WatchStatus:
+class WatchStatus(myEnum):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"
 
-    @classmethod
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
 class Grouping(myEnum):
@@ -145,4 +146,5 @@ __all__ = [
     "WatchlistColumns",
     "UserColumns",
     "DerivedUserColumns",
+    "Grouping",
 ]

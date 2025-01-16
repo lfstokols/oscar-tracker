@@ -26,7 +26,7 @@ from backend.logic.MyTypes import *
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Attempts to parse nomination data from Wikipedia."
+        description="Attempts to find IMDB entries for movies in the database."
     )
     parser.add_argument(
         "year",

@@ -15,9 +15,13 @@ from collections.abc import Callable
 from backend.logic.MyTypes import *
 from typing import Literal, IO, Any, overload
 import backend.logic.Flavors as flv
-import backend.logic.utils as utils
+
+# import backend.logic.utils as utils
 
 
+# TODO - Create a DataTable class with attributes like flavor, year, and filename
+# TODO      This class computes the filename and flavor_props, and they're what StorageManager returns
+# TODO      It can also abstract away the changes to the attributes. Only it knows what the attributes are stored as, everything else only sees the derived values
 class StorageManager:
 
     def __init__(self, database_directory):
@@ -33,7 +37,7 @@ class StorageManager:
         self.DEFAULT_MOVIES.astype(
             {
                 MovieColumns.TITLE: "string",
-                MovieColumns.IMDB_ID: "string",
+                MovieColumns.Imdb_ID: "string",
                 MovieColumns.RUNTIME: "Int64",
             }
         )
@@ -307,22 +311,30 @@ class StorageManager:
         print(f"Unable to open file {filepath} after {self.max_retries} retries.")
         raise OSError(13, "File is locked, please try again later")
 
-    def read(self, flavor, year=None, **kwargs) -> pd.DataFrame:
+    def read(self, flavor: DataFlavor, year=None, **kwargs) -> pd.DataFrame:
         filename = self.get_filename(flavor, year)
         return self.retry_file_access(
             filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs
         )
-        # try:
-        #     with self.file_access(filename) as files:
-        #         data = self.files_to_df(files, flavor)
-        #     return data
-        # except Exception as e:
-        #     print(f"Unable to load data from {filename}.")
-        #     raise
 
     def json_read(self, flavor, year=None, **kwargs) -> list[dict]:
         df = self.read(flavor, year, **kwargs)
-        return utils.df_to_jsonable(df, flavor)
+        return self.df_to_jsonable(df, flavor)
+
+    #! - delete this, it's here to avoid circular imports
+    #! - Once json_read is fully deprecated, delete this too
+    def df_to_jsonable(self, df: pd.DataFrame, flavor: str) -> list[dict]:
+        """
+        Converts a pandas DataFrame to a list of dictionaries.
+        It's not a json, but it's easily castable to json.
+        """
+        flavor = flv.format_flavor(flavor)
+        if flv.flavor_props(flavor)["shape"] == "entity":
+            df = df.reset_index()
+        df = df.replace({np.nan: None})
+        return df.to_dict(orient="records")
+
+    #! - end of delete block
 
     # Applies an operation to the data in the file
     # `operation` is a function that takes a pandas DataFrame as input and returns two outputs:
@@ -353,7 +365,7 @@ class StorageManager:
         #     print(f"Unable to write data to {filename}.")
         #     raise
 
-    def delete(self, flavor, year="test"):
+    def delete_file(self, flavor, year="test"):
         filename = self.get_filename(flavor, year)
         flavor = flv.format_flavor(flavor)
         with self.file_access(filename, "w") as files:
@@ -361,6 +373,8 @@ class StorageManager:
                 self.df_to_files(self.DEFAULT_MOVIES, files)
             elif flavor == "nominations":
                 self.df_to_files(self.DEFAULT_NOMINATIONS, files)
+            elif flavor == "watchlist":
+                self.df_to_files(self.DEFAULT_WATCHLIST, files)
             else:
                 raise Exception(f"Invalid type '{flavor}' for deletion.")
 
@@ -376,9 +390,11 @@ class StorageManager:
 
         self.edit(operation, flavor, year)
 
-    def blank_test_data(self):
-        self.delete("movies", year="test")
-        self.delete("nominations", year="test")
+    def blank_test_data(self, year: str | int | None = None):
+        assert self.dir.name == "test_database"
+        self.delete_file("movies", year=year)
+        self.delete_file("nominations", year=year)
+        self.delete_file("watchlist", year=year)
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):

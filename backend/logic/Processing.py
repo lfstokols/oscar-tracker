@@ -51,9 +51,10 @@ def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> in
     return total
 
 
-def get_movies(storage, year, idList=None, json=False):
+def get_movies(storage: StorageManager, year, idList=None, json=False):
     data = storage.read("movies", year)
     noms = storage.read("nominations", year)
+    categories = storage.read("categories")
     data[DerivedMovieColumns.NUM_NOMS] = (
         noms.groupby(NomColumns.MOVIE).size()[data.index].fillna(0)
     )
@@ -63,6 +64,8 @@ def get_movies(storage, year, idList=None, json=False):
     data[DerivedMovieColumns.RUNTIME_HOURS] = data[
         DerivedMovieColumns.RUNTIME_MINUTES
     ].apply(lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None)
+    data = pd.concat([data, are_movies_short(data, noms, categories)], axis="columns")
+    data.index.name = "id"
     if idList:
         data = data.loc[idList]
     if json:
@@ -134,7 +137,7 @@ def get_user_propic(letterboxd_username: str) -> str | None:
 
 def get_watchdata_by_categories(
     storage: StorageManager, year, userIdList=None, json=False
-) -> dict[UserID, list[dict[CatID | Grouping | 'numCats', int]]]:
+) -> dict[UserID, list[dict[CatID | Grouping | "numCats", int]]]:
     watchlist = storage.read("watchlist", year)
     categories = storage.read("categories", year)
     nominations = storage.read("nominations", year)
@@ -216,7 +219,7 @@ def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame
         num_seen: int
         num_todo: int
         seen_watchtime: int (minutes)
-    \    todo_watchtime: int (minutes)
+    .    todo_watchtime: int (minutes)
 
     """
     movies = storage.read("movies", year)
@@ -297,10 +300,6 @@ def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame
 def get_user_completion_data(storage: StorageManager, year, json=False):
     users: pd.DataFrame = get_users(storage)
     newdata = compute_user_completion_stats(storage, year)
-    print(newdata)
-    # Flatten the multi-index columns
-    # newdata.columns = newdata.columns.get_level_values(0)
-    # Rename index to match users DataFrame before joining
     newdata.index.name = "id"
     data = users.join(newdata, how="outer")
     if json:

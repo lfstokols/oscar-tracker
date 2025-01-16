@@ -25,16 +25,20 @@ export type RawWatchStatus = z.infer<typeof RawWatchStatusSchema>;
 export const UserSchema = z.object({
   id: UserIdSchema,
   username: z.string(),
+  propic: z.string().url().nullable(),
 });
 
 export const MovieSchema = z
   .object({
     id: MovieIdSchema,
     title: z.string(),
-    imdbId: z.string().nullable(),
-    'runtime(hours)': z.string().nullable(),
-    'runtime(minutes)': z.number().nullable(),
+    ImdbId: z.string().nullable(),
+    movieDbId: z.number().nullable(),
+    runtime_hours: z.string().nullable(),
+    runtime_minutes: z.number().nullable(),
     numNoms: z.number().gte(1),
+    isShort: z.boolean(),
+    posterPath: z.string().url().nullable(),
   })
   .passthrough();
 
@@ -76,11 +80,11 @@ export type Nom = z.infer<typeof NomSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 
 // * Collection Schemas
-export const NomListSchema = z.array(NomSchema);
-export const UserListSchema = z.array(UserSchema);
-export const MovieListSchema = z.array(MovieSchema);
-export const CategoryListSchema = z.array(CategorySchema).nonempty();
-export const WatchListSchema = z.array(WatchNoticeSchema);
+export const NomListSchema = z.array(NomSchema).describe('A list of nominations');
+export const UserListSchema = z.array(UserSchema).describe('A list of users');
+export const MovieListSchema = z.array(MovieSchema).describe('A list of movies');
+export const CategoryListSchema = z.array(CategorySchema).describe('A list of categories').nonempty();
+export const WatchListSchema = z.array(WatchNoticeSchema).describe('A watchlist');
 
 // * Collection Types
 export type WatchList = z.infer<typeof WatchListSchema>;
@@ -107,7 +111,7 @@ export const UserStatsSchema = UserSchema.extend({
   numMultinomsSeen: z.number().nullable().default(0),
   numMultinomsTodo: z.number().nullable().default(0),
 });
-export const UserStatsListSchema = z.array(UserStatsSchema);
+export const UserStatsListSchema = z.array(UserStatsSchema).describe("A list of users' stats");
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;
 export type UserStats = z.infer<typeof UserStatsSchema>;

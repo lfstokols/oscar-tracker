@@ -1,6 +1,7 @@
 import {queryOptions} from '@tanstack/react-query';
 import {DataFlavor} from '../types/Enums';
 import LockError from '../types/LockErorr';
+import {z} from 'zod';
 import {
   CategoryListSchema,
   MovieListSchema,
@@ -115,7 +116,19 @@ function qFunction<T>(
         `Data fetch returned error code ${response.status}: ${response.json()}`,
       );
     }
-    return parser(await response.json());
+    try {
+      return parser(await response.json());
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.error(
+          `Zod validation failed for dataFlavor ${dFlavor} with params ${JSON.stringify(
+            qParams,
+          )}`,
+        );
+        console.error(error.message);
+      }
+      throw error;
+    }
   };
 }
 

@@ -37,7 +37,7 @@ def main():
         help="Year to import data for. Year is when movies are released, not when the Oscars ceremony is held.",
     )
     parser.add_argument(
-        "--dry-run", action="store_true", help="Saves data in a test folder."
+        "--dry-run", action="store_true", help="Saves data in the test database."
     )
     parser.add_argument(
         "--overwrite",
@@ -56,12 +56,14 @@ def main():
     verbose = args.verbose
 
     global storage
-    storage = StorageManager(BACKEND_DIR / "database")
+    database_dir = (
+        BACKEND_DIR / "database" if not dry_run else BACKEND_DIR / "test_database"
+    )
+    storage = StorageManager(database_dir)
     global storage_year
-    storage_year = str(year)
-    if dry_run:
-        storage_year = "test"
-        storage.blank_test_data()
+    storage_year = str(year)  # ? This var is a remnant of past implementation
+    if overwrite:
+        storage.blank_test_data(year)
     storage.add_columns("movies", storage_year, columns={"title": str})
 
     global category_df

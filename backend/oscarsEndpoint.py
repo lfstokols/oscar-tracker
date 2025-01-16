@@ -1,16 +1,36 @@
+import time
+from dotenv import load_dotenv
+from functools import wraps
 from flask import Blueprint, send_from_directory, request, jsonify, abort
 
 # from flask_cors import CORS
 import os
 from pathlib import Path
 
+from nbformat import ValidationError
 import requests
-from backend.logic.utils import catch_file_locked_error, no_year_response, has_flag
+from backend.data_management.validators import validate_nom_list
+from backend.logic import utils
+from backend.logic.utils import (
+    catch_file_locked_error,
+    no_year_response,
+    has_flag,
+    YearError,
+)
 from logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from logic.MyTypes import *
 
+# from data_management.schemas import *
+from data_management.validators import *
+
+load_dotenv(Path(__file__).parent.parent / ".env")
+try:
+    PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE"))
+except Exception as e:
+    print(f"The .env file is missing or has an error: {e}")
+    raise
 
 project_root_directory = Path(__file__).parent.parent
 storage = StorageManager(project_root_directory / "backend" / "database")
@@ -24,53 +44,82 @@ oscars = Blueprint(
 # CORS(oscars)  # Enable CORS for all routes
 
 
-# TEST_DATA = '{ "users": [{ "username": "Logan", "watchedMovies": ["Oppenheimer"] }], "movies": [ { "title": "Oppenheimer", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Poor Things", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Killers of the Flower Moon", "nominations": [ "Best Picture", "Actor", "Actress" ] }, { "title": "Barbie", "nominations": [ "Best Picture", "Actor", "Actress" ] } ] }'
+def handle_errors(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except OSError as e:
+            if e.errno == 13:
+                print(
+                    f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
+                )
+                return {
+                    "error": "File is locked, please try again later",
+                    "retryable": "true",
+                }, 423
+            raise
+        except ValidationError as e:
+            print(f"Pydantic validation failed: {e.errors()}")
+            return (
+                jsonify({"error": "Pydantic validation failed", "message": str(e)}),
+                PYDANTIC_ERROR_STATUS_CODE,
+            )
+        except YearError as e:
+            print(f"YearError: {e}")
+            return no_year_response()
+        except Exception as e:
+            print(f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})")
+            print(f"Error of type {type(e)} with message {e}")
+            raise
+
+    return wrapper
 
 
 # Serve data
 @oscars.route("/api/nominations", methods=["GET"])
-def get_noms():
+@handle_errors
+def serve_noms():
     if not (year := request.args.get("year")):
-        print("No year provided")
-        return no_year_response()
+        raise YearError()
 
-    return catch_file_locked_error(storage.json_read, "n", year)
+    data = storage.read("n", year)
+    return validate_nom_list(data)
 
 
 @oscars.route("/api/movies", methods=["GET"])
-def get_movies():
+@handle_errors
+def serve_movies():
     if not (year := request.args.get("year")):
-        print("No year provided")
-        return no_year_response()
-    return catch_file_locked_error(pr.get_movies, storage, year, json=True)
+        raise YearError()
+    data = pr.get_movies(storage, year)
+    return validate_movie_list(data)
 
 
 @oscars.route("/api/users", methods=["GET", "POST", "PUT", "DELETE"])
-def get_users():
-    userId = request.cookies.get("activeUserId", None)
+@handle_errors
+def serve_users():
+    userId = utils.get_active_user_id(storage, request)
     if request.method == "GET":
         if has_flag(request, "myData") and userId:
-            return catch_file_locked_error(
-                pr.get_my_user_data, storage, userId, json=True
-            )
+            data = pr.get_my_user_data(storage, userId)
+            return validate_my_user_data(data)
         if has_flag(request, "completionData"):
             year = request.args.get("year", None)
             if year is None:
-                return no_year_response()
-            return catch_file_locked_error(
-                pr.get_user_completion_data, storage, year=year, json=True
-            )
-        return catch_file_locked_error(pr.get_users, storage, json=True)
+                raise YearError()
+            data = pr.get_user_completion_data(storage, year=year)
+            return validate_user_stats_list(data)
+        return validate_user_list(pr.get_users(storage))
     elif request.method == "POST":
-        # Expects a body with a username field
-        # Any other fields in body will be added to the user
+        # * Expects a body with a username field
+        # * Any other fields in body will be added to the user
         username = request.json.get("username")
-        output, status = catch_file_locked_error(mu.add_user, storage, username)
-        if status != 200:
-            return output, status
-        newUserId = output
+        newUserId = mu.add_user(storage, username)
+        newUserId = UserID(newUserId)
         mu.update_user(storage, newUserId, request.json)
         newState = pr.get_users(storage, json=True)
+        newState = validate_user_list(newState)
         return jsonify({"userId": newUserId, "users": newState})
     elif request.method == "PUT":
         # * Expects any dictionary of user data
@@ -95,18 +144,17 @@ def get_users():
 
 
 @oscars.route("/api/categories", methods=["GET"])
-def get_categories():
+@handle_errors
+def serve_categories():
     return catch_file_locked_error(storage.json_read, "c")
 
 
 # Expect justMe = bool
 # If PUT, expect movieId and status
 @oscars.route("/api/watchlist", methods=["GET", "PUT"])
-def get_watchlist():
-    if "activeUserId" in request.cookies:
-        userId = request.cookies.get("activeUserId")
-    else:
-        userId = None
+@handle_errors
+def serve_watchlist():
+    userId = utils.get_active_user_id(storage, request)
     if request.method == "GET":
         justMe = (
             x.lower() == "true"
@@ -136,7 +184,8 @@ def get_watchlist():
 
 
 @oscars.route("/api/letterboxd/search", methods=["GET"])
-def letterboxd_search():
+@handle_errors
+def serve_letterboxd_search():
     """
     Just a proxy for letterboxd.com search
     The search term is passed as a query parameter,
