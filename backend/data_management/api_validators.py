@@ -45,11 +45,11 @@ def validate_my_user_data(my_user_data: pd.DataFrame) -> api_MyUserData:
 
 
 def validate_category_completion_dict(
-    category_completion_dict: dict[UserID, pd.DataFrame]
+    category_completion_dict: dict[UserID, list[pd.DataFrame]]
 ) -> api_CategoryCompletionsDict:
     return api_CategoryCompletionsDict(
         root={
-            UserID(k): api_CategoryCompletions(root=v.to_dict())
+            UserID(k): list[api_CategoryCompletions(root=v.to_dict())]
             for k, v in category_completion_dict.items()
         }
     ).model_dump()

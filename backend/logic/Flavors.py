@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, TypedDict
 from backend.logic.MyTypes import DataFlavor, GeneralDataFlavor
 
 
@@ -27,9 +27,13 @@ def format_flavor(flavor: GeneralDataFlavor) -> DataFlavor:
     return flavor_aliases[flavor]
 
 
-def flavor_props(
-    flavor_indic, is_filename=False
-) -> dict[Literal["shape", "static", "annual"], str | bool]:
+class FlavorProps(TypedDict):
+    shape: str
+    static: bool
+    annual: bool
+
+
+def flavor_props(flavor_indic, is_filename=False) -> FlavorProps:
     """
     'flavor_indic' can be a DataFlavor or a Path object
     if 'is_filename=False', then function WILL throw on invalid flavor
@@ -41,7 +45,7 @@ def flavor_props(
     'static' tells you if the flavor is a static table that should not be edited
     'annual' tells you if the tables exist only once or if there are copies in each year folder
     """
-    props = {"shape": None, "static": False, "annual": True}
+    props: FlavorProps = {"shape": "", "static": False, "annual": True}
     if is_filename:
         file = flavor_indic
         name = file.name

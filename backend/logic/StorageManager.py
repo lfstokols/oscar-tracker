@@ -1,10 +1,9 @@
 from time import sleep
 import random
 from pathlib import Path
-import re
 import pandas as pd
-import numpy as np
 import sys
+import re
 from contextlib import contextmanager
 
 from backend.data_management.api_schemas import Flavor
@@ -15,7 +14,7 @@ else:
     import fcntl
 from collections.abc import Callable
 from backend.logic.MyTypes import *
-from typing import Literal, IO, Any, overload
+from typing import IO, Any
 import backend.logic.Flavors as flv
 
 # import backend.logic.utils as utils
@@ -100,12 +99,12 @@ class StorageManager:
         tries = 100
         while tries < 100:
             id = (
-                "mov_" + f"{(year-1927)%256:02x}"
+                "mov_" + f"{(int(year)-1927)%256:02x}"
                 if str(year).isdigit()
                 else "00" + f"{random.randint(0, 0xFF_FF):04x}"
             )
             if id not in existing_ids:
-                return id
+                return MovieID(id)  # type: ignore
             tries += 1
         raise Exception(
             "Unable to create unique ID. Erroring out to avoid infinite loop."
@@ -117,43 +116,43 @@ class StorageManager:
         while tries < 100:
             id = "usr_" + f"{random.randint(0, 0xFFF_FFF):06x}"
             if id not in existing_ids:
-                return id
+                return UserID(id)  # type: ignore
             tries += 1
         raise Exception(
             "Unable to create unique ID. Erroring out to avoid infinite loop."
         )
 
-    #! deprecated
-    def create_unique_id(
-        self, flavor: DataFlavor, existing_ids, year=None
-    ) -> MovID | UserID:
-        flavor = flv.format_flavor(flavor)
-        assert (
-            flv.flavor_props(flavor)["shape"] == "entity"
-        ), f"Flavor '{flavor}' doesn't have IDs."
-        assert (
-            flavor != "categories"
-        ), "Category IDs are static. You can't create new ones."
-        if flv.flavor_props(flavor)["annual"]:
-            assert year is not None
-        try:
-            id_prefix = {"movies": "mov_", "users": "usr_"}[flavor]
-        except:
-            raise Exception("Invalid type. Must be 'movie' or 'user'.")
+    # ! deprecated
+    # def create_unique_id(
+    #     self, flavor: DataFlavor, existing_ids, year=None
+    # ) -> MovID | UserID:
+    #     flavor = flv.format_flavor(flavor)
+    #     assert (
+    #         flv.flavor_props(flavor)["shape"] == "entity"
+    #     ), f"Flavor '{flavor}' doesn't have IDs."
+    #     assert (
+    #         flavor != "categories"
+    #     ), "Category IDs are static. You can't create new ones."
+    #     if flv.flavor_props(flavor)["annual"]:
+    #         assert year is not None
+    #     try:
+    #         id_prefix = {"movies": "mov_", "users": "usr_"}[flavor]
+    #     except:
+    #         raise Exception("Invalid type. Must be 'movie' or 'user'.")
 
-        tries = 0
-        while tries < 100:
-            if flavor == "movies":
-                first_digits = f"{(year-1927)%256:02x}" if str(year).isdigit() else "00"
-            else:
-                first_digits = f"{random.randint(0, 0xFF):02x}"
-            id = id_prefix + first_digits + f"{random.randint(0, 0xFFFF):04x}"
-            if id not in existing_ids:
-                return id
-            tries += 1
-        raise Exception(
-            "Unable to create unique ID. Erroring out to avoid infinite loop."
-        )
+    #     tries = 0
+    #     while tries < 100:
+    #         if flavor == "movies":
+    #             first_digits = f"{(year-1927)%256:02x}" if str(year).isdigit() else "00"
+    #         else:
+    #             first_digits = f"{random.randint(0, 0xFF):02x}"
+    #         id = id_prefix + first_digits + f"{random.randint(0, 0xFFFF):04x}"
+    #         if id not in existing_ids:
+    #             return id
+    #         tries += 1
+    #     raise Exception(
+    #         "Unable to create unique ID. Erroring out to avoid infinite loop."
+    #     )
 
     # Returns the filenames for the data of a certain flavor and year
     # Value is tuple, (.csv, .json)
@@ -173,11 +172,11 @@ class StorageManager:
         return filenames
 
     # Checks if an ID is valid for a certain flavor
-    def validate_id(self, id: str, flavor: GeneralDataFlavor | None = None):
+    def validate_id(self, id: str, flavor: DataFlavor):
         if flavor:
             flavor = flv.format_flavor(flavor)
-        else:
-            flavor = flv.format_flavor(id[:2])
+        # else:
+        #     flavor = flv.format_flavor(id[:2])
         if flavor == "movies":
             assert (
                 re.match(r"^mov_[0-9a-fA-F]{6}$", id) != None
@@ -408,7 +407,7 @@ class StorageManager:
         nominations = self.read("nominations", year)
         category_counts = nominations[NomColumns.CATEGORY].value_counts()
         cat_df = self.read("categories")
-        expected_counts = cat_df[CategoryColumns.MAX_NOMS]
+        expected_counts: pd.Series[int] = cat_df[CategoryColumns.MAX_NOMS]
         bad_cats = []
         for category, count in category_counts.items():
             if (

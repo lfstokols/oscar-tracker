@@ -105,7 +105,7 @@ def main():
 
 def fetch_movie_db(year, error_cutoff):
 
-    movie_data = pr.get_movies(storage, from_storage_year, json=False)
+    movie_data = pr.get_movies(storage, from_storage_year)
     debug_print(movie_data)
     for movId in movie_data.index:
         try:
@@ -127,9 +127,7 @@ def fetch_movie_db(year, error_cutoff):
             release_status = details["status"]
             release_date = details["release_date"]
 
-            title_correct = ("title" in details) and (
-                details["title"] == title
-            )
+            title_correct = ("title" in details) and (details["title"] == title)
             year_correct = "release_date" in details and (release_date[:4] == str(year))
             runtime_correct = "runtime" in details and (
                 (runtime > 80 and not is_short) or (runtime < 60 and is_short)
@@ -137,7 +135,7 @@ def fetch_movie_db(year, error_cutoff):
             release_status_correct = "status" in details and (
                 release_status == "Released"
             )
-            odd_tags = (details['adult'] or details['video'])
+            odd_tags = details["adult"] or details["video"]
             if (
                 sum(
                     [
@@ -175,8 +173,10 @@ def fetch_movie_db(year, error_cutoff):
                     )
                 if odd_tags:
                     tags = []
-                    if details['adult']: tags.append("adult")
-                    if details['video']: tags.append("video")
+                    if details["adult"]:
+                        tags.append("adult")
+                    if details["video"]:
+                        tags.append("video")
                     print(f"The movie was tagged as <{str.join(tags, ', ')}>")
                 print(
                     "\nAdditional info:",
@@ -194,14 +194,14 @@ def fetch_movie_db(year, error_cutoff):
             new_data = {
                 MovieColumns.MovieDB_ID: movie_db_id,
             }
-            if details['imdb_id']:
-                new_data[MovieColumns.Imdb_ID] = details['imdb_id']
+            if details["imdb_id"]:
+                new_data[MovieColumns.Imdb_ID] = details["imdb_id"]
             else:
                 debug_print(f"Missing Imdb ID for {title}")
-            if details['runtime'] and details['runtime'] > 0:
-                new_data[MovieColumns.RUNTIME] = details['runtime']
-            if details['poster_path']:
-                new_data[MovieColumns.POSTER_PATH] = details['poster_path']
+            if details["runtime"] and details["runtime"] > 0:
+                new_data[MovieColumns.RUNTIME] = details["runtime"]
+            if details["poster_path"]:
+                new_data[MovieColumns.POSTER_PATH] = details["poster_path"]
 
             if not dry_run:
                 storage.update_movie(movId, to_storage_year, new_data=new_data)

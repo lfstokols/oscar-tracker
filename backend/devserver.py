@@ -12,7 +12,7 @@ from pathlib import Path
 load_dotenv(Path(__file__).parent.parent / ".env")
 try:
     RUN_DEBUG = (os.getenv("RUN_DEBUG") or "").lower() == "true"
-    DEVSERVER_PORT = int(os.getenv("DEVSERVER_PORT"))
+    DEVSERVER_PORT = int(os.getenv("DEVSERVER_PORT"))  # type: ignore
     print(f"The port should be {DEVSERVER_PORT}.")
 except Exception as e:
     print(f"The .env file is missing or has an error: {e}")

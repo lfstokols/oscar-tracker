@@ -182,4 +182,4 @@ class api_CategoryCompletions(RootModel):
 
 
 class api_CategoryCompletionsDict(RootModel):
-    root: dict[UserID, api_CategoryCompletions]
+    root: dict[UserID, list[api_CategoryCompletions]]

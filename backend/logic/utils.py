@@ -62,12 +62,12 @@ def catch_file_locked_error(
         raise
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: DataFlavor) -> list[dict]:
+def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
     """
     Converts a pandas DataFrame to a list of dictionaries.
     It's not a json, but it's easily castable to json.
     """
-    flavor = flv.format_flavor(flavor)
+    # flavor = flv.format_flavor(flavor)
     if flv.flavor_props(flavor)["shape"] == "entity":
         df = df.reset_index()
     df = df.replace({np.nan: None})
@@ -94,4 +94,4 @@ def get_active_user_id(storage: StorageManager, request: Request) -> UserID | No
     users = storage.read("users")
     if active_user_id not in users.index:
         return None
-    return UserID(active_user_id)
+    return UserID(active_user_id)  # type: ignore

@@ -1,6 +1,9 @@
 from typing import overload
-from backend.data_management.api_schemas import api_CategoryCompletionsDict
-from backend.logic.MyTypes import *
+from backend.data_management.api_schemas import (
+    api_CategoryCompletionsDict,
+    MovieID,
+    CategoryCompletionKey,
+)
 import requests
 from bs4 import BeautifulSoup, Tag
 import pandas as pd
@@ -58,7 +61,7 @@ def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> in
     return total
 
 
-def get_movies(storage: StorageManager, year, idList=None, json=False):
+def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = None):
     data = storage.read("movies", year)
     noms = storage.read("nominations", year)
     categories = storage.read("categories")
@@ -75,28 +78,14 @@ def get_movies(storage: StorageManager, year, idList=None, json=False):
     data.index.name = "id"
     if idList:
         data = data.loc[idList]
-    if json:
-        return utils.df_to_jsonable(data, "movies")
     return data
 
 
-@overload
-def get_users(
-    storage: StorageManager, idList: list[UserID] | None = None, json=False
-) -> pd.DataFrame: ...
-@overload
-def get_users(
-    storage: StorageManager, idList: list[UserID] | None = None, json=True
-) -> list[dict]: ...
-
-
-def get_users(storage: StorageManager, idList: list[UserID] | None = None, json=False):
+def get_users(storage: StorageManager, idList: list[UserID] | None = None):
     data = storage.read("users")
     data = data.drop(columns=["email", "letterboxd"])
     if idList:
         data = data.loc[idList]
-    if json:
-        return utils.df_to_jsonable(data, "users")
     return data
 
 
@@ -116,10 +105,8 @@ def get_user_propic(letterboxd_username: str) -> str | None:
         url = f"https://letterboxd.com/{letterboxd_username}/"
         response = requests.get(url)
         response.raise_for_status()
-
         # Parse the HTML
         soup = BeautifulSoup(response.text, "html.parser")
-
         # Find the avatar image
         avatar = soup.find("div", class_="profile-avatar")
         avatar = avatar.find("img") if avatar else None
@@ -130,26 +117,31 @@ def get_user_propic(letterboxd_username: str) -> str | None:
             and "src" in avatar.attrs
         ):
             return avatar.attrs["src"]
-
+        return None
     except (requests.RequestException, AttributeError) as e:
         print(f"Error getting user propic for {letterboxd_username}", e)
         return None
 
 
-def get_watchdata_by_categories(
-    storage: StorageManager, year, userIdList=None, json=False
-) -> api_CategoryCompletionsDict:
-    # ) -> dict[UserID, list[dict[CatID | Grouping | "numCats", int]]]:
+def get_category_completion_dict(
+    storage: StorageManager, year, userIdList: list[UserID] | None = None
+) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
+    """
+    This is for the 'by category' view.
+    Returns a dict with keys as UserIDs and values as
+            dicts with mapping category names + etc to ints
+            representing the number of movies seen in that 'category'
+    """
     watchlist = storage.read("watchlist", year)
     categories = storage.read("categories", year)
     nominations = storage.read("nominations", year)
     users = storage.read("users")
-    edges = compute_category_watchlist(watchlist, nominations).merge(
+    edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
         categories[CategoryColumns.GROUPING],
         left_on=NomColumns.CATEGORY,
         right_index=True,
     )
-    data = {}
+    data: dict[UserID, list[dict[CategoryCompletionKey, int]]] = {}
     for user in users.index:
         data[user] = [{}, {}]
         for category in categories.index:
@@ -182,7 +174,7 @@ def get_watchdata_by_categories(
     ).merge(categories, left_on=NomColumns.CATEGORY, right_index=True)
 
 
-def compute_category_watchlist(watchlist, nominations):
+def compute_user_to_category_edgeframe(watchlist, nominations):
     """
     Should return an edge list with columns including:
         userId: UserID
@@ -249,7 +241,7 @@ def num_seen_with_property(
     return bool_col.groupby(WatchlistColumns.USER).size()  # type: ignore
 
 
-def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame:
+def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     """
     finds the total number of movies seen and todo by a user
     If the movie list has complete runtime data,
@@ -357,5 +349,5 @@ def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame
 
 
 def get_category_completion_data(storage: StorageManager, year, json=False):
-    data = compute_user_completion_stats(storage, year)
+    data = compute_user_stats(storage, year)
     return data.to_dict(orient="index")

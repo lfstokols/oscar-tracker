@@ -13,10 +13,11 @@ from backend.data_management.api_validators import (
     validate_nom_list,
     validate_movie_list,
     validate_user_list,
-    validate_my_user_data,
-    validate_category_completion_dict,
     validate_watchlist,
     validate_category_list,
+    validate_my_user_data,
+    validate_category_completion_dict,
+    validate_user_stats_list,
 )
 from backend.logic import utils
 from backend.logic.utils import (
@@ -28,9 +29,6 @@ from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
-
-# from data_management.schemas import *
-from backend.data_management.api_validators import *
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 try:
@@ -117,6 +115,7 @@ def serve_users_GET():
         year = request.args.get("year", None)
         if year is None:
             raise YearError("query params")
+        #! should this be here?
         data = pr.get_category_completion_data(storage, year=year)
         return validate_category_completion_dict(data)
     else:
@@ -134,7 +133,7 @@ def serve_users_POST():
     newUserId = mu.add_user(storage, username)
     newUserId = UserID(newUserId)
     mu.update_user(storage, newUserId, request.json)
-    newState = pr.get_users(storage, json=True)
+    newState = pr.get_users(storage)
     newState = validate_user_list(newState)
     return jsonify({"userId": newUserId, "users": newState})
 
@@ -212,6 +211,26 @@ def serve_watchlist_PUT():
         raise YearError()
     mu.add_watchlist_entry(storage, year, userId, movieId, status)
     return validate_watchlist(storage.read("watchlist", year))
+
+
+@oscars.route("/api/by_user", methods=["GET"])
+@handle_errors
+def serve_by_user():
+    year = request.args.get("year")
+    if year is None:
+        raise YearError()
+    data = pr.get_user_stats(storage, year)
+    return validate_user_stats_list(data)
+
+
+@oscars.route("/api/by_category", methods=["GET"])
+@handle_errors
+def serve_by_category():
+    year = request.args.get("year")
+    if year is None:
+        raise YearError()
+    data = pr.get_category_completion_data(storage, year)
+    return validate_category_completion_dict(data)
 
 
 @oscars.route("/api/letterboxd/search", methods=["GET"])
