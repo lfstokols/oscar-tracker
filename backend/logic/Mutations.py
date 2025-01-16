@@ -6,16 +6,18 @@ from typing import Any
 
 
 def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> UserID:
-    userIdList = storage.read("users").index.tolist()
-
-    def operation(data: pd.DataFrame):
-        user_id = storage.create_unique_id("users", existing_ids=userIdList)
-        data.loc[user_id] = {
+    user_id = storage.create_unique_user_id()
+    newEntry = pd.DataFrame(
+        {
             UserColumns.NAME: username,
             UserColumns.LETTERBOXD: letterboxd,
             UserColumns.EMAIL: email,
-        }
-        return data, user_id
+        },
+        index=[user_id],
+    )
+
+    def operation(data: pd.DataFrame):
+        return pd.concat([data, newEntry], axis="index", ignore_index=True), user_id
 
     return storage.edit(operation, "users")
 
@@ -163,6 +165,14 @@ def update_movie(
                 data.loc[movieId] = {MovieColumns.TITLE: movie, **new_data}
             return data, movieId
 
-    feedback = storage.edit(operation, "movies", year)
-    # print(f"utils line 183, feedback={feedback}, type={type(feedback)}")
-    return feedback
+    return storage.edit(operation, "movies", year)
+
+
+def add_movie(storage: StorageManager, year: int | str, title: str) -> MovID:
+    id = storage.create_unique_movie_id(year=year)
+    newEntry = pd.DataFrame({MovieColumns.TITLE: title}, index=[id])
+
+    def operation(data: pd.DataFrame):
+        return pd.concat([data, newEntry], axis="index", ignore_index=True), id
+
+    return storage.edit(operation, "movies", year)

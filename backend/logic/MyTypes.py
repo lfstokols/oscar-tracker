@@ -59,6 +59,7 @@ class DerivedMovieColumns(MovieColumns):
     RUNTIME_HOURS = "runtime_hours"
     RUNTIME_MINUTES = "runtime_minutes"
     NUM_NOMS = "numNoms"
+    IS_MULTI_NOM = "isMultiNom"
 
 
 class NomColumns(myEnum):
@@ -120,6 +121,8 @@ class DerivedUserColumns(UserColumns):
     NUM_SEEN_FEATURE = "numSeenFeature"
     NUM_TODO_SHORT = "numTodoShort"
     NUM_TODO_FEATURE = "numTodoFeature"
+    NUM_SEEN_MULTINOM = "numSeenMultinom"
+    NUM_TODO_MULTINOM = "numTodoMultinom"
     SEEN_WATCHTIME = "seenWatchtime"
     TODO_WATCHTIME = "todoWatchtime"
 

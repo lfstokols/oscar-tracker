@@ -9,13 +9,20 @@ from pathlib import Path
 
 from pydantic import ValidationError
 import requests
-from backend.data_management.api_validators import validate_nom_list
+from backend.data_management.api_validators import (
+    validate_nom_list,
+    validate_movie_list,
+    validate_user_list,
+    validate_my_user_data,
+    validate_category_completion_dict,
+    validate_watchlist,
+    validate_category_list,
+)
 from backend.logic import utils
 from backend.logic.utils import (
-    catch_file_locked_error,
-    no_year_response,
     has_flag,
     YearError,
+    MissingAPIArgumentError,
 )
 from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
@@ -27,7 +34,7 @@ from backend.data_management.api_validators import *
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 try:
-    PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE"))
+    PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE") or "500")
 except Exception as e:
     print(f"The .env file is missing or has an error: {e}")
     raise
@@ -65,9 +72,12 @@ def handle_errors(func):
                 jsonify({"error": "Pydantic validation failed", "message": str(e)}),
                 PYDANTIC_ERROR_STATUS_CODE,
             )
-        except YearError as e:
-            print(f"YearError: {e}")
-            return no_year_response()
+        except MissingAPIArgumentError as e:
+            print(
+                f"MissingAPIArgumentError: {e.message}",
+                f"Missing data: {e.missing_data}",
+            )
+            return jsonify({"error": e.message, "missing_data": e.missing_data}), 422
         except Exception as e:
             print(f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})")
             print(f"Error of type {type(e)} with message {e}")
@@ -91,57 +101,78 @@ def serve_noms():
 @handle_errors
 def serve_movies():
     if not (year := request.args.get("year")):
-        raise YearError()
+        raise YearError("query params")
     data = pr.get_movies(storage, year)
     return validate_movie_list(data)
 
 
-@oscars.route("/api/users", methods=["GET", "POST", "PUT", "DELETE"])
+@oscars.route("/api/users", methods=["GET"])
 @handle_errors
-def serve_users():
+def serve_users_GET():
     userId = utils.get_active_user_id(storage, request)
-    if request.method == "GET":
-        if has_flag(request, "myData") and userId:
-            data = pr.get_my_user_data(storage, userId)
-            return validate_my_user_data(data)
-        if has_flag(request, "completionData"):
-            year = request.args.get("year", None)
-            if year is None:
-                raise YearError()
-            data = pr.get_user_completion_data(storage, year=year)
-            return validate_user_stats_list(data)
+    if has_flag(request, "myData") and userId:
+        data = pr.get_my_user_data(storage, userId)
+        return validate_my_user_data(data)
+    elif has_flag(request, "categoryCompletionData"):
+        year = request.args.get("year", None)
+        if year is None:
+            raise YearError("query params")
+        data = pr.get_category_completion_data(storage, year=year)
+        return validate_category_completion_dict(data)
+    else:
         return validate_user_list(pr.get_users(storage))
-    elif request.method == "POST":
-        # * Expects a body with a username field
-        # * Any other fields in body will be added to the user
-        username = request.json.get("username")
-        newUserId = mu.add_user(storage, username)
-        newUserId = UserID(newUserId)
-        mu.update_user(storage, newUserId, request.json)
-        newState = pr.get_users(storage, json=True)
-        newState = validate_user_list(newState)
-        return jsonify({"userId": newUserId, "users": newState})
-    elif request.method == "PUT":
-        # * Expects any dictionary of user data
-        mu.update_user(storage, userId, request.json)
-        newState = pr.get_my_user_data(storage, userId, json=True)
-        return jsonify(newState)
-    elif request.method == "DELETE":
-        if request.json is None:
-            raise ValueError("No body provided")
-        cookie_id = request.cookies.get("activeUserId")
-        param_id = request.args.get("userId")
-        body_id = request.json.get("userId")
-        if not (request.json.get("forRealsies") and request.json.get("delete")):
-            print(
-                "Tried to delete user without 'delete: true' and 'forRealsies: true' in body"
-            )
-            return jsonify({"error": "Must confirm deletion"}), 400
-        if not (cookie_id == param_id and cookie_id == body_id):
-            print("Tried to delete user with mismatching ids")
-            return jsonify({"error": "Mismatching ids"}), 400
-        mu.delete_user(storage, userId)
-        return validate_user_list(pr.get_users(storage))
+
+
+@oscars.route("/api/users", methods=["POST"])
+@handle_errors
+def serve_users_POST():
+    # * Expects a body with a username field
+    # * Any other fields in body will be added to the user
+    if request.json is None:
+        raise ValueError("No body provided, what am I supposed to update?")
+    username = request.json.get("username")
+    newUserId = mu.add_user(storage, username)
+    newUserId = UserID(newUserId)
+    mu.update_user(storage, newUserId, request.json)
+    newState = pr.get_users(storage, json=True)
+    newState = validate_user_list(newState)
+    return jsonify({"userId": newUserId, "users": newState})
+
+
+@oscars.route("/api/users", methods=["PUT"])
+@handle_errors
+def serve_users_PUT():
+    # * Expects any dictionary of user data
+    userId = utils.get_active_user_id(storage, request)
+    if userId is None:
+        raise MissingAPIArgumentError("No active user id", [("activeUserId", "cookie")])
+    if request.json is None:
+        raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
+    mu.update_user(storage, userId, request.json)
+    newState = pr.get_my_user_data(storage, userId)
+    newState = validate_my_user_data(newState)
+    return jsonify(newState)
+
+
+@oscars.route("/api/users", methods=["DELETE"])
+@handle_errors
+def serve_users_DELETE():
+    if request.json is None:
+        raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
+    cookie_id = request.cookies.get("activeUserId")
+    param_id = request.args.get("userId")
+    body_id = request.json.get("userId")
+    if not (request.json.get("forRealsies") and request.json.get("delete")):
+        raise MissingAPIArgumentError(
+            "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
+        )
+    if not (cookie_id == param_id and cookie_id == body_id):
+        raise MissingAPIArgumentError(
+            "Need matching ids in cookie, param, and body",
+            [("activeUserId", "cookie"), ("userId", "param"), ("userId", "body")],
+        )
+    mu.delete_user(storage, UserID(body_id))
+    return validate_user_list(pr.get_users(storage))
 
 
 @oscars.route("/api/categories", methods=["GET"])
@@ -154,29 +185,33 @@ def serve_categories():
 # If PUT, expect movieId and status
 @oscars.route("/api/watchlist", methods=["GET", "PUT"])
 @handle_errors
-def serve_watchlist():
+def serve_watchlist_GET():
     userId = utils.get_active_user_id(storage, request)
-    if request.method == "GET":
-        justMe = (
-            x.lower() == "true"
-            if ((x := request.args.get("justMe")) != None)
-            else False
-        )
-        if not (year := request.args.get("year")):
-            raise YearError()
-        if justMe:
-            data = storage.read("watchlist", year)
-            data = data.loc[data[WatchlistColumns.USER] == userId]
-            return validate_watchlist(data)
-        else:
-            return validate_watchlist(storage.read("watchlist", year))
-    elif request.method == "PUT":
-        movieId = request.json.get("movieId")
-        status = request.json.get("status")
-        if not (year := request.json.get("year")):
-            raise YearError()
-        mu.add_watchlist_entry(storage, year, userId, movieId, status)
+    justMe = (
+        x.lower() == "true" if ((x := request.args.get("justMe")) != None) else False
+    )
+    if not (year := request.args.get("year")):
+        raise YearError()
+    if justMe:
+        data = storage.read("watchlist", year)
+        data = data.loc[data[WatchlistColumns.USER] == userId]
+        return validate_watchlist(data)
+    else:
         return validate_watchlist(storage.read("watchlist", year))
+
+
+@oscars.route("/api/watchlist", methods=["PUT"])
+@handle_errors
+def serve_watchlist_PUT():
+    userId = utils.get_active_user_id(storage, request)
+    if request.json is None:
+        raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
+    movieId = request.json.get("movieId")
+    status = request.json.get("status")
+    if not (year := request.json.get("year")):
+        raise YearError()
+    mu.add_watchlist_entry(storage, year, userId, movieId, status)
+    return validate_watchlist(storage.read("watchlist", year))
 
 
 @oscars.route("/api/letterboxd/search", methods=["GET"])

@@ -95,13 +95,35 @@ class StorageManager:
 
     # So far I only use this inside of an `operation` function,
     # 		so I should take the existing list directly instead of reading from a file
-    @overload
-    def create_unique_id(
-        self, flavor: Literal["movies"], existing_ids, year: int | str
-    ) -> MovID: ...
-    @overload
-    def create_unique_id(self, flavor: Literal["users"], existing_ids) -> UserID: ...
+    def create_unique_movie_id(self, year: int | str) -> MovID:
+        existing_ids = self.read("movies", year).index
+        tries = 100
+        while tries < 100:
+            id = (
+                "mov_" + f"{(year-1927)%256:02x}"
+                if str(year).isdigit()
+                else "00" + f"{random.randint(0, 0xFF_FF):04x}"
+            )
+            if id not in existing_ids:
+                return id
+            tries += 1
+        raise Exception(
+            "Unable to create unique ID. Erroring out to avoid infinite loop."
+        )
 
+    def create_unique_user_id(self) -> UserID:
+        existing_ids = self.read("users").index
+        tries = 100
+        while tries < 100:
+            id = "usr_" + f"{random.randint(0, 0xFFF_FFF):06x}"
+            if id not in existing_ids:
+                return id
+            tries += 1
+        raise Exception(
+            "Unable to create unique ID. Erroring out to avoid infinite loop."
+        )
+
+    #! deprecated
     def create_unique_id(
         self, flavor: DataFlavor, existing_ids, year=None
     ) -> MovID | UserID:
@@ -273,7 +295,7 @@ class StorageManager:
                         else:
                             fcntl.flock(file.fileno(), fcntl.LOCK_UN)
         except (BlockingIOError, OSError) as e:
-            print(f"Error opening file {filepath}.")
+            print(f"Error opening file {filepath[0].name}.")
             raise
             # finally:
             # 	if sys.platform.startswith('win'):
@@ -327,8 +349,8 @@ class StorageManager:
     def edit(
         self,
         operation: Callable[[pd.DataFrame], tuple[pd.DataFrame, Any]],
-        flavor,
-        year=None,
+        flavor: DataFlavor,
+        year: int | str | None = None,
         **kwargs,
     ):
         filename = self.get_filename(flavor, year)

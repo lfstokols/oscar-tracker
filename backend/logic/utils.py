@@ -11,14 +11,27 @@ import backend.logic.Flavors as flv
 from backend.logic.MyTypes import *
 
 
+class MissingAPIArgumentError(Exception):
+    def __init__(self, message: str, missing_data: list[tuple[str, str]]):
+        """
+        missing_data is a list of tuples, of the form
+        (argument_name, location)
+        Example: [("year", "query params"), ("userId", "body")]
+        """
+        self.message = message
+        self.missing_data = missing_data
+        super().__init__(self.message)
+
+
 def no_year_response():
     return (jsonify({"error": "No year provided"}), 422)
 
 
-class YearError(Exception):
-    def __init__(self, message: str = "No year provided in API call"):
-        self.message = message
-        super().__init__(self.message)
+class YearError(MissingAPIArgumentError):
+    def __init__(self, location: str = "query params"):
+        message = "No year provided in API call"
+        missing_data = [("year", location)]
+        super().__init__(message, missing_data)
 
 
 # FYI: errno 13 is the error number for permission denied, which includes file locking issues

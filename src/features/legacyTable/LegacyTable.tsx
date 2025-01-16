@@ -131,8 +131,8 @@ function LegacyTable(): React.ReactElement {
                     sx={{minWidth: 200, className: 'runtime-column'}}
                     align="center">
                     {runtimeFormatted
-                      ? sortedData[index]['runtime(hours)']
-                      : sortedData[index]['runtime(minutes)']}
+                      ? sortedData[index]['runtime_hours']
+                      : sortedData[index]['runtime_minutes']}
                   </TableCell>
                   {users.map(user => (
                     <TableCell

@@ -1,6 +1,13 @@
-from pydantic import BaseModel, StringConstraints, Field, HttpUrl, EmailStr, conint
+from pydantic import (
+    BaseModel,
+    StringConstraints,
+    Field,
+    HttpUrl,
+    EmailStr,
+    RootModel,
+)
 from datetime import datetime
-from typing import Optional, Annotated, Literal
+from typing import Optional, Annotated, Literal, Union, KeysView
 from enum import Enum
 
 
@@ -17,7 +24,7 @@ class WatchStatus(str, Enum):
     BLANK = "blank"
 
 
-class Grouping(str, Enum):
+class Grouping_pyd(str, Enum):
     BIG_THREE = "Big Three"
     ACTING = "Acting"
     FILMKRAFT = "Technical (Filmkraft)"
@@ -58,7 +65,7 @@ class db_Category(BaseModel):
     fullName: str
     hasNote: bool
     isShort: bool
-    grouping: Grouping
+    grouping: Grouping_pyd
     maxNoms: Literal[5, 10]
 
 
@@ -115,7 +122,7 @@ class api_Category(BaseModel):
     fullName: str
     hasNote: bool
     isShort: bool
-    grouping: Grouping
+    grouping: Grouping_pyd
     maxNoms: Literal[5, 10]
 
 
@@ -162,3 +169,17 @@ class api_UserStats(api_User):
 class api_UserStatsList(BaseModel):
     data: list[api_UserStats]
     total_count: int
+
+
+CategoryCompletionKey = Annotated[
+    Union[CategoryID, Grouping_pyd, Literal["numCats"]],
+    "Valid keys for category completions",
+]
+
+
+class api_CategoryCompletions(RootModel):
+    root: dict[CategoryCompletionKey, int]
+
+
+class api_CategoryCompletionsDict(RootModel):
+    root: dict[UserID, api_CategoryCompletions]

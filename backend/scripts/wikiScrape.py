@@ -223,7 +223,7 @@ def debug_print(message):
 def get_movie_id(
     title: str,
 ) -> MovID:  # Returns the id if it exists, otherwise creates one and adds to table
-    return storage.update_movie(title.strip(), storage_year, try_title_lookup=True)
+    return mu.update_movie(title.strip(), storage_year, try_title_lookup=True)
 
 
 if __name__ == "__main__":
