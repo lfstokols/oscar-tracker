@@ -7,6 +7,8 @@ import numpy as np
 import sys
 from contextlib import contextmanager
 
+from backend.data_management.api_schemas import Flavor
+
 if sys.platform.startswith("win"):
     import msvcrt
 else:
@@ -133,7 +135,7 @@ class StorageManager:
 
     # Returns the filenames for the data of a certain flavor and year
     # Value is tuple, (.csv, .json)
-    def get_filename(self, flavor, year=None) -> tuple[Path, Path]:
+    def get_filename(self, flavor: GeneralDataFlavor, year=None) -> tuple[Path, Path]:
         # Format inputs
         flavor = flv.format_flavor(flavor)
 
@@ -149,7 +151,7 @@ class StorageManager:
         return filenames
 
     # Checks if an ID is valid for a certain flavor
-    def validate_id(self, id, flavor=None):
+    def validate_id(self, id: str, flavor: GeneralDataFlavor | None = None):
         if flavor:
             flavor = flv.format_flavor(flavor)
         else:
@@ -175,7 +177,7 @@ class StorageManager:
                 return flavor
         raise Exception(f"File {file} does not correspond to a known flavor.")
 
-    def files_to_df(self, files, flavor) -> pd.DataFrame:
+    def files_to_df(self, files, flavor: DataFlavor) -> pd.DataFrame:
         flavor_props = flv.flavor_props(flavor)
         tfile, jfile = files
         data = pd.read_csv(tfile)  # , na_values='NaN')
@@ -191,7 +193,7 @@ class StorageManager:
             data.set_index("id", inplace=True)
         return data
 
-    def df_to_files(self, data, files) -> None:
+    def df_to_files(self, data: pd.DataFrame, files) -> None:
         tfile, jfile = files
         for file in files:
             file.seek(0)
@@ -304,11 +306,13 @@ class StorageManager:
                 return output
             except OSError as e:
                 if e.errno == 13 and should_retry:
-                    print(f"File {filepath} is locked. Retrying...")
+                    print(f"File {filepath[0].name} is locked. Retrying...")
                     sleep(retry_interval / 1000)
                 else:
                     raise
-        print(f"Unable to open file {filepath} after {self.max_retries} retries.")
+        print(
+            f"Unable to open file {filepath[0].name} after {self.max_retries} retries."
+        )
         raise OSError(13, "File is locked, please try again later")
 
     def read(self, flavor: DataFlavor, year=None, **kwargs) -> pd.DataFrame:
@@ -316,25 +320,6 @@ class StorageManager:
         return self.retry_file_access(
             filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs
         )
-
-    def json_read(self, flavor, year=None, **kwargs) -> list[dict]:
-        df = self.read(flavor, year, **kwargs)
-        return self.df_to_jsonable(df, flavor)
-
-    #! - delete this, it's here to avoid circular imports
-    #! - Once json_read is fully deprecated, delete this too
-    def df_to_jsonable(self, df: pd.DataFrame, flavor: str) -> list[dict]:
-        """
-        Converts a pandas DataFrame to a list of dictionaries.
-        It's not a json, but it's easily castable to json.
-        """
-        flavor = flv.format_flavor(flavor)
-        if flv.flavor_props(flavor)["shape"] == "entity":
-            df = df.reset_index()
-        df = df.replace({np.nan: None})
-        return df.to_dict(orient="records")
-
-    #! - end of delete block
 
     # Applies an operation to the data in the file
     # `operation` is a function that takes a pandas DataFrame as input and returns two outputs:
@@ -392,15 +377,15 @@ class StorageManager:
 
     def blank_test_data(self, year: str | int | None = None):
         assert self.dir.name == "test_database"
-        self.delete_file("movies", year=year)
-        self.delete_file("nominations", year=year)
-        self.delete_file("watchlist", year=year)
+        self.delete_file("movies", year=str(year))
+        self.delete_file("nominations", year=str(year))
+        self.delete_file("watchlist", year=str(year))
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):
         nominations = self.read("nominations", year)
         category_counts = nominations[NomColumns.CATEGORY].value_counts()
-        cat_df = self.read("c")
+        cat_df = self.read("categories")
         expected_counts = cat_df[CategoryColumns.MAX_NOMS]
         bad_cats = []
         for category, count in category_counts.items():
@@ -416,4 +401,3 @@ class StorageManager:
 if __name__ == "__main__":
     storage = StorageManager("C:/Users/lfsto/OscarFiles/backend/database")
     print(storage.read("users"))
-    print(storage.read("users", json=True))

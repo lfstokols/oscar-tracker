@@ -1,4 +1,5 @@
 import pandas as pd
+from backend.data_management.api_schemas import db_Nom
 from backend.logic.StorageManager import StorageManager
 from backend.logic.MyTypes import *
 from typing import Any
@@ -77,7 +78,7 @@ def add_watchlist_entry(storage, year, userId, movieId, status: WatchStatus) -> 
 # Does NOT check if they actually exist in the database
 # 	If you didn't already add/confirm them yourstorage, you're doing something wrong
 # If `validate` is True, the function will at least check if there are too many nominations in a category
-def add_nomination(storage, year, nomination: Nom, validate=False):
+def add_nomination(storage, year, nomination: db_Nom, validate=False):
     """Adds a nomination to the database.
 
     Args:

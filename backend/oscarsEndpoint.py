@@ -7,9 +7,9 @@ from flask import Blueprint, send_from_directory, request, jsonify, abort
 import os
 from pathlib import Path
 
-from nbformat import ValidationError
+from pydantic import ValidationError
 import requests
-from backend.data_management.validators import validate_nom_list
+from backend.data_management.api_validators import validate_nom_list
 from backend.logic import utils
 from backend.logic.utils import (
     catch_file_locked_error,
@@ -17,13 +17,13 @@ from backend.logic.utils import (
     has_flag,
     YearError,
 )
-from logic.StorageManager import StorageManager
+from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-from logic.MyTypes import *
+from backend.logic.MyTypes import *
 
 # from data_management.schemas import *
-from data_management.validators import *
+from backend.data_management.api_validators import *
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 try:
@@ -83,7 +83,7 @@ def serve_noms():
     if not (year := request.args.get("year")):
         raise YearError()
 
-    data = storage.read("n", year)
+    data = storage.read("nominations", year)
     return validate_nom_list(data)
 
 
@@ -127,6 +127,8 @@ def serve_users():
         newState = pr.get_my_user_data(storage, userId, json=True)
         return jsonify(newState)
     elif request.method == "DELETE":
+        if request.json is None:
+            raise ValueError("No body provided")
         cookie_id = request.cookies.get("activeUserId")
         param_id = request.args.get("userId")
         body_id = request.json.get("userId")
@@ -139,14 +141,13 @@ def serve_users():
             print("Tried to delete user with mismatching ids")
             return jsonify({"error": "Mismatching ids"}), 400
         mu.delete_user(storage, userId)
-        newState = pr.get_users(storage, json=True)
-        return jsonify({"users": newState})
+        return validate_user_list(pr.get_users(storage))
 
 
 @oscars.route("/api/categories", methods=["GET"])
 @handle_errors
 def serve_categories():
-    return catch_file_locked_error(storage.json_read, "c")
+    return validate_category_list(storage.read("categories"))
 
 
 # Expect justMe = bool
@@ -161,26 +162,21 @@ def serve_watchlist():
             if ((x := request.args.get("justMe")) != None)
             else False
         )
-        if userId is None:
-            userId = request.args.get("userId")
         if not (year := request.args.get("year")):
-            print("No year provided")
-            return no_year_response()
+            raise YearError()
         if justMe:
-            # TODO - Add locked file error handling
-            data = storage.read("w", year)
-            return jsonify(data.loc[data["userId"] == userId].to_dict(orient="records"))
+            data = storage.read("watchlist", year)
+            data = data.loc[data[WatchlistColumns.USER] == userId]
+            return validate_watchlist(data)
         else:
-            return catch_file_locked_error(storage.json_read, "w", year)
+            return validate_watchlist(storage.read("watchlist", year))
     elif request.method == "PUT":
         movieId = request.json.get("movieId")
         status = request.json.get("status")
         if not (year := request.json.get("year")):
-            print("No year provided")
-            return no_year_response()
-        storage.add_watchlist_entry(year, userId, movieId, status)
-        return jsonify(storage.json_read("w", year))
-        # TODO - Figure out a pattern for file lock errors with PUT requests
+            raise YearError()
+        mu.add_watchlist_entry(storage, year, userId, movieId, status)
+        return validate_watchlist(storage.read("watchlist", year))
 
 
 @oscars.route("/api/letterboxd/search", methods=["GET"])

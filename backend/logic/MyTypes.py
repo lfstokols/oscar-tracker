@@ -7,6 +7,21 @@ MovID = NewType("MovID", IDNum)
 UserID = NewType("UserID", IDNum)
 CatID = NewType("CatID", IDNum)
 DataFlavor = Literal["movies", "users", "nominations", "categories", "watchlist"]
+GeneralDataFlavor = Literal[
+    "movies",
+    "users",
+    "categories",
+    "watchlist",
+    "nominations",
+    "c",
+    "u",
+    "n",
+    "w",
+    "m",
+    "mov",
+    "usr",
+    "cat",
+]
 # WatchStatus = Literal["seen", "todo", "blank"]
 
 
@@ -147,4 +162,5 @@ __all__ = [
     "UserColumns",
     "DerivedUserColumns",
     "Grouping",
+    "GeneralDataFlavor",
 ]

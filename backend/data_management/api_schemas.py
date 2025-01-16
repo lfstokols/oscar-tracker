@@ -68,7 +68,7 @@ class db_Nom(BaseModel):
     note: Optional[str] = None
 
 
-class db_WatchlistEntry(BaseModel):
+class db_Watchlist(BaseModel):
     userId: UserID
     movieId: MovieID
     status: WatchStatus

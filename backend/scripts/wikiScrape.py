@@ -18,6 +18,8 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from backend.logic.StorageManager import StorageManager
+import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
 import re
 import csv
@@ -196,13 +198,21 @@ def parse_data(data_list):
                     )
             movie_id = get_movie_id(title)
             # print(f"line 151, movie_id={movie_id}, type={type(movie_id)}")
-            nom = {"movie": movie_id, "category": category, "note": note}
-            storage.add_nomination(storage_year, nom, validate=True)
+            nom = {
+                NomColumns.MOVIE: movie_id,
+                NomColumns.CATEGORY: category,
+                NomColumns.NOTE: note,
+            }
+            mu.add_nomination(storage, storage_year, nom, validate=True)
 
     if verbose:
-        lengths = storage.read("n", storage_year)["category"].value_counts().to_dict()
+        lengths = (
+            storage.read("nominations", storage_year)["category"]
+            .value_counts()
+            .to_dict()
+        )
         debug_print(f"Parsed nomination dictionary created: {lengths.items()}")
-    debug_print(f"Found {len(storage.read('m', storage_year))} movies.")
+    debug_print(f"Found {len(storage.read('movies', storage_year))} movies.")
 
 
 def debug_print(message):

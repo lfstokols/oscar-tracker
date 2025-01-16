@@ -1,15 +1,15 @@
 from typing import Literal
-from backend.logic.MyTypes import DataFlavor
+from backend.logic.MyTypes import DataFlavor, GeneralDataFlavor
 
 
-flavor_list: dict[DataFlavor] = [
+flavor_list: list[DataFlavor] = [
     "movies",
     "users",
     "nominations",
     "categories",
     "watchlist",
 ]
-flavor_aliases = {
+flavor_aliases: dict[str, DataFlavor] = {
     **{flavor: flavor for flavor in flavor_list},  # Each flavor is its own alias
     **{
         flavor[:1]: flavor for flavor in flavor_list
@@ -22,7 +22,7 @@ flavor_aliases = {
 
 # Converts flavor from alias
 # Throws on invalid flavor
-def format_flavor(flavor: str) -> DataFlavor:
+def format_flavor(flavor: GeneralDataFlavor) -> DataFlavor:
     assert flavor in flavor_aliases.keys(), f"Invalid flavor '{flavor}'."
     return flavor_aliases[flavor]
 

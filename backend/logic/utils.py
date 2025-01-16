@@ -5,10 +5,10 @@ from typing import Any
 from flask import jsonify, Request
 import numpy as np
 import pandas as pd
-from backend.data_management.schemas import Flavor
+from backend.data_management.api_schemas import Flavor
 from backend.logic.StorageManager import StorageManager
 import backend.logic.Flavors as flv
-from backend.logic.MyTypes import UserColumns, UserID
+from backend.logic.MyTypes import *
 
 
 def no_year_response():
@@ -49,7 +49,7 @@ def catch_file_locked_error(
         raise
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
+def df_to_jsonable(df: pd.DataFrame, flavor: DataFlavor) -> list[dict]:
     """
     Converts a pandas DataFrame to a list of dictionaries.
     It's not a json, but it's easily castable to json.
