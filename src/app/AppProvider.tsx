@@ -7,6 +7,9 @@ import ThemeConfig from '../config/ThemeConfig';
 import QueryClientConfig from '../config/QueryClientConfig';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import App from './App';
+import env from '../../env.json';
+
+const ROUTE_BASENAME = env.ROUTE_BASENAME;
 
 const theme = createTheme(ThemeConfig);
 const queryClient = new QueryClient(QueryClientConfig);
@@ -17,7 +20,7 @@ export default function AppProvider({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <BrowserRouter basename="/oscars">
+    <BrowserRouter basename={ROUTE_BASENAME}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <QueryClientProvider client={queryClient}>
