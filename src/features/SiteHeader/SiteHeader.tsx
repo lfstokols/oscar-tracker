@@ -11,7 +11,8 @@ import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
-import TabDrawer from '../tabDrawer/TabDrawer';
+import TabDrawer from '../tabDrawer/tabDrawer';
+import {useNavigate, useLocation} from 'react-router-dom';
 
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
@@ -22,6 +23,7 @@ type Props = {};
 export default function SiteHeader(props: Props): React.ReactElement {
   const [openDrawer, setOpenDrawer] = useState(false);
   const isMobile = useIsMobile();
+
   const handleDrawerOpen = (event: React.MouseEvent<HTMLElement>) => {
     setOpenDrawer(true);
   };

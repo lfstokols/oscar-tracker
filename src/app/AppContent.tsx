@@ -7,7 +7,7 @@ import HomeTab from './routes/HomeTab';
 import UserTab from './routes/UserTab';
 import CategoryTab from './routes/CategoryTab';
 
-export default function AppContent(): React.ReactElement {
+export function AppContent(): React.ReactElement {
   const {selectedTab} = useOscarAppContext();
   let currentTab = null;
   switch (selectedTab) {
@@ -22,6 +22,14 @@ export default function AppContent(): React.ReactElement {
       break;
   }
 
+  return mainPageContainer({currentTab});
+}
+
+export default function mainPageContainer({
+  currentTab,
+}: {
+  currentTab: React.ReactElement;
+}): React.ReactElement {
   return (
     <Container
       sx={{
