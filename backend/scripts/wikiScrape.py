@@ -192,7 +192,7 @@ def parse_data(data_list):
                 pattern = rf"^(.*) {dash_pattern} ([^\n\u2020-\u2021\[]*)"
                 group_num = 2
             elif (
-                category_df.loc[category, "grouping"] == "Acting"
+                category_df.loc[category, "grouping"] == "acting"
             ):  # in ["Best Actor", "Best Actress", "Best Supporting Actor", "Best Supporting Actress"]:
                 pattern = rf"^(.*) {dash_pattern} (.*) as"
                 group_num = 2

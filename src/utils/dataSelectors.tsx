@@ -1,4 +1,5 @@
 import {WatchStatus} from '../types/Enums';
+import {LogToConsole} from './Logger';
 
 export function getMovieWatchStatusForUser(
   userId: UserId,
@@ -34,7 +35,7 @@ export function getCategoryFromID(
   // TODO: Maybe we should throw error here instead
   const theCat = categories.find(cat => cat.id === categoryID);
   if (theCat == null) {
-    console.log('Unknown category id:', categoryID);
+    LogToConsole(`Unknown category id: ${categoryID}`);
   }
   return theCat;
 }

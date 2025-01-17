@@ -8,6 +8,7 @@ import {addUserOnSuccess, onMutateError} from '../../hooks/mutationOptions';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {addUserMutationFn} from '../../hooks/mutationOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
+import Tooltip from '@mui/material/Tooltip';
 
 type Props = {
   closer: () => void;
@@ -48,9 +49,9 @@ export default function SignUp({closer}: Props) {
 
     let isValid = true;
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    if (email.value && !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
-      setEmailErrorMessage('Please enter a valid email address.');
+      setEmailErrorMessage("That's not a valid email address.");
       isValid = false;
     } else {
       setEmailError(false);
@@ -63,10 +64,10 @@ export default function SignUp({closer}: Props) {
     const username = document.getElementById('username') as HTMLInputElement;
 
     let isValid = true;
-    if (!username.value || !/^[a-zA-Z0-9]+$/.test(username.value)) {
+    if (!username.value || !/^[a-zA-Z0-9_]+$/.test(username.value)) {
       setUsernameError(true);
       setUsernameErrorMessage(
-        'Username must consist of only letters and numbers.',
+        'Username must consist of only letters, numbers, and underscores.',
       );
       isValid = false;
     } else {
@@ -80,20 +81,24 @@ export default function SignUp({closer}: Props) {
     <>
       <TitleLine title="Create an Account" />
       <Box component="form" onSubmit={handleSubmit} noValidate sx={boxStyle}>
-        <TextEntry
-          title="Username"
-          label="username"
-          placeholder="username"
-          error={usernameError}
-          errorMessage={usernameErrorMessage}
-        />
-        <TextEntry
-          title="Email"
-          label="email"
-          placeholder="your@email.com"
-          error={emailError}
-          errorMessage={emailErrorMessage}
-        />
+        <Tooltip title="Username must consist of only letters, numbers, and underscores.">
+          <TextEntry
+            title="Username"
+            label="username"
+            placeholder="username"
+            error={usernameError}
+            errorMessage={usernameErrorMessage}
+          />
+        </Tooltip>
+        <Tooltip title="This is optional, I included it to look more professional.">
+          <TextEntry
+            title="Email"
+            label="email"
+            placeholder="your@email.com"
+            error={emailError}
+            errorMessage={emailErrorMessage}
+          />
+        </Tooltip>
         <Button
           type="submit"
           fullWidth

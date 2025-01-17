@@ -137,7 +137,7 @@ def get_category_completion_dict(
     nominations = storage.read("nominations", year)
     users = storage.read("users")
     edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
-        categories[CategoryColumns.GROUPING],
+        categories[[CategoryColumns.GROUPING, CategoryColumns.MAX_NOMS]],
         left_on=NomColumns.CATEGORY,
         right_index=True,
     )
@@ -145,28 +145,61 @@ def get_category_completion_dict(
     for user in users.index:
         data[user] = [{}, {}]
         for category in categories.index:
-            data[user][0][category] = edges.at[
-                edges[WatchlistColumns.USER] == user
-                and edges[NomColumns.CATEGORY] == category,
-                WatchStatus.SEEN,
-            ]
-            data[user][1][category] = edges.at[
-                edges[WatchlistColumns.USER] == user
-                and edges[NomColumns.CATEGORY] == category,
-                WatchStatus.TODO,
-            ]
+            data[user][0][category] = (
+                edges.loc[
+                    (edges[WatchlistColumns.USER] == user)
+                    & (edges[NomColumns.CATEGORY] == category),
+                    WatchStatus.SEEN,
+                ]
+                .sum()
+                .sum()
+                .item()
+            )
+            data[user][1][category] = (
+                edges.loc[
+                    (edges[WatchlistColumns.USER] == user)
+                    & (edges[NomColumns.CATEGORY] == category),
+                    [WatchStatus.TODO, WatchStatus.SEEN],
+                ]
+                .sum()
+                .sum()
+                .item()
+            )
         for group in Grouping.values():
-            data[user][0][group] = edges.loc[
-                edges[WatchlistColumns.USER] == user
-                and edges[CategoryColumns.GROUPING] == group,
-                WatchStatus.SEEN,
-            ].sum()
-            data[user][1][group] = edges.loc[
-                edges[WatchlistColumns.USER] == user
-                and edges[CategoryColumns.GROUPING] == group,
-                WatchStatus.TODO,
-            ].sum()
-        data[user][0]["numCats"]
+            data[user][0][group] = (
+                edges.loc[
+                    (edges[WatchlistColumns.USER] == user)
+                    & (edges[CategoryColumns.GROUPING] == group),
+                    WatchStatus.SEEN,
+                ]
+                .sum()
+                .item()
+            )
+            data[user][1][group] = (
+                edges.loc[
+                    (edges[WatchlistColumns.USER] == user)
+                    & (edges[CategoryColumns.GROUPING] == group),
+                    [WatchStatus.TODO, WatchStatus.SEEN],
+                ]
+                .sum()
+                .sum()
+                .item()
+            )
+        data[user][0]["numCats"] = len(
+            edges.loc[
+                (edges[WatchlistColumns.USER] == user)
+                & (edges[WatchStatus.SEEN] == edges[CategoryColumns.MAX_NOMS])
+            ]
+        )
+        data[user][1]["numCats"] = len(
+            edges.loc[
+                (edges[WatchlistColumns.USER] == user)
+                & (
+                    edges[WatchStatus.TODO] + edges[WatchStatus.SEEN]
+                    == edges[CategoryColumns.MAX_NOMS]
+                )
+            ]
+        )
     return data
 
     users_to_categories = watchlist.merge(
@@ -193,12 +226,13 @@ def compute_user_to_category_edgeframe(watchlist, nominations):
         .unstack(fill_value=0)
         .reset_index()
     )
-
     return result[
-        WatchlistColumns.USER,
-        NomColumns.CATEGORY,
-        WatchStatus.SEEN,
-        WatchStatus.TODO,
+        [
+            WatchlistColumns.USER,
+            NomColumns.CATEGORY,
+            WatchStatus.SEEN,
+            WatchStatus.TODO,
+        ]
     ]
 
 

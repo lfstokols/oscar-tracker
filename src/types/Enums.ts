@@ -30,3 +30,13 @@ export enum Endpoints {
     byCategory = 'by_category',
     letterboxdSearch = 'letterboxd/search',
 }
+
+export enum Grouping {
+    big_three = 'big_three',
+    acting = 'acting',
+    filmkraft = 'filmkraft',
+    art = 'art',
+    audio = 'audio',
+    best_in_class = 'best_in_class',
+    short = 'short',
+}

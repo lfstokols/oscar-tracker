@@ -30,6 +30,12 @@ def parse_args():
     parser.add_argument(
         "-c", "--copy", action="store_true", help="Copy database to test directory"
     )
+    parser.add_argument(
+        "-y", "--year", type=int, help="Year to use for database operations"
+    )
+    parser.add_argument(
+        "--vars", action="store_true", help="Pre-defined data variables for testing"
+    )
     return parser.parse_args()
 
 
@@ -56,6 +62,14 @@ pr           : Processing functions module
 mu           : Mutation functions module (be careful if not in test mode!)
 utils        : Utility functions module
 flv          : Flavors module for data type handling
+
+With --vars flag
+-----------------
+movies      : storage.read('movies', year)
+users       : storage.read('users')
+categories  : storage.read('categories', year)
+nominations : storage.read('nominations', year)
+watchlist   : storage.read('watchlist', year)
 
 Common Operations:
 -----------------
@@ -86,6 +100,8 @@ def main():
 
     args = parse_args()
 
+    year = args.year or 2023
+
     # Initialize objects
     storage = init_environment(test_mode=args.test, copy_mode=args.copy)
 
@@ -102,6 +118,13 @@ def main():
         "TEST_MODE": args.test,
         "COPY_MODE": args.copy,
     }
+    if args.vars:
+        namespace["year"] = year
+        namespace["movies"] = storage.read("movies", year)
+        namespace["users"] = storage.read("users")
+        namespace["categories"] = storage.read("categories", year)
+        namespace["nominations"] = storage.read("nominations", year)
+        namespace["watchlist"] = storage.read("watchlist", year)
 
     # Configure IPython shell
     shell = InteractiveShell.instance()

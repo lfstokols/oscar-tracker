@@ -12,6 +12,7 @@ import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from './NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
 import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
+import {LogToConsole} from '../utils/Logger';
 
 export type OscarAppContextValue = Readonly<{
   selectedTab: AppTabType;
@@ -48,18 +49,6 @@ export default function OscarAppContextProvider(
   // TODO - Wait, can I just use TanStack to set the username and userId? It's fundamentally a cache thing, no? Hmm...
   const queryClient = useQueryClient();
   //* Set the default values from the cookies
-  // const cookieUserId = Cookies.get('activeUserId');
-  // console.log(`cookie says ${cookieUserId}`);
-  // const parsedUserId = UserIdSchema.safeParse(cookieUserId);
-  // console.log(`zod's parser says ${parsedUserId}`);
-  // console.log(`zod's parser success? ${parsedUserId.success}`);
-  // console.log(`zod's parser data? ${parsedUserId.data}`);
-  // const defaultUserId = parsedUserId.success ? parsedUserId.data : null;
-  // console.log(`defaultUserId is ${defaultUserId}`);
-  // const cookieUsername = Cookies.get('activeUsername');
-  // console.log(`cookieUsername is ${cookieUsername}`);
-  // const defaultUsername = cookieUsername ?? null;
-  // console.log(`defaultUsername is ${defaultUsername}`);
   const parsed = UserIdSchema.safeParse(Cookies.get('activeUserId'));
   const defaultUserId = parsed.success ? parsed.data : null;
   const defaultUsername = Cookies.get('activeUsername') ?? null;
@@ -146,7 +135,7 @@ function CookieHandler({
   queryClient.fetchQuery(userOptions()).then(data => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
     if (activeUsername !== suggestedUsername) {
-      console.log(
+      LogToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
         The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
         Attempting to fix...`,
@@ -207,7 +196,7 @@ function CookieHandler({
 
   userList.promise.then(data => {
     if (activeUsername !== getUsernameFromId(activeUserId ?? '', data)) {
-      console.log(
+      LogToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
       );
       const notifications = useNotifications();
@@ -277,7 +266,7 @@ function getCallbackForArrivedUserList(
       timeLimit &&
       Date.now() - timeStamp > timeLimit
     ) {
-      console.log(
+      LogToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
         'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
         'Attempting to fix...`,

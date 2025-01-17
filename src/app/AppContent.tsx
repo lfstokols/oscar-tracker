@@ -5,6 +5,7 @@ import {useOscarAppContext} from '../providers/AppContext';
 import {AppTabType} from '../types/Enums';
 import HomeTab from './routes/HomeTab';
 import UserTab from './routes/UserTab';
+import CategoryTab from './routes/CategoryTab';
 
 export default function AppContent(): React.ReactElement {
   const {selectedTab} = useOscarAppContext();
@@ -15,6 +16,9 @@ export default function AppContent(): React.ReactElement {
       break;
     case AppTabType.byUser:
       currentTab = <UserTab />;
+      break;
+    case AppTabType.byCategory:
+      currentTab = <CategoryTab />;
       break;
   }
 

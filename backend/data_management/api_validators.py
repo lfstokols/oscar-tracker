@@ -47,6 +47,7 @@ def validate_my_user_data(my_user_data: pd.DataFrame) -> api_MyUserData:
 def validate_category_completion_dict(
     category_completion_dict: dict[UserID, list[pd.DataFrame]]
 ) -> api_CategoryCompletionsDict:
+    return category_completion_dict
     return api_CategoryCompletionsDict(
         root={
             UserID(k): list[api_CategoryCompletions(root=v.to_dict())]

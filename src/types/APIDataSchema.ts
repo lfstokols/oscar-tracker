@@ -3,6 +3,7 @@ import {WatchStatus} from './Enums';
 
 // * Primitive Schemas
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
+export const GroupingSchema = z.enum(['big_three', 'acting', 'filmkraft', 'art', 'audio', 'best_in_class', 'short']);
 export const MovieIdSchema = z
   .string()
   .regex(/^mov_[a-zA-Z0-9]{6}$/)

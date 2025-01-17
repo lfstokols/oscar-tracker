@@ -144,13 +144,13 @@ class WatchStatus(myEnum):
 
 
 class Grouping(myEnum):
-    BigThree = "Big Three"
-    Acting = "Acting"
-    Filmkraft = "Technical (Filmkraft)"
-    Art = "Technical (Art)"
-    Audio = "Technical (Audio)"
-    BestInClass = "Best in Class"
-    Short = "Short"
+    BigThree = "big_three"
+    Acting = "acting"
+    Filmkraft = "filmkraft"
+    Art = "art"
+    Audio = "audio"
+    BestInClass = "best_in_class"
+    Short = "short"
 
 
 __all__ = [

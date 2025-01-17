@@ -229,7 +229,7 @@ def serve_by_category():
     year = request.args.get("year")
     if year is None:
         raise YearError()
-    data = pr.get_category_completion_data(storage, year)
+    data = pr.get_category_completion_dict(storage, year)
     return validate_category_completion_dict(data)
 
 

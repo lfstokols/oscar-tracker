@@ -8,6 +8,7 @@ import {
 } from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
+import {LogToConsole} from '../utils/Logger';
 
 // *
 // * Genera Stuff // *
@@ -28,7 +29,7 @@ export function onMutateError(
   notifications: NotificationsDispatch,
 ) {
   return async (response: Response) => {
-    console.log(response);
+    LogToConsole(response);
     notifications.show({
       type: 'error',
       message: message,
@@ -95,10 +96,10 @@ export function updateUserMutationFn() {
   };
 }
 
-export function deleteUserMutationFn() {
+export function deleteUserMutationFn(userId: UserId, password: string) {
   return async (userId: UserId) => {
     const params = new URLSearchParams({userId});
-    const body = JSON.stringify({userId, delete: true, forRealsies: true});
+    const body = JSON.stringify({userId, delete: true, [password]: true});
     return await fetch(`api/users?${params.toString()}`, {
       method: 'DELETE',
       body,

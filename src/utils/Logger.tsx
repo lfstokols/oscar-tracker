@@ -1,5 +1,15 @@
-export function LogToConsole(message: string) {
-  if (process.env.REACT_APP_RUN_DEBUG === 'true') {
+import env from '../../env.json';
+
+const RUN_DEBUG = env.RUN_DEBUG;
+
+export function LogToConsole(message: any) {
+  if (RUN_DEBUG === 'true') {
     console.log(message);
+  }
+}
+
+export function LogToConsoleError(message: any) {
+  if (RUN_DEBUG === 'true') {
+    console.error(message);
   }
 }

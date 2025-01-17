@@ -22,6 +22,7 @@ import {
 } from '../../../hooks/mutationOptions';
 import {MyUserDataSchema} from '../../../types/APIDataSchema';
 import {useNotifications} from '../../../providers/NotificationContext';
+import UserDataField from '../UserDataField';
 
 export default function LetterboxdField() {
   const queryClient = useQueryClient();
@@ -29,10 +30,6 @@ export default function LetterboxdField() {
   const {activeUserId} = useOscarAppContext();
   if (activeUserId === null)
     throw new Error('Loading Letterboxd field with no active user. How?');
-  const {data, isError} = useSuspenseQuery(myUserDataOptions(activeUserId));
-  if (isError) {
-    return <ErrorIcon />;
-  }
   const mutation = useMutation({
     mutationFn: updateUserMutationFn(),
     onSuccess: updateCacheOnSuccess(
@@ -45,34 +42,70 @@ export default function LetterboxdField() {
       notifications,
     ),
   });
-  const remoteValue = data.letterboxd;
-  const localValue = mutation.isPending
-    ? mutation.variables.letterboxd
-    : remoteValue;
-  const [isEditing, setIsEditing] = React.useState(false);
-  if (isEditing) {
-    return (
-      <EditableLetterboxdField
-        activeUserId={activeUserId}
-        mutation={mutation}
-        onCancel={() => setIsEditing(false)}
-      />
-    );
-  }
+  const {data, isError} = useSuspenseQuery(myUserDataOptions(activeUserId));
+
   return (
-    <Stack direction="row" spacing={4}>
-      <Typography variant="h6" gutterBottom>
-        Letterboxd:
-      </Typography>
-      <Typography variant="body1">
-        {localValue ? localValue : 'Not Set'}
-      </Typography>
-      <Button variant="contained" onClick={() => setIsEditing(true)}>
-        Edit
-      </Button>
-    </Stack>
+    <UserDataField
+      label="Letterboxd"
+      remoteValue={data.letterboxd}
+      localValue={
+        mutation.isPending ? mutation.variables.letterboxd : data.letterboxd
+      }
+      editableComponent={EditableLetterboxdField}
+      editableComponentProps={{
+        mutation: mutation,
+      }}
+    />
   );
 }
+
+//   const {activeUserId} = useOscarAppContext();
+//   if (activeUserId === null)
+//     throw new Error('Loading Letterboxd field with no active user. How?');
+//   const {data, isError} = useSuspenseQuery(myUserDataOptions(activeUserId));
+//   if (isError) {
+//     return <ErrorIcon />;
+//   }
+//   const mutation = useMutation({
+//     mutationFn: updateUserMutationFn(),
+//     onSuccess: updateCacheOnSuccess(
+//       myUserDataOptions(activeUserId).queryKey,
+//       MyUserDataSchema.parse,
+//       queryClient,
+//     ),
+//     onError: onMutateError(
+//       'Failed to update letterboxd username.',
+//       notifications,
+//     ),
+//   });
+//   const remoteValue = data.letterboxd;
+//   const localValue = mutation.isPending
+//     ? mutation.variables.letterboxd
+//     : remoteValue;
+//   const [isEditing, setIsEditing] = React.useState(false);
+//   if (isEditing) {
+//     return (
+//       <EditableLetterboxdField
+//         activeUserId={activeUserId}
+//         mutation={mutation}
+//         onCancel={() => setIsEditing(false)}
+//       />
+//     );
+//   }
+//   return (
+//     <Stack direction="row" spacing={4}>
+//       <Typography variant="h6" gutterBottom>
+//         Letterboxd:
+//       </Typography>
+//       <Typography variant="body1">
+//         {localValue ? localValue : 'Not Set'}
+//       </Typography>
+//       <Button variant="contained" onClick={() => setIsEditing(true)}>
+//         Edit
+//       </Button>
+//     </Stack>
+//   );
+// }
 
 function EditableLetterboxdField({
   activeUserId,

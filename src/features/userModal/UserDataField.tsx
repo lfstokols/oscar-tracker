@@ -12,34 +12,29 @@ import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
+import ButtonIcon from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import ErrorIcon from '@mui/icons-material/Error';
+import EditIcon from '@mui/icons-material/Edit';
 import {
   updateCacheOnSuccess,
   updateUserMutationFn,
   onMutateError,
 } from '../../hooks/mutationOptions';
-import {MyUserDataSchema} from '../../types/APIDataSchema';
+import {MyUserData, MyUserDataSchema} from '../../types/APIDataSchema';
 import {useNotifications} from '../../providers/NotificationContext';
 
-type Props = {
+type Props<T> = {
   label: string;
-  value: string | null;
-  // mutation: UseMutationResult<
-  //   Response,
-  //   unknown,
-  //   Partial<z.input<typeof MyUserDataSchema>>
-  // >;
-  // optimisticValue: string | Promise<string>;
-  editableComponent: (props: {
-    [any: string]: any;
-    // activeUserId: UserId;
-    // mutation: any;
-    onCancel: () => void;
-  }) => React.ReactNode;
+  remoteValue: string | null;
+  localValue: string | null | undefined;
+  editableComponent: (
+    props: T & {onCancel: () => void; activeUserId: UserId},
+  ) => React.ReactNode;
+  editableComponentProps: T;
 };
 
-export default function UserDataField(props: Props) {
+export default function UserDataField<T>(props: Props<T>) {
   const {activeUserId} = useOscarAppContext();
   if (activeUserId === null)
     throw new Error('Loading UserDataField with no active user. How?');
@@ -49,28 +44,34 @@ export default function UserDataField(props: Props) {
   }
   const [isEditing, setIsEditing] = React.useState(false);
   // const mutation = props.mutation;
-  const remoteValue = props.value;
-  const localValue = remoteValue; //mutation.isPending ? props.optimisticValue : remoteValue;
+  const remoteValue = props.remoteValue;
+  const localValue = props.localValue; //mutation.isPending ? props.optimisticValue : remoteValue;
   if (isEditing) {
     return (
       <props.editableComponent
-        // activeUserId={activeUserId}
-        // mutation={mutation}
+        activeUserId={activeUserId}
         onCancel={() => setIsEditing(false)}
+        {...props.editableComponentProps}
       />
     );
   }
   return (
-    <Stack direction="row" spacing={4}>
-      <Typography variant="h6" gutterBottom>
+    <Stack direction="row" alignItems="fill">
+      <Typography
+        variant="h6"
+        sx={{width: '250px', position: 'relative', bottom: '6px'}}>
         {props.label}:
       </Typography>
-      <Typography variant="body1">
+      <Typography variant="body1" sx={{width: '200px'}}>
         {localValue ? localValue : 'Not Set'}
       </Typography>
-      <Button variant="contained" onClick={() => setIsEditing(true)}>
-        Edit
-      </Button>
+      <span style={{flexGrow: 1}} />
+      <ButtonIcon
+        // variant="contained"
+        size="small"
+        onClick={() => setIsEditing(true)}>
+        <EditIcon />
+      </ButtonIcon>
     </Stack>
   );
 }

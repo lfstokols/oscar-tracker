@@ -10,7 +10,9 @@ import {
   WatchListSchema,
   MyUserDataSchema,
   UserStatsListSchema,
+  // CategoryCompletionListSchema,
 } from '../types/APIDataSchema';
+import {LogToConsole} from '../utils/Logger';
 
 // * Nominations // *
 export function nomOptions(year: number) {
@@ -41,18 +43,6 @@ export function myUserDataOptions(userId: UserId) {
       Endpoints.users,
       {myData: 'true'},
       MyUserDataSchema.parse,
-    ),
-    retry: retryFunction,
-  });
-}
-
-export function userStatsOptions(year: number | string) {
-  return queryOptions({
-    queryKey: ['userStats', year.toString()],
-    queryFn: qFunction(
-      Endpoints.byUser,
-      {year: year.toString()},
-      UserStatsListSchema.parse,
     ),
     retry: retryFunction,
   });
@@ -93,6 +83,30 @@ export function watchlistOptions(year: number) {
   });
 }
 
+// * Other // *
+export function userStatsOptions(year: number | string) {
+  return queryOptions({
+    queryKey: ['userStats', year.toString()],
+    queryFn: qFunction(
+      Endpoints.byUser,
+      {year: year.toString()},
+      UserStatsListSchema.parse,
+    ),
+    retry: retryFunction,
+  });
+}
+
+export function categoryCompletionOptions(year: number | string) {
+  return queryOptions({
+    queryKey: ['categoryCompletion', year.toString()],
+    queryFn: qFunction(Endpoints.byCategory, {year: year.toString()}, x => {
+      LogToConsole(x);
+      return x;
+    }),
+    retry: retryFunction,
+  });
+}
+
 // *
 // * Helper functions // *
 // *
@@ -102,7 +116,6 @@ function qFunction<T>(
   qParams: Record<string, string>,
   parser: (data: any) => T,
 ): () => Promise<T> {
-  //ReturnType<typeof parser>> {
   return async () => {
     const params = new URLSearchParams(qParams);
     const response = await fetch(`api/${endpoint}?${params.toString()}`, {

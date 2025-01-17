@@ -27,13 +27,13 @@ class WatchStatus(str, Enum):
 
 
 class Grouping_pyd(str, Enum):
-    BIG_THREE = "Big Three"
-    ACTING = "Acting"
-    FILMKRAFT = "Technical (Filmkraft)"
-    ART = "Technical (Art)"
-    AUDIO = "Technical (Audio)"
-    BEST_IN_CLASS = "Best in Class"
-    SHORT = "Short"
+    BIG_THREE = "big_three"
+    ACTING = "acting"
+    FILMKRAFT = "filmkraft"
+    ART = "art"
+    AUDIO = "audio"
+    BEST_IN_CLASS = "best_in_class"
+    SHORT = "short"
 
 
 class Flavor(str, Enum):

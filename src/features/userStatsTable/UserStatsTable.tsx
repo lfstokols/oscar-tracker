@@ -71,10 +71,10 @@ export default function UserStatsTable(): React.ReactElement {
             false,
           ),
         )}
-        {makeRow('Movies Left to Watch', user =>
+        {makeRow('Movies Seen (planned)', user =>
           makeFraction(
-            user.numTodoFeature ?? 0,
-            user.numTodoShort ?? 0,
+            (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
+            (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
             shortsAreOneFilm,
             false,
           ),
@@ -82,8 +82,13 @@ export default function UserStatsTable(): React.ReactElement {
         {makeRow('Multiple Nominations', user =>
           makeFraction(user.numSeenMultinom ?? 0, 0, shortsAreOneFilm, true),
         )}
-        {makeRow('Multiple Nominations (to do)', user =>
-          makeFraction(user.numTodoMultinom ?? 0, 0, shortsAreOneFilm, true),
+        {makeRow('Multiple Nominations (planned)', user =>
+          makeFraction(
+            (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
+            0,
+            shortsAreOneFilm,
+            true,
+          ),
         )}
         {makeRow('Total Watchtime Completed', user =>
           minutesToHours(user.seenWatchtime),

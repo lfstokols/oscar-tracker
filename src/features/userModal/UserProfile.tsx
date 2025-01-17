@@ -2,6 +2,7 @@ import React from 'react';
 import {useOscarAppContext} from '../../providers/AppContext';
 import TitleLine, {Divider, boxStyle} from './Common';
 import ErrorIcon from '@mui/icons-material/Error';
+import {DeleteForever} from '@mui/icons-material';
 import {useNotifications} from '../../providers/NotificationContext';
 import {
   Box,
@@ -53,7 +54,7 @@ export default function UserProfile({closer}: Props) {
   const notifications = useNotifications();
   const queryClient = useQueryClient();
   const deletionMutation = useMutation({
-    mutationFn: deleteUserMutationFn(),
+    mutationFn: deleteUserMutationFn(activeUserId, 'forRealsies'),
     onSuccess: () => {
       updateCacheOnSuccess(
         userOptions().queryKey,
@@ -99,13 +100,17 @@ export default function UserProfile({closer}: Props) {
         <DefaultCatcher>
           <UserDataField
             label="Username"
-            value={myUserData?.username ?? 'Not Set'}
+            remoteValue={myUserData?.username ?? 'Not Set'}
+            localValue={myUserData?.username ?? 'Not Set'}
             editableComponent={placeholderEditableComponent}
+            editableComponentProps={{}}
           />
           <UserDataField
             label="Email"
-            value={myUserData?.email ?? 'Not Set'}
+            remoteValue={myUserData?.email ?? 'Not Set'}
+            localValue={myUserData?.email ?? 'Not Set'}
             editableComponent={placeholderEditableComponent}
+            editableComponentProps={{}}
           />
           <LetterboxdField />
         </DefaultCatcher>
@@ -136,7 +141,9 @@ export default function UserProfile({closer}: Props) {
           color="error"
           sx={{width: '100%'}}
           onClick={handleDelete}>
+          <DeleteForever sx={{marginRight: 1}} />
           Delete Account
+          <DeleteForever sx={{marginLeft: 1}} />
         </Button>
       </Stack>
       <Dialog open={deleteDialogIsOpen} onClose={handleCloseDeleteDialog}>
@@ -197,7 +204,13 @@ function Preference({
   );
 }
 
-function placeholderEditableComponent({onCancel}: {onCancel: () => void}) {
+function placeholderEditableComponent({
+  onCancel,
+  activeUserId,
+}: {
+  onCancel: () => void;
+  activeUserId: UserId;
+}) {
   return (
     <Stack direction="row" spacing={2}>
       <ErrorIcon />
