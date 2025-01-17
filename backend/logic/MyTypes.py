@@ -115,8 +115,11 @@ class UserColumns(myEnum):
     #     ]
 
 
-class DerivedUserColumns(UserColumns):
+class myUserDataColumns(UserColumns):
     PROFILE_PIC = "propic"
+
+
+class UserStatsColumns(myEnum):
     NUM_SEEN_SHORT = "numSeenShort"
     NUM_SEEN_FEATURE = "numSeenFeature"
     NUM_TODO_SHORT = "numTodoShort"
@@ -163,7 +166,8 @@ __all__ = [
     "CategoryColumns",
     "WatchlistColumns",
     "UserColumns",
-    "DerivedUserColumns",
+    "myUserDataColumns",
+    "UserStatsColumns",
     "Grouping",
     "GeneralDataFlavor",
 ]

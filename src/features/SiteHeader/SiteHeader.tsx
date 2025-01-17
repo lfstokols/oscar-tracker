@@ -11,12 +11,13 @@ import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
 import TabDrawer from '../tabDrawer/TabDrawer';
+import {useIsMobile} from '../../hooks/useIsMobile';
 
 type Props = {};
 
 export default function SiteHeader(props: Props): React.ReactElement {
   const [openDrawer, setOpenDrawer] = useState(false);
-
+  const isMobile = useIsMobile();
   const handleDrawerOpen = (event: React.MouseEvent<HTMLElement>) => {
     setOpenDrawer(true);
   };
@@ -43,7 +44,7 @@ export default function SiteHeader(props: Props): React.ReactElement {
             <MenuIcon />
           </IconButton>
           <TabDrawer open={openDrawer} onClose={handleDrawerClose} />
-          <OurWordmark />
+          <OurWordmark mini={isMobile} />
         </Stack>
         <Stack direction="row" alignItems="center" gap="12px">
           <YearSelector />

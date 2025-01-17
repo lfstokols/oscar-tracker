@@ -182,7 +182,7 @@ def serve_categories():
 
 # Expect justMe = bool
 # If PUT, expect movieId and status
-@oscars.route("/api/watchlist", methods=["GET", "PUT"])
+@oscars.route("/api/watchlist", methods=["GET"])
 @handle_errors
 def serve_watchlist_GET():
     userId = utils.get_active_user_id(storage, request)

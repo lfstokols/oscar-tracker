@@ -100,16 +100,16 @@ export const MyUserDataSchema = UserSchema.extend({
   propic: z.string().url().nullable(),
 });
 
-export const UserStatsSchema = UserSchema.extend({
-  username: z.string().nullable(),
+export const UserStatsSchema = z.object({
+  id: UserIdSchema,
   numSeenFeature: z.number().nullable().default(0),
   numSeenShort: z.number().nullable().default(0),
   numTodoFeature: z.number().nullable().default(0),
   numTodoShort: z.number().nullable().default(0),
   seenWatchtime: z.number().nullable().default(0),
   todoWatchtime: z.number().nullable().default(0),
-  numMultinomsSeen: z.number().nullable().default(0),
-  numMultinomsTodo: z.number().nullable().default(0),
+  numSeenMultinom: z.number().nullable().default(0),
+  numTodoMultinom: z.number().nullable().default(0),
 });
 export const UserStatsListSchema = z.array(UserStatsSchema).describe("A list of users' stats");
 

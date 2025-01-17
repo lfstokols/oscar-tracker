@@ -27,6 +27,7 @@ import {
   nomOptions,
   userOptions,
 } from '../../hooks/dataOptions';
+import NominationsCell from './NominationsCell';
 
 function LegacyTable(): React.ReactElement {
   const year = useOscarAppContext().year;
@@ -114,19 +115,11 @@ function LegacyTable(): React.ReactElement {
                   <TableCell title={row.id} sx={{className: 'title-column'}}>
                     {sortedData[index].title}
                   </TableCell>
-                  <TableCell
-                    sx={{
-                      whiteSpace: 'pre-wrap',
-                      className: 'nominations-column',
-                    }}>
-                    {getNominationCategoriesForMovie(
-                      sortedData[index].id,
-                      nominations,
-                      categories,
-                    )
-                      .map(nom => nom.shortName)
-                      .join(', ')}
-                  </TableCell>
+                  <NominationsCell
+                    movieId={row.id}
+                    nominations={nominations}
+                    categories={categories}
+                  />
                   <TableCell
                     sx={{minWidth: 200, className: 'runtime-column'}}
                     align="center">

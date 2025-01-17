@@ -1,4 +1,4 @@
-from typing import overload
+from typing import Hashable, overload, Any
 from backend.data_management.api_schemas import (
     api_CategoryCompletionsDict,
     MovieID,
@@ -93,7 +93,7 @@ def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
     data = storage.read("users")
     data = data.loc[[userId]]
     assert data is not None, "User not found <in get_my_user_data>"
-    data[DerivedUserColumns.PROFILE_PIC] = get_user_propic(
+    data[myUserDataColumns.PROFILE_PIC] = get_user_propic(
         data.at[userId, UserColumns.LETTERBOXD]
     )
     return data
@@ -222,11 +222,11 @@ def num_seen_with_property(
     inverse: bool = False,
 ) -> pd.Series:
     """
-    enriched_watchlist: a watchlist-shaped dataframe with an extra boolean column names {property}
+    enriched_watchlist: a watchlist-shaped dataframe with an extra boolean column named {property}
     property: the name of the boolean column (must exist!)
     new_name: the name to be given to the Series (since unnamed Series aren't typesafe)
     inverse: if True, returns the number of movies that the user has seen *without* the property
-    returns: a series of integers, indexed by UserID, indicating the number of movies that user has seen in that category
+    returns: a series of integers, indexed by UserID, indicating the number of movies that user has seen with the property
     note: 'seen' is a placeholder, it's really how many movies the user has marked (with either status)
     """
     assert (
@@ -238,7 +238,7 @@ def num_seen_with_property(
     bool_col = enriched_watchlist[property]
     if inverse:
         bool_col = ~bool_col
-    return bool_col.groupby(WatchlistColumns.USER).size()  # type: ignore
+    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER).size().fillna(0).rename(new_name)  # type: ignore
 
 
 def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
@@ -257,6 +257,8 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
         num_todo_multinom: int
         total_seen_runtime: int (minutes)
         total_todo_runtime: int (minutes)
+        multinom_seen: int
+        multinom_todo: int
 
     """
 
@@ -284,33 +286,33 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     )
 
     num_seen_short = num_seen_with_property(
-        enriched_seenlist, CategoryColumns.IS_SHORT, DerivedUserColumns.NUM_SEEN_SHORT
+        enriched_seenlist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_SEEN_SHORT
     )
     num_seen_feature = num_seen_with_property(
         enriched_seenlist,
         CategoryColumns.IS_SHORT,
-        DerivedUserColumns.NUM_SEEN_FEATURE,
+        UserStatsColumns.NUM_SEEN_FEATURE,
         inverse=True,
     )
     num_todo_short = num_seen_with_property(
-        enriched_todolist, CategoryColumns.IS_SHORT, DerivedUserColumns.NUM_TODO_SHORT
+        enriched_todolist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_TODO_SHORT
     )
     num_todo_feature = num_seen_with_property(
         enriched_todolist,
         CategoryColumns.IS_SHORT,
-        DerivedUserColumns.NUM_TODO_FEATURE,
+        UserStatsColumns.NUM_TODO_FEATURE,
         inverse=True,
     )
 
     num_seen_multinom = num_seen_with_property(
         enriched_seenlist,
         DerivedMovieColumns.IS_MULTI_NOM,
-        DerivedUserColumns.NUM_SEEN_MULTINOM,
+        UserStatsColumns.NUM_SEEN_MULTINOM,
     )
     num_todo_multinom = num_seen_with_property(
         enriched_todolist,
         DerivedMovieColumns.IS_MULTI_NOM,
-        DerivedUserColumns.NUM_TODO_MULTINOM,
+        UserStatsColumns.NUM_TODO_MULTINOM,
     )
 
     seen_with_runtime = enrich_watchlist_with_movie_data(
@@ -323,12 +325,12 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     total_seen_runtime = (
         seen_with_runtime.groupby(WatchlistColumns.USER)
         .sum()[MovieColumns.RUNTIME]
-        .rename(DerivedUserColumns.SEEN_WATCHTIME)
+        .rename(UserStatsColumns.SEEN_WATCHTIME)
     )
     total_todo_runtime = (
         todo_with_runtime.groupby(WatchlistColumns.USER)
         .sum()[MovieColumns.RUNTIME]
-        .rename(DerivedUserColumns.TODO_WATCHTIME)
+        .rename(UserStatsColumns.TODO_WATCHTIME)
     )
 
     result = pd.concat(
@@ -343,11 +345,11 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
             total_todo_runtime,
         ],
         axis="columns",
-    )
+    ).fillna(0)
     result.index.name = "id"
     return result
 
 
-def get_category_completion_data(storage: StorageManager, year, json=False):
-    data = compute_user_stats(storage, year)
-    return data.to_dict(orient="index")
+def get_user_stats(storage: StorageManager, year) -> pd.DataFrame:
+    return compute_user_stats(storage, year)
+    return data.to_dict(orient="records")

@@ -19,3 +19,14 @@ export enum DataFlavor {
     categories = 'categories',
     watchlist = 'watchlist',
 }
+
+export enum Endpoints {
+    movies = 'movies',
+    users = 'users',
+    nominations = 'nominations',
+    categories = 'categories',
+    watchlist = 'watchlist',
+    byUser = 'by_user',
+    byCategory = 'by_category',
+    letterboxdSearch = 'letterboxd/search',
+}

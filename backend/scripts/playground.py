@@ -2,6 +2,7 @@
 
 import shutil
 import sys
+import signal
 from pathlib import Path
 import pandas as pd
 from IPython.core.interactiveshell import InteractiveShell
@@ -72,8 +73,17 @@ Example Usage:
     print(help_text)
 
 
+def signal_handler(sig, frame):
+    """Handle SIGINT by exiting gracefully"""
+    print("\nReceived SIGINT. Exiting...")
+    sys.exit(0)
+
+
 def main():
     """Main REPL environment setup"""
+    # Set up signal handler for SIGINT
+    signal.signal(signal.SIGINT, signal_handler)
+
     args = parse_args()
 
     # Initialize objects

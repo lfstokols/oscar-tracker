@@ -16,7 +16,8 @@
 		"@tanstack/react-query-devtools": "^5.62.11",
 		"js-cookie": "",
 		"react-router-dom": "",
-		"zod": ""
+		"zod": "",
+		"flag-icons": ""
 	},
 	"devDependencies": {
 		"@babel/core": "^7.23.0",

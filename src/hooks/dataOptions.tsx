@@ -1,5 +1,5 @@
 import {queryOptions} from '@tanstack/react-query';
-import {DataFlavor} from '../types/Enums';
+import {DataFlavor, Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
 import {z} from 'zod';
 import {
@@ -17,7 +17,7 @@ export function nomOptions(year: number) {
   return queryOptions({
     queryKey: ['nominations', year],
     queryFn: qFunction(
-      DataFlavor.nominations,
+      Endpoints.nominations,
       {year: year.toString()},
       NomListSchema.parse,
     ),
@@ -29,7 +29,7 @@ export function nomOptions(year: number) {
 export function userOptions() {
   return queryOptions({
     queryKey: ['users'],
-    queryFn: qFunction(DataFlavor.users, {}, UserListSchema.parse),
+    queryFn: qFunction(Endpoints.users, {}, UserListSchema.parse),
     retry: retryFunction,
   });
 }
@@ -38,7 +38,7 @@ export function myUserDataOptions(userId: UserId) {
   return queryOptions({
     queryKey: ['myUserData', userId],
     queryFn: qFunction(
-      DataFlavor.users,
+      Endpoints.users,
       {myData: 'true'},
       MyUserDataSchema.parse,
     ),
@@ -50,8 +50,8 @@ export function userStatsOptions(year: number | string) {
   return queryOptions({
     queryKey: ['userStats', year.toString()],
     queryFn: qFunction(
-      DataFlavor.users,
-      {completionData: 'true', year: year.toString()},
+      Endpoints.byUser,
+      {year: year.toString()},
       UserStatsListSchema.parse,
     ),
     retry: retryFunction,
@@ -63,7 +63,7 @@ export function movieOptions(year: number) {
   return queryOptions({
     queryKey: ['movies', year],
     queryFn: qFunction(
-      DataFlavor.movies,
+      Endpoints.movies,
       {year: year.toString()},
       MovieListSchema.parse,
     ),
@@ -75,7 +75,7 @@ export function movieOptions(year: number) {
 export function categoryOptions() {
   return queryOptions({
     queryKey: ['categories'],
-    queryFn: qFunction(DataFlavor.categories, {}, CategoryListSchema.parse),
+    queryFn: qFunction(Endpoints.categories, {}, CategoryListSchema.parse),
     retry: retryFunction,
   });
 }
@@ -85,7 +85,7 @@ export function watchlistOptions(year: number) {
   return queryOptions({
     queryKey: ['watchlist', year],
     queryFn: qFunction(
-      DataFlavor.watchlist,
+      Endpoints.watchlist,
       {year: year.toString(), justMe: 'false'},
       WatchListSchema.parse,
     ),
@@ -98,14 +98,14 @@ export function watchlistOptions(year: number) {
 // *
 
 function qFunction<T>(
-  dFlavor: DataFlavor,
+  endpoint: Endpoints,
   qParams: Record<string, string>,
   parser: (data: any) => T,
 ): () => Promise<T> {
   //ReturnType<typeof parser>> {
   return async () => {
     const params = new URLSearchParams(qParams);
-    const response = await fetch(`api/${dFlavor}?${params.toString()}`, {
+    const response = await fetch(`api/${endpoint}?${params.toString()}`, {
       method: 'GET',
     });
     if (!response.ok) {
@@ -121,7 +121,7 @@ function qFunction<T>(
     } catch (error) {
       if (error instanceof z.ZodError) {
         console.error(
-          `Zod validation failed for dataFlavor ${dFlavor} with params ${JSON.stringify(
+          `Zod validation failed for dataFlavor ${endpoint} with params ${JSON.stringify(
             qParams,
           )}`,
         );

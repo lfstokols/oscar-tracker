@@ -10,6 +10,8 @@ from datetime import datetime
 from typing import Optional, Annotated, Literal, Union, KeysView
 from enum import Enum
 
+from backend.logic.MyTypes import UserStatsColumns
+
 
 # * Primitives
 MovieID = Annotated[str, StringConstraints(pattern=r"^mov_[0-9a-f]{6}$")]
@@ -154,16 +156,16 @@ class api_MyUserData(api_User):
     propic: Optional[HttpUrl] = None
 
 
-class api_UserStats(api_User):
-    username: Optional[str] = None
-    numSeenFeature: Optional[int] = Field(default=0)
+class api_UserStats(BaseModel):
+    id: UserID
     numSeenShort: Optional[int] = Field(default=0)
-    numTodoFeature: Optional[int] = Field(default=0)
+    numSeenFeature: Optional[int] = Field(default=0)
     numTodoShort: Optional[int] = Field(default=0)
+    numTodoFeature: Optional[int] = Field(default=0)
+    numSeenMultinom: Optional[int] = Field(default=0)
+    numTodoMultinom: Optional[int] = Field(default=0)
     seenWatchtime: Optional[int] = Field(default=0)
     todoWatchtime: Optional[int] = Field(default=0)
-    numMultinomsSeen: Optional[int] = Field(default=0)
-    numMultinomsTodo: Optional[int] = Field(default=0)
 
 
 class api_UserStatsList(BaseModel):
