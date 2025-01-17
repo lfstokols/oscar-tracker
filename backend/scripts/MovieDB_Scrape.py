@@ -1,27 +1,28 @@
-import os
 import sys
 from pathlib import Path
-from typing import Optional
-from dotenv import load_dotenv
 
 BACKEND_DIR = Path(__file__).parent.parent
-LOGIC_DIR = BACKEND_DIR / "logic"
+# LOGIC_DIR = BACKEND_DIR / "logic"
 sys.path.append(
     str(BACKEND_DIR)
 )  # Adds the parent directory to the path for module imports
 # Should be `backend/
 # N.B. first .parent goes from file to directory, second
 # goes to parent directory
-sys.path.append(
-    str(LOGIC_DIR)
-)  # Adds the logic directory to the path for module imports
+# sys.path.append(
+#     str(LOGIC_DIR)
+# )  # Adds the logic directory to the path for module imports
 
-import argparse, requests, re
+import argparse, requests, re, os
 from datetime import datetime
 import pandas as pd
 from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
+
+from typing import Optional
+from dotenv import load_dotenv
 
 load_dotenv(BACKEND_DIR.parent / ".env")
 try:
@@ -40,7 +41,7 @@ BASE_SESSION.headers.update(
 BASE_SESSION.base_url = URL_BASE
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(description="Attempts to scrape TMDB data.")
     parser.add_argument(
         "year",
@@ -48,26 +49,40 @@ def main():
         help="Year to import data for. Year is when movies are released, "
         "not when the Oscars ceremony is held.",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Doesn't save anything.")
+    parser.add_argument(
+        "-d",
+        "--dry-run",
+        action="store_true",
+        help="Doesn't save anything.",
+    )
     # parser.add_argument('--write-test', action='store_true',
     # 				help='Saves data in a test folder.')
     parser.add_argument(
-        "--read-test",
+        "-t",
+        "--test",
         action="store_true",
-        help="Uses movie data from test folder. Should fail unless last test run"
-        " of wikiScrape was for same year. Also saves to test folder, unless dry-run.",
+        help="Uses movie data from test folder. Also saves to test folder, unless dry-run.",
     )
     parser.add_argument(
-        "--verbose", action="store_true", help="Prints additional information."
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Prints additional information.",
     )
     parser.add_argument(
+        "-c",
         "--cutoff",
         type=int,
         help="Asks for user input if there are at least this many problems with"
         " the data. Default is 2.",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def main():
+    args = parse_args()
+
+    global year
     year = args.year
     global dry_run
     dry_run = args.dry_run
@@ -76,16 +91,15 @@ def main():
     error_cutoff = args.cutoff or 2
 
     global storage
-    storage = StorageManager(BACKEND_DIR / "database")
-    global to_storage_year
-    global from_storage_year
-    to_storage_year = "test" if args.read_test else str(year)
-    from_storage_year = "test" if args.read_test else str(year)
+    if args.use_test:
+        storage = StorageManager(BACKEND_DIR / "test_database")
+    else:
+        storage = StorageManager(BACKEND_DIR / "database")
 
     if not dry_run:
         storage.add_columns(
             "movies",
-            to_storage_year,
+            year,
             columns={
                 MovieColumns.MovieDB_ID: "string",
                 MovieColumns.RUNTIME: "Int64",
@@ -93,22 +107,15 @@ def main():
             },
         )
 
-    global category_df
-    category_df = storage.read("categories")
-    # category_df.set_index('id', inplace=True)
-    # category_df = category_df.astype({'isShort': bool, 'hasNote': bool})
-
-    # category_list = category_df.index.tolist()
-
     fetch_movie_db(year, error_cutoff)
 
 
 def fetch_movie_db(year, error_cutoff):
 
-    movie_data = pr.get_movies(storage, from_storage_year)
-    debug_print(movie_data)
+    movie_data = pr.get_movies(storage, year)
     for movId in movie_data.index:
         try:
+            debug_print(f"Fetching data for {movId}")
             movie = movie_data.loc[movId].reset_index().to_dict()
             assert (
                 movie[MovieColumns.ID] == movId
@@ -123,7 +130,7 @@ def fetch_movie_db(year, error_cutoff):
             details = fetch_wrapper(f"movie/{movie_db_id}")
             title = details["title"]
             runtime = details["runtime"]
-            is_short = movie[MovieColumns.IS_SHORT]
+            is_short = movie[DerivedMovieColumns.IS_SHORT]
             release_status = details["status"]
             release_date = details["release_date"]
 
@@ -204,11 +211,11 @@ def fetch_movie_db(year, error_cutoff):
                 new_data[MovieColumns.POSTER_PATH] = details["poster_path"]
 
             if not dry_run:
-                storage.update_movie(movId, to_storage_year, new_data=new_data)
+                mu.update_movie(storage, movId, year, new_data=new_data)
             if dry_run:
-                debug_print(f"{title}: {new_data}")
+                print(f"{title}: {new_data}")
         except Exception as e:
-            debug_print(f"Error with {movId}: {e}")
+            print(f"Error with {movId}: {e}")
 
 
 def try_to_find_moviedb_id(movie, year) -> Optional[int]:
@@ -251,7 +258,7 @@ def fetch_from_Imdb_id(imdb_id):
 
 def fetch_wrapper(endpoint, params=None, headers=None):
     """
-    Returns the JSON response from the TMDB API (a dict).
+    Returns the JSON response from the movieDB API (a dict).
     endpoint: everything after /3/, no leading/trailing slashes.
     """
     # Use the session but customize for this specific request

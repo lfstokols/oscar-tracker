@@ -2,34 +2,27 @@ import sys
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).parent.parent
-LOGIC_DIR = BACKEND_DIR / "logic"
+# LOGIC_DIR = BACKEND_DIR / "logic"
 sys.path.append(
     str(BACKEND_DIR)
 )  # Adds the parent directory to the path for module imports
 # Should be backend/
 # N.B. first .parent goes from file to directory, second goes to parent directory
-sys.path.append(
-    str(LOGIC_DIR)
-)  # Adds the logic directory to the path for module imports
+# sys.path.append(
+#     str(LOGIC_DIR)
+# )  # Adds the logic directory to the path for module imports
 # Fuck it, hope this works
 
-import argparse
-import requests
+import argparse, requests, re
 from bs4 import BeautifulSoup
 from datetime import datetime
 from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
-import re
-import csv
-import pandas as pd
-
-# category_df = None
-category_list: list[CatID] = []
 
 
-def main():
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Attempts to parse nomination data from Wikipedia."
     )
@@ -39,41 +32,60 @@ def main():
         help="Year to import data for. Year is when movies are released, not when the Oscars ceremony is held.",
     )
     parser.add_argument(
-        "--dry-run", action="store_true", help="Saves data in the test database."
-    )
-    parser.add_argument(
-        "--overwrite",
+        "-d",
+        "--dry-run",
         action="store_true",
-        help="Deletes existing data before adding new entries.",
+        help="Doesn't save anything.",
     )
     parser.add_argument(
-        "--verbose", action="store_true", help="Prints additional information."
+        "-t",
+        "--test",
+        action="store_true",
+        help="Uses movie data from test folder. Also saves to test folder, unless dry-run.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Prints additional information.",
+    )
+    parser.add_argument(
+        "-s",
+        "--save-text",
+        action="store_true",
+        help="Saves the raw text scraped from Wikipedia to a file, for help debugging the regex when the syntax inevitably changes.",
+    )
+    return parser.parse_args()
 
+
+def main():
+    args = parse_args()
+
+    global year
     year = args.year
+    global dry_run
     dry_run = args.dry_run
-    overwrite = args.overwrite
     global verbose
     verbose = args.verbose
+    global save_text
+    save_text = args.save_text
 
     global storage
-    database_dir = (
-        BACKEND_DIR / "database" if not dry_run else BACKEND_DIR / "test_database"
-    )
-    storage = StorageManager(database_dir)
-    global storage_year
-    storage_year = str(year)  # ? This var is a remnant of past implementation
-    if overwrite:
-        storage.blank_test_data(year)
-    storage.add_columns("movies", storage_year, columns={"title": str})
+    if args.test:
+        storage = StorageManager(BACKEND_DIR / "test_database")
+    else:
+        storage = StorageManager(BACKEND_DIR / "database")
+
+    if not dry_run:
+        storage.add_columns(
+            "movies",
+            year,
+            columns={MovieColumns.TITLE: "string"},
+        )
 
     global category_df
     global category_list
     category_df = storage.read("categories")
-    # category_df.set_index('id', inplace=True)
-    category_df = category_df.astype({"isShort": bool, "hasNote": bool})
-
     category_list = category_df.index.tolist()
 
     data_list = fetch_wikipedia(year)
@@ -116,12 +128,15 @@ def fetch_wikipedia(year):
         return
 
     # Write data to file
-    with open(BACKEND_DIR.parent / "fyi" / "scrape.txt", "w", encoding="utf-8") as file:
-        file.write(str(__file__) + " @ " + str(datetime.now()) + "\n\n")
-        for item in data_list:
-            file.write(item)
-            file.write("\n\n")
-    debug_print("Data written to file")
+    if save_text:
+        with open(
+            BACKEND_DIR.parent / "fyi" / "scrape.txt", "w", encoding="utf-8"
+        ) as file:
+            file.write(str(__file__) + " @ " + str(datetime.now()) + "\n\n")
+            for item in data_list:
+                file.write(item)
+                file.write("\n\n")
+        debug_print("Data written to file")
 
     return data_list
 
@@ -210,23 +225,28 @@ def parse_data(data_list):
             if not type(title) == str:
                 print(f"Invalid title '{title}' for {category}.")
                 continue
-            movie_id = get_movie_id(title)
-            # print(f"line 151, movie_id={movie_id}, type={type(movie_id)}")
-            nom = {
-                NomColumns.MOVIE: movie_id,
-                NomColumns.CATEGORY: category,
-                NomColumns.NOTE: note,
-            }
-            mu.add_nomination(storage, storage_year, nom, validate=True)
+            # * Check if the movie exists, and if not, add it
+            if dry_run:
+                movie_id = None
+                if check_movie_exists(title):
+                    movie_id = get_movie_id(title)
+                print(f"{title}<{movie_id}>, category: {category}, note: {note}")
+            else:
+                if check_movie_exists(title):
+                    movie_id = get_movie_id(title)
+                else:
+                    movie_id = mu.add_movie(storage, year, title)
+                nom = {
+                    NomColumns.MOVIE: movie_id,
+                    NomColumns.CATEGORY: category,
+                    NomColumns.NOTE: note,
+                }
+                mu.add_nomination(storage, year, nom, validate=True)
 
     if verbose:
-        lengths = (
-            storage.read("nominations", storage_year)["category"]
-            .value_counts()
-            .to_dict()
-        )
+        lengths = storage.read("nominations", year)["category"].value_counts().to_dict()
         debug_print(f"Parsed nomination dictionary created: {lengths.items()}")
-    debug_print(f"Found {len(storage.read('movies', storage_year))} movies.")
+    debug_print(f"Found {len(storage.read('movies', year))} movies.")
 
 
 def debug_print(message):
@@ -234,13 +254,18 @@ def debug_print(message):
         print("LOG: " + str(message))
 
 
+def check_movie_exists(title: str) -> bool:
+    titleList = storage.read("movies", year)[MovieColumns.TITLE]
+    return title in titleList
+
+
 def get_movie_id(
     title: str,
-) -> MovID:  # Returns the id if it exists, otherwise creates one and adds to table
-    result = mu.update_movie(
-        storage, title.strip(), storage_year, try_title_lookup=True
-    )
-    return result
+) -> tuple[
+    MovID, bool
+]:  # Returns the id if it exists, otherwise creates one and adds to table
+    titleList = storage.read("movies", year)[MovieColumns.TITLE]
+    return titleList[titleList == title].index[0], True
 
 
 if __name__ == "__main__":

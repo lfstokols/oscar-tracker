@@ -60,6 +60,7 @@ class DerivedMovieColumns(MovieColumns):
     RUNTIME_MINUTES = "runtime_minutes"
     NUM_NOMS = "numNoms"
     IS_MULTI_NOM = "isMultiNom"
+    IS_SHORT = "isShort"
 
 
 class NomColumns(myEnum):

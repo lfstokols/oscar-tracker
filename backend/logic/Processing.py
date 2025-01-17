@@ -27,7 +27,7 @@ def are_movies_short(
     num_short_noms = enriched_nominations.groupby(NomColumns.MOVIE)[
         CategoryColumns.IS_SHORT
     ].sum()
-    return num_short_noms > 0
+    return (num_short_noms > 0).rename(DerivedMovieColumns.IS_SHORT)
 
 
 def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:

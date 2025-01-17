@@ -79,10 +79,10 @@ export default function UserStatsTable(): React.ReactElement {
             false,
           ),
         )}
-        {makeRow('Multinom Movies Seen', user =>
+        {makeRow('Multiple Nominations', user =>
           makeFraction(user.numSeenMultinom ?? 0, 0, shortsAreOneFilm, true),
         )}
-        {makeRow('Multinom Movies Left to Watch', user =>
+        {makeRow('Multiple Nominations (to do)', user =>
           makeFraction(user.numTodoMultinom ?? 0, 0, shortsAreOneFilm, true),
         )}
         {makeRow('Total Watchtime Completed', user =>

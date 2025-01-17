@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
 import OurWordmark from '../../components/OurWordmark';
+import Avatar from '@mui/material/Avatar';
 import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../legacyTable/WatchlistCell';
