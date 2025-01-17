@@ -1,11 +1,13 @@
 import React, {Suspense, useCallback, useState} from 'react';
-import {Chip, Button, Avatar} from '@mui/material';
+import {Chip, Button, Avatar, IconButton} from '@mui/material';
 import {useOscarAppContext} from '../../providers/AppContext';
 import LoginMenu from './LoginMenu';
 import DefaultCatcher from '../../components/LoadScreen';
 import ProfileScreen from '../userModal/ProfileScreen';
 import UserAvatar from '../../components/userAvatar';
 import {QueryErrorResetBoundary} from '@tanstack/react-query/build/legacy/QueryErrorResetBoundary';
+import {useIsMobile} from '../../hooks/useIsMobile';
+
 
 export default function UserButton(): React.ReactElement {
   // hooks
@@ -13,6 +15,7 @@ export default function UserButton(): React.ReactElement {
   const isLoggedIn = activeUserId !== null;
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const closeProfile = useCallback(() => {
     setIsProfileOpen(false);
@@ -38,23 +41,28 @@ export default function UserButton(): React.ReactElement {
       </>
     );
   } else {
+    const avatar = (
+      <UserAvatar userId={activeUserId} username={activeUsername ?? ' '} />
+    );
+    // if (isMobile) {
+    //   return <IconButton onClick={openProfile} />;
+    // }
     return (
       <div style={{display: 'flex', alignItems: 'center'}}>
         <>
-          <Chip
-            avatar={
-              <UserAvatar
-                userId={activeUserId}
-                username={activeUsername ?? ' '}
-              />
-            }
-            onClick={openProfile}
-            label={activeUsername}
-            color="secondary"
-            sx={{mr: 1}}
-          />
+          {isMobile ? (
+            <IconButton onClick={openProfile} color="secondary">
+              {avatar}
+            </IconButton>
+          ) : (
+            <Chip
+              onClick={openProfile}
+              color="secondary"
+              avatar={avatar}
+              label={activeUsername}
+            />
+          )}
           <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
-          {/* <UserModal closer={closeProfile} /> */}
         </>
       </div>
     );

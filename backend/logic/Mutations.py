@@ -1,25 +1,37 @@
 import pandas as pd
+from backend.data_management.api_schemas import (
+    db_Nom,
+    db_User,
+    db_Movie,
+    db_Watchlist,
+    db_Category,
+    UserID,
+    MovieID,
+    CategoryID,
+)
 from backend.logic.StorageManager import StorageManager
 from backend.logic.MyTypes import *
 from typing import Any
 
 
 def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> UserID:
-    userIdList = storage.read("users").index.tolist()
-
-    def operation(data: pd.DataFrame):
-        user_id = storage.create_unique_id("users", existing_ids=userIdList)
-        data.loc[user_id] = {
+    user_id = storage.create_unique_user_id()
+    newEntry = pd.DataFrame(
+        {
             UserColumns.NAME: username,
             UserColumns.LETTERBOXD: letterboxd,
             UserColumns.EMAIL: email,
-        }
-        return data, user_id
+        },
+        index=[user_id],
+    )
+
+    def operation(data: pd.DataFrame):
+        return pd.concat([data, newEntry], axis="index", ignore_index=True), user_id
 
     return storage.edit(operation, "users")
 
 
-def update_user(storage, userId, new_data: dict):
+def update_user(storage: StorageManager, userId, new_data: dict):
     storage.validate_id(userId, "users")
 
     def operation(data: pd.DataFrame):
@@ -45,7 +57,9 @@ def delete_user(storage, userId):
 
 # Deletes existing entry if it exists
 # returns True if the entry already existed, False if it didn't
-def add_watchlist_entry(storage, year, userId, movieId, status: WatchStatus) -> bool:
+def add_watchlist_entry(
+    storage: StorageManager, year, userId, movieId, status: WatchStatus
+) -> bool:
     storage.validate_id(userId, "users")
     storage.validate_id(movieId, "movies")
     assert status in WatchStatus.values(), f"Invalid status '{status}'."
@@ -77,7 +91,7 @@ def add_watchlist_entry(storage, year, userId, movieId, status: WatchStatus) -> 
 # Does NOT check if they actually exist in the database
 # 	If you didn't already add/confirm them yourstorage, you're doing something wrong
 # If `validate` is True, the function will at least check if there are too many nominations in a category
-def add_nomination(storage, year, nomination: Nom, validate=False):
+def add_nomination(storage: StorageManager, year, nomination: db_Nom, validate=False):
     """Adds a nomination to the database.
 
     Args:
@@ -96,8 +110,8 @@ def add_nomination(storage, year, nomination: Nom, validate=False):
     movie = nomination[NomColumns.MOVIE]
     category = nomination[NomColumns.CATEGORY]
     note = nomination[NomColumns.NOTE] if NomColumns.NOTE in nomination else None
-    storage.validate_id(movie, "m")
-    storage.validate_id(category, "c")
+    storage.validate_id(movie, "movies")
+    storage.validate_id(category, "categories")
 
     def operation(data: pd.DataFrame):
         newEntry = pd.DataFrame(
@@ -124,7 +138,11 @@ def add_nomination(storage, year, nomination: Nom, validate=False):
 # 		In that case, the id of the movie is returned (whether it was found or created)
 # `new_data` is a dictionary of new data to add or update
 def update_movie(
-    storage, movie, year, new_data: dict[str, Any] = {}, try_title_lookup=False
+    storage: StorageManager,
+    movie,
+    year,
+    new_data: dict[str, Any] = {},
+    try_title_lookup=False,
 ) -> MovID | bool:
     for val in new_data.values():
         if "," in str(val):
@@ -137,7 +155,8 @@ def update_movie(
     if not try_title_lookup:
         movieId = movie
         try:
-            storage.validate_id(movieId, "m")
+            # storage.validate_id(movieId, "movies")
+            MovieID(movieId)
         except:
             raise Exception(
                 f"Invalid movie id '{movieId}'.\n"
@@ -154,14 +173,20 @@ def update_movie(
         def operation(data):
             if movie in data[MovieColumns.TITLE].tolist():
                 movieId = data.loc[data[MovieColumns.TITLE] == movie].index[0]
-                data.loc[movieId, new_data.keys()] = new_data.values()
+                data.at[movieId, new_data.keys()] = new_data.values()
             else:
-                movieId = storage.create_unique_id(
-                    "m", year=year, existing_ids=data.index
-                )
-                data.loc[movieId] = {MovieColumns.TITLE: movie, **new_data}
+                movieId = storage.create_unique_movie_id(year=year)
+                data.at[movieId] = {MovieColumns.TITLE: movie, **new_data}
             return data, movieId
 
-    feedback = storage.edit(operation, "movies", year)
-    # print(f"utils line 183, feedback={feedback}, type={type(feedback)}")
-    return feedback
+    return storage.edit(operation, "movies", year)
+
+
+def add_movie(storage: StorageManager, year: int | str, title: str) -> MovID:
+    id = storage.create_unique_movie_id(year=year)
+    newEntry = pd.DataFrame({MovieColumns.TITLE: title}, index=[id])
+
+    def operation(data: pd.DataFrame):
+        return pd.concat([data, newEntry], axis="index", ignore_index=True), id
+
+    return storage.edit(operation, "movies", year)

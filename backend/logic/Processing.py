@@ -1,5 +1,9 @@
-from typing import overload
-from backend.logic.MyTypes import *
+from typing import Hashable, overload, Any
+from backend.data_management.api_schemas import (
+    api_CategoryCompletionsDict,
+    MovieID,
+    CategoryCompletionKey,
+)
 import requests
 from bs4 import BeautifulSoup, Tag
 import pandas as pd
@@ -24,6 +28,12 @@ def are_movies_short(
         CategoryColumns.IS_SHORT
     ].sum()
     return num_short_noms > 0
+
+
+def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:
+    return (nominations.groupby(NomColumns.MOVIE).size() > 1).rename(
+        DerivedMovieColumns.IS_MULTI_NOM
+    )
 
     # Create boolean series indicating if each movie has any short nominations
     is_short = pd.Series(False, index=movies.index, name="is_short")
@@ -51,9 +61,10 @@ def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> in
     return total
 
 
-def get_movies(storage, year, idList=None, json=False):
+def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = None):
     data = storage.read("movies", year)
     noms = storage.read("nominations", year)
+    categories = storage.read("categories")
     data[DerivedMovieColumns.NUM_NOMS] = (
         noms.groupby(NomColumns.MOVIE).size()[data.index].fillna(0)
     )
@@ -63,46 +74,28 @@ def get_movies(storage, year, idList=None, json=False):
     data[DerivedMovieColumns.RUNTIME_HOURS] = data[
         DerivedMovieColumns.RUNTIME_MINUTES
     ].apply(lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None)
+    data = pd.concat([data, are_movies_short(data, noms, categories)], axis="columns")
+    data.index.name = "id"
     if idList:
         data = data.loc[idList]
-    if json:
-        return utils.df_to_jsonable(data, "movies")
     return data
 
 
-@overload
-def get_users(
-    storage: StorageManager, idList: list[UserID] | None = None, json=False
-) -> pd.DataFrame: ...
-@overload
-def get_users(
-    storage: StorageManager, idList: list[UserID] | None = None, json=True
-) -> list[dict]: ...
-
-
-def get_users(storage: StorageManager, idList: list[UserID] | None = None, json=False):
+def get_users(storage: StorageManager, idList: list[UserID] | None = None):
     data = storage.read("users")
     data = data.drop(columns=["email", "letterboxd"])
     if idList:
         data = data.loc[idList]
-    if json:
-        return utils.df_to_jsonable(data, "users")
     return data
 
 
-def get_my_user_data(
-    storage: StorageManager, userId: UserID, json=False
-) -> pd.DataFrame | dict:
+def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
     data = storage.read("users")
     data = data.loc[[userId]]
     assert data is not None, "User not found <in get_my_user_data>"
-    data[DerivedUserColumns.PROFILE_PIC] = get_user_propic(
+    data[myUserDataColumns.PROFILE_PIC] = get_user_propic(
         data.at[userId, UserColumns.LETTERBOXD]
     )
-    if json:
-        output = utils.df_to_jsonable(data, "users")
-        assert len(output) == 1, f"Expected 1 user, got {len(output)}"
-        return output[0]
     return data
 
 
@@ -112,10 +105,8 @@ def get_user_propic(letterboxd_username: str) -> str | None:
         url = f"https://letterboxd.com/{letterboxd_username}/"
         response = requests.get(url)
         response.raise_for_status()
-
         # Parse the HTML
         soup = BeautifulSoup(response.text, "html.parser")
-
         # Find the avatar image
         avatar = soup.find("div", class_="profile-avatar")
         avatar = avatar.find("img") if avatar else None
@@ -126,25 +117,31 @@ def get_user_propic(letterboxd_username: str) -> str | None:
             and "src" in avatar.attrs
         ):
             return avatar.attrs["src"]
-
+        return None
     except (requests.RequestException, AttributeError) as e:
         print(f"Error getting user propic for {letterboxd_username}", e)
         return None
 
 
-def get_watchdata_by_categories(
-    storage: StorageManager, year, userIdList=None, json=False
-) -> dict[UserID, list[dict[CatID | Grouping | 'numCats', int]]]:
+def get_category_completion_dict(
+    storage: StorageManager, year, userIdList: list[UserID] | None = None
+) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
+    """
+    This is for the 'by category' view.
+    Returns a dict with keys as UserIDs and values as
+            dicts with mapping category names + etc to ints
+            representing the number of movies seen in that 'category'
+    """
     watchlist = storage.read("watchlist", year)
     categories = storage.read("categories", year)
     nominations = storage.read("nominations", year)
     users = storage.read("users")
-    edges = compute_category_watchlist(watchlist, nominations).merge(
+    edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
         categories[CategoryColumns.GROUPING],
         left_on=NomColumns.CATEGORY,
         right_index=True,
     )
-    data = {}
+    data: dict[UserID, list[dict[CategoryCompletionKey, int]]] = {}
     for user in users.index:
         data[user] = [{}, {}]
         for category in categories.index:
@@ -177,7 +174,7 @@ def get_watchdata_by_categories(
     ).merge(categories, left_on=NomColumns.CATEGORY, right_index=True)
 
 
-def compute_category_watchlist(watchlist, nominations):
+def compute_user_to_category_edgeframe(watchlist, nominations):
     """
     Should return an edge list with columns including:
         userId: UserID
@@ -205,7 +202,46 @@ def compute_category_watchlist(watchlist, nominations):
     ]
 
 
-def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame:
+def enrich_watchlist_with_movie_data(
+    watchlist: pd.DataFrame, movies_data: pd.Series
+) -> pd.DataFrame:
+    """
+    watchlist: a watchlist-shaped dataframe, perhaps filtered somehow
+    movies_data: a Series indexed by MovieID, indicating the property of each movie
+    returns: a watchlist-shaped dataframe with the same columns as the input, but with a new column representing the property
+    """
+    return watchlist.merge(
+        movies_data, left_on=WatchlistColumns.MOVIE, right_index=True
+    )
+
+
+def num_seen_with_property(
+    enriched_watchlist: pd.DataFrame,
+    property: str,
+    new_name: str,
+    inverse: bool = False,
+) -> pd.Series:
+    """
+    enriched_watchlist: a watchlist-shaped dataframe with an extra boolean column named {property}
+    property: the name of the boolean column (must exist!)
+    new_name: the name to be given to the Series (since unnamed Series aren't typesafe)
+    inverse: if True, returns the number of movies that the user has seen *without* the property
+    returns: a series of integers, indexed by UserID, indicating the number of movies that user has seen with the property
+    note: 'seen' is a placeholder, it's really how many movies the user has marked (with either status)
+    """
+    assert (
+        property in enriched_watchlist.columns
+    ), f"Property {property} not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
+    assert (
+        WatchlistColumns.USER in enriched_watchlist.columns
+    ), f"UserID column not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
+    bool_col = enriched_watchlist[property]
+    if inverse:
+        bool_col = ~bool_col
+    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER).size().fillna(0).rename(new_name)  # type: ignore
+
+
+def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     """
     finds the total number of movies seen and todo by a user
     If the movie list has complete runtime data,
@@ -213,12 +249,19 @@ def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame
 
     Returns: Dataframe with columns:
         index: UserID
-        num_seen: int
-        num_todo: int
-        seen_watchtime: int (minutes)
-    \    todo_watchtime: int (minutes)
+        num_seen_short: int
+        num_seen_feature: int
+        num_todo_short: int
+        num_todo_feature: int
+        num_seen_multinom: int
+        num_todo_multinom: int
+        total_seen_runtime: int (minutes)
+        total_todo_runtime: int (minutes)
+        multinom_seen: int
+        multinom_todo: int
 
     """
+
     movies = storage.read("movies", year)
     nominations = storage.read("nominations", year)
     categories = storage.read("categories", year)
@@ -231,78 +274,82 @@ def compute_user_completion_stats(storage: StorageManager, year) -> pd.DataFrame
         watchlist[WatchlistColumns.STATUS] == WatchStatus.TODO
     ]
     movie_is_short = are_movies_short(movies, nominations, categories)
-    seen_with_shortness = seen_watchlist.merge(
-        movie_is_short, left_on=WatchlistColumns.MOVIE, right_index=True
+    movie_is_multinom = are_movies_multinom(nominations)
+
+    enriched_seenlist = enrich_watchlist_with_movie_data(seen_watchlist, movie_is_short)
+    enriched_seenlist = enrich_watchlist_with_movie_data(
+        enriched_seenlist, movie_is_multinom
     )
-    todo_with_shortness = todo_watchlist.merge(
-        movie_is_short, left_on=WatchlistColumns.MOVIE, right_index=True
+    enriched_todolist = enrich_watchlist_with_movie_data(todo_watchlist, movie_is_short)
+    enriched_todolist = enrich_watchlist_with_movie_data(
+        enriched_todolist, movie_is_multinom
     )
 
-    num_seen_short = (
-        seen_with_shortness.loc[seen_with_shortness[CategoryColumns.IS_SHORT]]
-        .groupby(WatchlistColumns.USER)
-        .size()
-        .rename(DerivedUserColumns.NUM_SEEN_SHORT)
+    num_seen_short = num_seen_with_property(
+        enriched_seenlist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_SEEN_SHORT
     )
-    num_seen_feature = (
-        seen_with_shortness.loc[~seen_with_shortness[CategoryColumns.IS_SHORT]]
-        .groupby(WatchlistColumns.USER)
-        .size()
-        .rename(DerivedUserColumns.NUM_SEEN_FEATURE)
+    num_seen_feature = num_seen_with_property(
+        enriched_seenlist,
+        CategoryColumns.IS_SHORT,
+        UserStatsColumns.NUM_SEEN_FEATURE,
+        inverse=True,
     )
-    num_todo_short = (
-        todo_with_shortness.loc[todo_with_shortness[CategoryColumns.IS_SHORT]]
-        .groupby(WatchlistColumns.USER)
-        .size()
-        .rename(DerivedUserColumns.NUM_TODO_SHORT)
+    num_todo_short = num_seen_with_property(
+        enriched_todolist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_TODO_SHORT
     )
-    num_todo_feature = (
-        todo_with_shortness.loc[~todo_with_shortness[CategoryColumns.IS_SHORT]]
-        .groupby(WatchlistColumns.USER)
-        .size()
-        .rename(DerivedUserColumns.NUM_TODO_FEATURE)
+    num_todo_feature = num_seen_with_property(
+        enriched_todolist,
+        CategoryColumns.IS_SHORT,
+        UserStatsColumns.NUM_TODO_FEATURE,
+        inverse=True,
     )
 
-    seen_with_runtime = seen_watchlist.merge(
-        movies[MovieColumns.RUNTIME], left_on=WatchlistColumns.MOVIE, right_index=True
+    num_seen_multinom = num_seen_with_property(
+        enriched_seenlist,
+        DerivedMovieColumns.IS_MULTI_NOM,
+        UserStatsColumns.NUM_SEEN_MULTINOM,
     )
-    todo_with_runtime = todo_watchlist.merge(
-        movies[MovieColumns.RUNTIME], left_on=WatchlistColumns.MOVIE, right_index=True
+    num_todo_multinom = num_seen_with_property(
+        enriched_todolist,
+        DerivedMovieColumns.IS_MULTI_NOM,
+        UserStatsColumns.NUM_TODO_MULTINOM,
+    )
+
+    seen_with_runtime = enrich_watchlist_with_movie_data(
+        seen_watchlist, movies[MovieColumns.RUNTIME]
+    )
+    todo_with_runtime = enrich_watchlist_with_movie_data(
+        todo_watchlist, movies[MovieColumns.RUNTIME]
     )
 
     total_seen_runtime = (
         seen_with_runtime.groupby(WatchlistColumns.USER)
         .sum()[MovieColumns.RUNTIME]
-        .rename(DerivedUserColumns.SEEN_WATCHTIME)
+        .rename(UserStatsColumns.SEEN_WATCHTIME)
     )
     total_todo_runtime = (
         todo_with_runtime.groupby(WatchlistColumns.USER)
         .sum()[MovieColumns.RUNTIME]
-        .rename(DerivedUserColumns.TODO_WATCHTIME)
+        .rename(UserStatsColumns.TODO_WATCHTIME)
     )
 
-    return pd.concat(
+    result = pd.concat(
         [
             num_seen_short,
             num_seen_feature,
             num_todo_short,
             num_todo_feature,
+            num_seen_multinom,
+            num_todo_multinom,
             total_seen_runtime,
             total_todo_runtime,
         ],
         axis="columns",
-    )
+    ).fillna(0)
+    result.index.name = "id"
+    return result
 
 
-def get_user_completion_data(storage: StorageManager, year, json=False):
-    users: pd.DataFrame = get_users(storage)
-    newdata = compute_user_completion_stats(storage, year)
-    print(newdata)
-    # Flatten the multi-index columns
-    # newdata.columns = newdata.columns.get_level_values(0)
-    # Rename index to match users DataFrame before joining
-    newdata.index.name = "id"
-    data = users.join(newdata, how="outer")
-    if json:
-        return utils.df_to_jsonable(data, "users")
-    return data
+def get_user_stats(storage: StorageManager, year) -> pd.DataFrame:
+    return compute_user_stats(storage, year)
+    return data.to_dict(orient="records")

@@ -1,14 +1,37 @@
 from collections.abc import Callable
+import re
 import time
 from typing import Any
 from flask import jsonify, Request
 import numpy as np
 import pandas as pd
+from backend.data_management.api_schemas import Flavor
+from backend.logic.StorageManager import StorageManager
 import backend.logic.Flavors as flv
+from backend.logic.MyTypes import *
+
+
+class MissingAPIArgumentError(Exception):
+    def __init__(self, message: str, missing_data: list[tuple[str, str]]):
+        """
+        missing_data is a list of tuples, of the form
+        (argument_name, location)
+        Example: [("year", "query params"), ("userId", "body")]
+        """
+        self.message = message
+        self.missing_data = missing_data
+        super().__init__(self.message)
 
 
 def no_year_response():
-    return (jsonify({"error": "No year provided"}), 400)
+    return (jsonify({"error": "No year provided"}), 422)
+
+
+class YearError(MissingAPIArgumentError):
+    def __init__(self, location: str = "query params"):
+        message = "No year provided in API call"
+        missing_data = [("year", location)]
+        super().__init__(message, missing_data)
 
 
 # FYI: errno 13 is the error number for permission denied, which includes file locking issues
@@ -39,8 +62,12 @@ def catch_file_locked_error(
         raise
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: str) -> list[dict]:
-    flavor = flv.format_flavor(flavor)
+def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
+    """
+    Converts a pandas DataFrame to a list of dictionaries.
+    It's not a json, but it's easily castable to json.
+    """
+    # flavor = flv.format_flavor(flavor)
     if flv.flavor_props(flavor)["shape"] == "entity":
         df = df.reset_index()
     df = df.replace({np.nan: None})
@@ -56,3 +83,15 @@ def has_flag(request: Request, arg: str) -> bool:
     output = value == "true"
     # print(f"has_flag will return {output}")
     return output
+
+
+def get_active_user_id(storage: StorageManager, request: Request) -> UserID | None:
+    active_user_id = request.cookies.get("activeUserId")
+    if active_user_id is None:
+        return None
+    if not re.fullmatch(r"^usr_[0-9a-fA-F]{6}$", active_user_id):
+        return None
+    users = storage.read("users")
+    if active_user_id not in users.index:
+        return None
+    return UserID(active_user_id)  # type: ignore

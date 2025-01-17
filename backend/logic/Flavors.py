@@ -1,15 +1,15 @@
-from typing import Literal
-from backend.logic.MyTypes import DataFlavor
+from typing import Literal, TypedDict
+from backend.logic.MyTypes import DataFlavor, GeneralDataFlavor
 
 
-flavor_list: dict[DataFlavor] = [
+flavor_list: list[DataFlavor] = [
     "movies",
     "users",
     "nominations",
     "categories",
     "watchlist",
 ]
-flavor_aliases = {
+flavor_aliases: dict[str, DataFlavor] = {
     **{flavor: flavor for flavor in flavor_list},  # Each flavor is its own alias
     **{
         flavor[:1]: flavor for flavor in flavor_list
@@ -22,14 +22,18 @@ flavor_aliases = {
 
 # Converts flavor from alias
 # Throws on invalid flavor
-def format_flavor(flavor: str) -> DataFlavor:
+def format_flavor(flavor: GeneralDataFlavor) -> DataFlavor:
     assert flavor in flavor_aliases.keys(), f"Invalid flavor '{flavor}'."
     return flavor_aliases[flavor]
 
 
-def flavor_props(
-    flavor_indic, is_filename=False
-) -> dict[Literal["shape", "static", "annual"], str | bool]:
+class FlavorProps(TypedDict):
+    shape: str
+    static: bool
+    annual: bool
+
+
+def flavor_props(flavor_indic, is_filename=False) -> FlavorProps:
     """
     'flavor_indic' can be a DataFlavor or a Path object
     if 'is_filename=False', then function WILL throw on invalid flavor
@@ -41,7 +45,7 @@ def flavor_props(
     'static' tells you if the flavor is a static table that should not be edited
     'annual' tells you if the tables exist only once or if there are copies in each year folder
     """
-    props = {"shape": None, "static": False, "annual": True}
+    props: FlavorProps = {"shape": "", "static": False, "annual": True}
     if is_filename:
         file = flavor_indic
         name = file.name

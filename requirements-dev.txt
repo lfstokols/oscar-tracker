@@ -1,0 +1,6 @@
+#* Note: Currenlty borked. 
+#* This package doesn't exist, so this file is worthless. 
+#* Still, it might be useful someday.
+
+pydantic[all]  # All dependencies for development
+-r requirements.txt  # Inherit from base requirements 

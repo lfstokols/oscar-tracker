@@ -26,7 +26,7 @@ from backend.logic.MyTypes import *
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Attempts to parse nomination data from Wikipedia."
+        description="Attempts to find IMDB entries for movies in the database."
     )
     parser.add_argument(
         "year",
@@ -87,7 +87,7 @@ def main():
 def fetch_imdb(year, error_cutoff):
     url = "http://www.omdbapi.com/"  # ?apikey=b96f294f&y={year}&type=movie&t=
     base_params = {"apikey": "b96f294f", "y": year, "type": "movie"}
-    movie_data = storage.read("m", from_storage_year)
+    movie_data = storage.read("movies", from_storage_year)
     debug_print(movie_data)
     for movId in movie_data.index:
         try:

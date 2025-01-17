@@ -7,6 +7,21 @@ MovID = NewType("MovID", IDNum)
 UserID = NewType("UserID", IDNum)
 CatID = NewType("CatID", IDNum)
 DataFlavor = Literal["movies", "users", "nominations", "categories", "watchlist"]
+GeneralDataFlavor = Literal[
+    "movies",
+    "users",
+    "categories",
+    "watchlist",
+    "nominations",
+    "c",
+    "u",
+    "n",
+    "w",
+    "m",
+    "mov",
+    "usr",
+    "cat",
+]
 # WatchStatus = Literal["seen", "todo", "blank"]
 
 
@@ -28,8 +43,10 @@ class Nom(TypedDict):
 class MovieColumns(myEnum):
     ID = "id"
     TITLE = "title"
-    IMDB_ID = "imdbId"
+    Imdb_ID = "ImdbId"
+    MovieDB_ID = "movieDbId"
     RUNTIME = "runtime"  # This is removed before reaching frontend
+    POSTER_PATH = "posterPath"
 
     # @classmethod
     # def values(cls):
@@ -39,24 +56,25 @@ class MovieColumns(myEnum):
 
 
 class DerivedMovieColumns(MovieColumns):
-    RUNTIME_HOURS = "runtime(hours)"
-    RUNTIME_MINUTES = "runtime(minutes)"
+    RUNTIME_HOURS = "runtime_hours"
+    RUNTIME_MINUTES = "runtime_minutes"
     NUM_NOMS = "numNoms"
+    IS_MULTI_NOM = "isMultiNom"
 
 
-class NomColumns:
+class NomColumns(myEnum):
     MOVIE = "movieId"
     CATEGORY = "categoryId"
     NOTE = "note"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class CategoryColumns:
+class CategoryColumns(myEnum):
     ID = "id"
     SHORT_NAME = "shortName"
     FULL_NAME = "fullName"
@@ -65,59 +83,63 @@ class CategoryColumns:
     GROUPING = "grouping"
     MAX_NOMS = "maxNoms"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class WatchlistColumns:
+class WatchlistColumns(myEnum):
     MOVIE = "movieId"
     USER = "userId"
     STATUS = "status"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class UserColumns:
+class UserColumns(myEnum):
     ID = "id"
     NAME = "username"
     LETTERBOXD = "letterboxd"
     EMAIL = "email"
 
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
-class DerivedUserColumns(UserColumns):
+class myUserDataColumns(UserColumns):
     PROFILE_PIC = "propic"
+
+
+class UserStatsColumns(myEnum):
     NUM_SEEN_SHORT = "numSeenShort"
     NUM_SEEN_FEATURE = "numSeenFeature"
     NUM_TODO_SHORT = "numTodoShort"
     NUM_TODO_FEATURE = "numTodoFeature"
+    NUM_SEEN_MULTINOM = "numSeenMultinom"
+    NUM_TODO_MULTINOM = "numTodoMultinom"
     SEEN_WATCHTIME = "seenWatchtime"
     TODO_WATCHTIME = "todoWatchtime"
 
 
-class WatchStatus:
+class WatchStatus(myEnum):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"
 
-    @classmethod
-    @classmethod
-    def values(cls):
-        return [
-            v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
-        ]
+    # @classmethod
+    # def values(cls):
+    #     return [
+    #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
+    #     ]
 
 
 class Grouping(myEnum):
@@ -144,5 +166,8 @@ __all__ = [
     "CategoryColumns",
     "WatchlistColumns",
     "UserColumns",
-    "DerivedUserColumns",
+    "myUserDataColumns",
+    "UserStatsColumns",
+    "Grouping",
+    "GeneralDataFlavor",
 ]

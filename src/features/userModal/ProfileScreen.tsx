@@ -96,7 +96,7 @@ export default function ProfileScreen({open, closeModal}: Props) {
           borderRadius: '2ch',
         }}>
         <ActiveUserDataContainer>
-          <OurWordmark />
+          <OurWordmark folded />
           <ProfileScreenContents closeModal={closeModal} />
         </ActiveUserDataContainer>
       </Card>

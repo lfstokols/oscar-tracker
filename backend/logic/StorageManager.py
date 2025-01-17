@@ -1,11 +1,12 @@
 from time import sleep
 import random
 from pathlib import Path
-import re
 import pandas as pd
-import numpy as np
 import sys
+import re
 from contextlib import contextmanager
+
+from backend.data_management.api_schemas import Flavor
 
 if sys.platform.startswith("win"):
     import msvcrt
@@ -13,11 +14,15 @@ else:
     import fcntl
 from collections.abc import Callable
 from backend.logic.MyTypes import *
-from typing import Literal, IO, Any, overload
+from typing import IO, Any
 import backend.logic.Flavors as flv
-import backend.logic.utils as utils
+
+# import backend.logic.utils as utils
 
 
+# TODO - Create a DataTable class with attributes like flavor, year, and filename
+# TODO      This class computes the filename and flavor_props, and they're what StorageManager returns
+# TODO      It can also abstract away the changes to the attributes. Only it knows what the attributes are stored as, everything else only sees the derived values
 class StorageManager:
 
     def __init__(self, database_directory):
@@ -33,7 +38,7 @@ class StorageManager:
         self.DEFAULT_MOVIES.astype(
             {
                 MovieColumns.TITLE: "string",
-                MovieColumns.IMDB_ID: "string",
+                MovieColumns.Imdb_ID: "string",
                 MovieColumns.RUNTIME: "Int64",
             }
         )
@@ -89,47 +94,69 @@ class StorageManager:
 
     # So far I only use this inside of an `operation` function,
     # 		so I should take the existing list directly instead of reading from a file
-    @overload
-    def create_unique_id(
-        self, flavor: Literal["movies"], existing_ids, year: int | str
-    ) -> MovID: ...
-    @overload
-    def create_unique_id(self, flavor: Literal["users"], existing_ids) -> UserID: ...
-
-    def create_unique_id(
-        self, flavor: DataFlavor, existing_ids, year=None
-    ) -> MovID | UserID:
-        flavor = flv.format_flavor(flavor)
-        assert (
-            flv.flavor_props(flavor)["shape"] == "entity"
-        ), f"Flavor '{flavor}' doesn't have IDs."
-        assert (
-            flavor != "categories"
-        ), "Category IDs are static. You can't create new ones."
-        if flv.flavor_props(flavor)["annual"]:
-            assert year is not None
-        try:
-            id_prefix = {"movies": "mov_", "users": "usr_"}[flavor]
-        except:
-            raise Exception("Invalid type. Must be 'movie' or 'user'.")
-
-        tries = 0
+    def create_unique_movie_id(self, year: int | str) -> MovID:
+        existing_ids = self.read("movies", year).index
+        tries = 100
         while tries < 100:
-            if flavor == "movies":
-                first_digits = f"{(year-1927)%256:02x}" if str(year).isdigit() else "00"
-            else:
-                first_digits = f"{random.randint(0, 0xFF):02x}"
-            id = id_prefix + first_digits + f"{random.randint(0, 0xFFFF):04x}"
+            id = (
+                "mov_" + f"{(int(year)-1927)%256:02x}"
+                if str(year).isdigit()
+                else "00" + f"{random.randint(0, 0xFF_FF):04x}"
+            )
             if id not in existing_ids:
-                return id
+                return MovieID(id)  # type: ignore
             tries += 1
         raise Exception(
             "Unable to create unique ID. Erroring out to avoid infinite loop."
         )
 
+    def create_unique_user_id(self) -> UserID:
+        existing_ids = self.read("users").index
+        tries = 100
+        while tries < 100:
+            id = "usr_" + f"{random.randint(0, 0xFFF_FFF):06x}"
+            if id not in existing_ids:
+                return UserID(id)  # type: ignore
+            tries += 1
+        raise Exception(
+            "Unable to create unique ID. Erroring out to avoid infinite loop."
+        )
+
+    # ! deprecated
+    # def create_unique_id(
+    #     self, flavor: DataFlavor, existing_ids, year=None
+    # ) -> MovID | UserID:
+    #     flavor = flv.format_flavor(flavor)
+    #     assert (
+    #         flv.flavor_props(flavor)["shape"] == "entity"
+    #     ), f"Flavor '{flavor}' doesn't have IDs."
+    #     assert (
+    #         flavor != "categories"
+    #     ), "Category IDs are static. You can't create new ones."
+    #     if flv.flavor_props(flavor)["annual"]:
+    #         assert year is not None
+    #     try:
+    #         id_prefix = {"movies": "mov_", "users": "usr_"}[flavor]
+    #     except:
+    #         raise Exception("Invalid type. Must be 'movie' or 'user'.")
+
+    #     tries = 0
+    #     while tries < 100:
+    #         if flavor == "movies":
+    #             first_digits = f"{(year-1927)%256:02x}" if str(year).isdigit() else "00"
+    #         else:
+    #             first_digits = f"{random.randint(0, 0xFF):02x}"
+    #         id = id_prefix + first_digits + f"{random.randint(0, 0xFFFF):04x}"
+    #         if id not in existing_ids:
+    #             return id
+    #         tries += 1
+    #     raise Exception(
+    #         "Unable to create unique ID. Erroring out to avoid infinite loop."
+    #     )
+
     # Returns the filenames for the data of a certain flavor and year
     # Value is tuple, (.csv, .json)
-    def get_filename(self, flavor, year=None) -> tuple[Path, Path]:
+    def get_filename(self, flavor: GeneralDataFlavor, year=None) -> tuple[Path, Path]:
         # Format inputs
         flavor = flv.format_flavor(flavor)
 
@@ -145,11 +172,11 @@ class StorageManager:
         return filenames
 
     # Checks if an ID is valid for a certain flavor
-    def validate_id(self, id, flavor=None):
+    def validate_id(self, id: str, flavor: DataFlavor):
         if flavor:
             flavor = flv.format_flavor(flavor)
-        else:
-            flavor = flv.format_flavor(id[:2])
+        # else:
+        #     flavor = flv.format_flavor(id[:2])
         if flavor == "movies":
             assert (
                 re.match(r"^mov_[0-9a-fA-F]{6}$", id) != None
@@ -171,7 +198,7 @@ class StorageManager:
                 return flavor
         raise Exception(f"File {file} does not correspond to a known flavor.")
 
-    def files_to_df(self, files, flavor) -> pd.DataFrame:
+    def files_to_df(self, files, flavor: DataFlavor) -> pd.DataFrame:
         flavor_props = flv.flavor_props(flavor)
         tfile, jfile = files
         data = pd.read_csv(tfile)  # , na_values='NaN')
@@ -187,7 +214,7 @@ class StorageManager:
             data.set_index("id", inplace=True)
         return data
 
-    def df_to_files(self, data, files) -> None:
+    def df_to_files(self, data: pd.DataFrame, files) -> None:
         tfile, jfile = files
         for file in files:
             file.seek(0)
@@ -267,7 +294,7 @@ class StorageManager:
                         else:
                             fcntl.flock(file.fileno(), fcntl.LOCK_UN)
         except (BlockingIOError, OSError) as e:
-            print(f"Error opening file {filepath}.")
+            print(f"Error opening file {filepath[0].name}.")
             raise
             # finally:
             # 	if sys.platform.startswith('win'):
@@ -300,29 +327,20 @@ class StorageManager:
                 return output
             except OSError as e:
                 if e.errno == 13 and should_retry:
-                    print(f"File {filepath} is locked. Retrying...")
+                    print(f"File {filepath[0].name} is locked. Retrying...")
                     sleep(retry_interval / 1000)
                 else:
                     raise
-        print(f"Unable to open file {filepath} after {self.max_retries} retries.")
+        print(
+            f"Unable to open file {filepath[0].name} after {self.max_retries} retries."
+        )
         raise OSError(13, "File is locked, please try again later")
 
-    def read(self, flavor, year=None, **kwargs) -> pd.DataFrame:
+    def read(self, flavor: DataFlavor, year=None, **kwargs) -> pd.DataFrame:
         filename = self.get_filename(flavor, year)
         return self.retry_file_access(
             filename, "r", lambda files: self.files_to_df(files, flavor), **kwargs
         )
-        # try:
-        #     with self.file_access(filename) as files:
-        #         data = self.files_to_df(files, flavor)
-        #     return data
-        # except Exception as e:
-        #     print(f"Unable to load data from {filename}.")
-        #     raise
-
-    def json_read(self, flavor, year=None, **kwargs) -> list[dict]:
-        df = self.read(flavor, year, **kwargs)
-        return utils.df_to_jsonable(df, flavor)
 
     # Applies an operation to the data in the file
     # `operation` is a function that takes a pandas DataFrame as input and returns two outputs:
@@ -330,8 +348,8 @@ class StorageManager:
     def edit(
         self,
         operation: Callable[[pd.DataFrame], tuple[pd.DataFrame, Any]],
-        flavor,
-        year=None,
+        flavor: DataFlavor,
+        year: int | str | None = None,
         **kwargs,
     ):
         filename = self.get_filename(flavor, year)
@@ -353,7 +371,7 @@ class StorageManager:
         #     print(f"Unable to write data to {filename}.")
         #     raise
 
-    def delete(self, flavor, year="test"):
+    def delete_file(self, flavor, year="test"):
         filename = self.get_filename(flavor, year)
         flavor = flv.format_flavor(flavor)
         with self.file_access(filename, "w") as files:
@@ -361,6 +379,8 @@ class StorageManager:
                 self.df_to_files(self.DEFAULT_MOVIES, files)
             elif flavor == "nominations":
                 self.df_to_files(self.DEFAULT_NOMINATIONS, files)
+            elif flavor == "watchlist":
+                self.df_to_files(self.DEFAULT_WATCHLIST, files)
             else:
                 raise Exception(f"Invalid type '{flavor}' for deletion.")
 
@@ -376,16 +396,18 @@ class StorageManager:
 
         self.edit(operation, flavor, year)
 
-    def blank_test_data(self):
-        self.delete("movies", year="test")
-        self.delete("nominations", year="test")
+    def blank_test_data(self, year: str | int | None = None):
+        assert self.dir.name == "test_database"
+        self.delete_file("movies", year=str(year))
+        self.delete_file("nominations", year=str(year))
+        self.delete_file("watchlist", year=str(year))
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
     def validate_nomination_list(self, year, expect_full=False):
         nominations = self.read("nominations", year)
         category_counts = nominations[NomColumns.CATEGORY].value_counts()
-        cat_df = self.read("c")
-        expected_counts = cat_df[CategoryColumns.MAX_NOMS]
+        cat_df = self.read("categories")
+        expected_counts: pd.Series[int] = cat_df[CategoryColumns.MAX_NOMS]
         bad_cats = []
         for category, count in category_counts.items():
             if (
@@ -400,4 +422,3 @@ class StorageManager:
 if __name__ == "__main__":
     storage = StorageManager("C:/Users/lfsto/OscarFiles/backend/database")
     print(storage.read("users"))
-    print(storage.read("users", json=True))

@@ -18,6 +18,8 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from backend.logic.StorageManager import StorageManager
+import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
 import re
 import csv
@@ -37,7 +39,7 @@ def main():
         help="Year to import data for. Year is when movies are released, not when the Oscars ceremony is held.",
     )
     parser.add_argument(
-        "--dry-run", action="store_true", help="Saves data in a test folder."
+        "--dry-run", action="store_true", help="Saves data in the test database."
     )
     parser.add_argument(
         "--overwrite",
@@ -56,12 +58,14 @@ def main():
     verbose = args.verbose
 
     global storage
-    storage = StorageManager(BACKEND_DIR / "database")
+    database_dir = (
+        BACKEND_DIR / "database" if not dry_run else BACKEND_DIR / "test_database"
+    )
+    storage = StorageManager(database_dir)
     global storage_year
-    storage_year = str(year)
-    if dry_run:
-        storage_year = "test"
-        storage.blank_test_data()
+    storage_year = str(year)  # ? This var is a remnant of past implementation
+    if overwrite:
+        storage.blank_test_data(year)
     storage.add_columns("movies", storage_year, columns={"title": str})
 
     global category_df
@@ -127,12 +131,23 @@ def parse_data(data_list):
     nominations_raw = {}
     for item in data_list:
         lines = [line.strip() for line in item.split("\n") if line.strip()]
-        category = re.match(r"^[a-zA-Z ]*", lines[0]).group().strip()
-        if category not in category_df["fullName"].tolist():
-            print(f"Header {category} is not in the category list.")
-            key = "cat_" + input("Please enter the category ID: cat_")
-            if key not in category_list:
-                raise Exception(f"Invalid category ID '{key}'.")
+        category_attempt = re.match(r"^[a-zA-Z ]*", lines[0])
+        is_problem = False
+        if category_attempt == None:
+            print(f"Unable to parse category for {lines[0]}")
+            is_problem = True
+        else:
+            category = category_attempt.group().strip()
+            if category not in category_df["fullName"].tolist():
+                print(f"Header {category} is not in the category list.")
+                is_problem = True
+        if is_problem:
+            while True:
+                key = "cat_" + input("Please enter the category ID: cat_")
+                if key not in category_list:
+                    print(f"Invalid category ID '{key}'.")
+                else:
+                    break
         else:
             key = category_df.loc[category_df["fullName"] == category].index[0]
         value = lines[1:]
@@ -174,7 +189,7 @@ def parse_data(data_list):
             note = None
             too_many_dashes = len(re.findall(f" {dash_pattern} ", line)) != 1
             try:
-                title = re.match(pattern, line).group(group_num).strip()
+                title = re.match(pattern, line).group(group_num).strip()  # type: ignore
                 assert not too_many_dashes
             except Exception as e:
                 print(f">\tUnable to parse title for {category}::{line}")
@@ -192,15 +207,26 @@ def parse_data(data_list):
                     note = (
                         input("\t>>Please enter the NOTE manually: ").strip() or title
                     )
+            if not type(title) == str:
+                print(f"Invalid title '{title}' for {category}.")
+                continue
             movie_id = get_movie_id(title)
             # print(f"line 151, movie_id={movie_id}, type={type(movie_id)}")
-            nom = {"movie": movie_id, "category": category, "note": note}
-            storage.add_nomination(storage_year, nom, validate=True)
+            nom = {
+                NomColumns.MOVIE: movie_id,
+                NomColumns.CATEGORY: category,
+                NomColumns.NOTE: note,
+            }
+            mu.add_nomination(storage, storage_year, nom, validate=True)
 
     if verbose:
-        lengths = storage.read("n", storage_year)["category"].value_counts().to_dict()
+        lengths = (
+            storage.read("nominations", storage_year)["category"]
+            .value_counts()
+            .to_dict()
+        )
         debug_print(f"Parsed nomination dictionary created: {lengths.items()}")
-    debug_print(f"Found {len(storage.read('m', storage_year))} movies.")
+    debug_print(f"Found {len(storage.read('movies', storage_year))} movies.")
 
 
 def debug_print(message):
@@ -211,7 +237,10 @@ def debug_print(message):
 def get_movie_id(
     title: str,
 ) -> MovID:  # Returns the id if it exists, otherwise creates one and adds to table
-    return storage.update_movie(title.strip(), storage_year, try_title_lookup=True)
+    result = mu.update_movie(
+        storage, title.strip(), storage_year, try_title_lookup=True
+    )
+    return result
 
 
 if __name__ == "__main__":
