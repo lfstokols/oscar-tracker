@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import OscarAppContextProvider from '../providers/AppContext';
 import NotificationsContextProvider from '../providers/NotificationContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
@@ -7,9 +8,8 @@ import ThemeConfig from '../config/ThemeConfig';
 import QueryClientConfig from '../config/QueryClientConfig';
 import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import App from './App';
-import env from '../../env.json';
 
-const ROUTE_BASENAME = env.ROUTE_BASENAME;
+const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;
 
 const theme = createTheme(ThemeConfig);
 const queryClient = new QueryClient(QueryClientConfig);
