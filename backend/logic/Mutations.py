@@ -114,15 +114,26 @@ def add_nomination(storage: StorageManager, year, nomination: db_Nom, validate=F
     storage.validate_id(category, "categories")
 
     def operation(data: pd.DataFrame):
+        # * Check if an identical nomination already exists
+        existing_entry = data[
+            (data[NomColumns.MOVIE] == movie)
+            & (data[NomColumns.CATEGORY] == category)
+            & (data[NomColumns.NOTE] == note)
+        ]
+        if not existing_entry.empty:
+            return data, 1
+        # * Okay, it's novel, continue
         newEntry = pd.DataFrame(
-            {
-                NomColumns.MOVIE: movie,
-                NomColumns.CATEGORY: category,
-                NomColumns.NOTE: note,
-            }
+            [
+                {
+                    NomColumns.MOVIE: movie,
+                    NomColumns.CATEGORY: category,
+                    NomColumns.NOTE: note,
+                }
+            ]
         )
         data = pd.concat([data, newEntry], ignore_index=True)
-        return data, None
+        return data, 0
 
     if validate:
         bad_cats = storage.validate_nomination_list(year)
@@ -187,6 +198,6 @@ def add_movie(storage: StorageManager, year: int | str, title: str) -> MovID:
     newEntry = pd.DataFrame({MovieColumns.TITLE: title}, index=[id])
 
     def operation(data: pd.DataFrame):
-        return pd.concat([data, newEntry], axis="index", ignore_index=True), id
+        return pd.concat([data, newEntry], axis="index"), id
 
     return storage.edit(operation, "movies", year)

@@ -2,9 +2,10 @@ import sys
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).parent.parent
+PROJECT_ROOT = BACKEND_DIR.parent
 # LOGIC_DIR = BACKEND_DIR / "logic"
 sys.path.append(
-    str(BACKEND_DIR)
+    str(PROJECT_ROOT)
 )  # Adds the parent directory to the path for module imports
 # Should be `backend/
 # N.B. first .parent goes from file to directory, second
@@ -91,7 +92,7 @@ def main():
     error_cutoff = args.cutoff or 2
 
     global storage
-    if args.use_test:
+    if args.test:
         storage = StorageManager(BACKEND_DIR / "test_database")
     else:
         storage = StorageManager(BACKEND_DIR / "database")
@@ -116,10 +117,9 @@ def fetch_movie_db(year, error_cutoff):
     for movId in movie_data.index:
         try:
             debug_print(f"Fetching data for {movId}")
-            movie = movie_data.loc[movId].reset_index().to_dict()
-            assert (
-                movie[MovieColumns.ID] == movId
-            ), f"That to_dict() failed, the MovieId isn't there: {movie}"
+            movie = movie_data.loc[movId].to_dict()
+            movie["id"] = movId
+
             movie_db_id = try_to_find_moviedb_id(movie, year)
             if movie_db_id is None:
                 continue
@@ -216,6 +216,7 @@ def fetch_movie_db(year, error_cutoff):
                 print(f"{title}: {new_data}")
         except Exception as e:
             print(f"Error with {movId}: {e}")
+            raise e
 
 
 def try_to_find_moviedb_id(movie, year) -> Optional[int]:
@@ -224,19 +225,19 @@ def try_to_find_moviedb_id(movie, year) -> Optional[int]:
     title = movie[MovieColumns.TITLE]
     assert title is not None
     debug_print(f"Title: {title}")
-    if movie[MovieColumns.MovieDB_ID] is not None:
+    if not pd.isna(movie[MovieColumns.MovieDB_ID]):
         debug_print(f"Already have a MovieDB ID for {movId} <{title}>")
         return None
-    if movie[MovieColumns.Imdb_ID] is not None:
-        use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
-        if use_Imdb:
-            Imdb_id = movie[MovieColumns.Imdb_ID]
-            result = fetch_from_Imdb_id(Imdb_id)
-            if result is None:
-                debug_print(
-                    f"Movie {movId} has Imdb ID set as {Imdb_id}, but no results found. The ID might be invalid."
-                )
-            return result
+    if not pd.isna(movie[MovieColumns.Imdb_ID]):
+        # use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
+        # if use_Imdb:
+        Imdb_id = movie[MovieColumns.Imdb_ID]
+        result = fetch_from_Imdb_id(Imdb_id)
+        if result is None:
+            debug_print(
+                f"Movie {movId} has Imdb ID set as {Imdb_id}, but no results found. The ID might be invalid."
+            )
+        return result
     else:
         params = {"query": title, "year": year}
         result = fetch_wrapper(endpoint="search/movie", params=params)

@@ -1,10 +1,14 @@
 import sys
 from pathlib import Path
 
+# from backend.logic.MyTypes import *
+
+
 BACKEND_DIR = Path(__file__).parent.parent
+PROJECT_ROOT = BACKEND_DIR.parent
 # LOGIC_DIR = BACKEND_DIR / "logic"
 sys.path.append(
-    str(BACKEND_DIR)
+    str(PROJECT_ROOT)
 )  # Adds the parent directory to the path for module imports
 # Should be backend/
 # N.B. first .parent goes from file to directory, second goes to parent directory
@@ -20,6 +24,7 @@ from backend.logic.StorageManager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
+from backend.data_management.api_schemas import MovieID
 
 
 def parse_args():
@@ -75,6 +80,8 @@ def main():
         storage = StorageManager(BACKEND_DIR / "test_database")
     else:
         storage = StorageManager(BACKEND_DIR / "database")
+
+    debug_print(f"Storage directory: {storage.dir}")
 
     if not dry_run:
         storage.add_columns(
@@ -142,7 +149,7 @@ def fetch_wikipedia(year):
 
 
 def parse_data(data_list):
-    # Parse text into lines
+    # * Parse text into lines
     nominations_raw = {}
     for item in data_list:
         lines = [line.strip() for line in item.split("\n") if line.strip()]
@@ -178,10 +185,10 @@ def parse_data(data_list):
 
     # debug_print(nominations_raw["Best Picture"])
 
-    # Parse values from lines, with regex
-    dash_pattern = r"[\u2010-\u2015\u2043\u2212\-]"  # represents a dash, but allowing for various dash-like unicode characters
-    for category in category_list:
-        for line in nominations_raw[category]:
+    # * Parse values from lines, with regex
+    dash_pattern = r"[\u2010-\u2015\u2043\u2212\-]"  # * represents a dash, but allowing for various dash-like unicode characters
+    for category, lines in nominations_raw.items():
+        for line in lines:
             if category == "cat_song":
                 pattern = rf'^"(.*)" from (.*) {dash_pattern} '
                 group_num = 2
@@ -228,11 +235,11 @@ def parse_data(data_list):
             # * Check if the movie exists, and if not, add it
             if dry_run:
                 movie_id = None
-                if check_movie_exists(title):
+                if does_movie_exist(title):
                     movie_id = get_movie_id(title)
                 print(f"{title}<{movie_id}>, category: {category}, note: {note}")
             else:
-                if check_movie_exists(title):
+                if does_movie_exist(title):
                     movie_id = get_movie_id(title)
                 else:
                     movie_id = mu.add_movie(storage, year, title)
@@ -241,10 +248,14 @@ def parse_data(data_list):
                     NomColumns.CATEGORY: category,
                     NomColumns.NOTE: note,
                 }
-                mu.add_nomination(storage, year, nom, validate=True)
+                mu.add_nomination(storage, year, nom, validate=False)
 
     if verbose:
-        lengths = storage.read("nominations", year)["category"].value_counts().to_dict()
+        lengths = (
+            storage.read("nominations", year)[NomColumns.CATEGORY]
+            .value_counts()
+            .to_dict()
+        )
         debug_print(f"Parsed nomination dictionary created: {lengths.items()}")
     debug_print(f"Found {len(storage.read('movies', year))} movies.")
 
@@ -254,18 +265,16 @@ def debug_print(message):
         print("LOG: " + str(message))
 
 
-def check_movie_exists(title: str) -> bool:
+def does_movie_exist(title: str) -> bool:
     titleList = storage.read("movies", year)[MovieColumns.TITLE]
-    return title in titleList
+    return title in titleList.values
 
 
 def get_movie_id(
     title: str,
-) -> tuple[
-    MovID, bool
-]:  # Returns the id if it exists, otherwise creates one and adds to table
+) -> MovieID:  # Returns the id if it exists, otherwise creates one and adds to table
     titleList = storage.read("movies", year)[MovieColumns.TITLE]
-    return titleList[titleList == title].index[0], True
+    return titleList[titleList == title].index[0]
 
 
 if __name__ == "__main__":

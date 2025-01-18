@@ -11,7 +11,7 @@ import Countdown from '../../components/Countdown';
 import {WatchStatus} from '../../types/Enums';
 import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
-import TabDrawer from '../tabDrawer/TabDrawer';
+import TabDrawer from '../tabDrawer/tabDrawer';
 
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';

@@ -13,3 +13,6 @@ export const DEFAULT_HIDE_DURATION_MS = 4000; // 4 seconds
 //* never actually changed
 export const NUM_SHORT_CATEGORIES = 3;
 export const NUM_SHORT_FILMS_PER_CATEGORY = 5;
+
+//* How to get tmdb posters
+export const MovieDb_POSTER_URL = "https://image.tmdb.org/t/p/w185";

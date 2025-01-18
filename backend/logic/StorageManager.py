@@ -16,6 +16,7 @@ from collections.abc import Callable
 from backend.logic.MyTypes import *
 from typing import IO, Any
 import backend.logic.Flavors as flv
+from backend.data_management.api_schemas import *
 
 # import backend.logic.utils as utils
 
@@ -96,12 +97,12 @@ class StorageManager:
     # 		so I should take the existing list directly instead of reading from a file
     def create_unique_movie_id(self, year: int | str) -> MovID:
         existing_ids = self.read("movies", year).index
-        tries = 100
+        tries = 0
         while tries < 100:
             id = (
-                "mov_" + f"{(int(year)-1927)%256:02x}"
-                if str(year).isdigit()
-                else "00" + f"{random.randint(0, 0xFF_FF):04x}"
+                "mov_"
+                + (f"{(int(year)-1927)%256:02x}" if str(year).isdigit() else "00")
+                + f"{random.randint(0, 0xFF_FF):04x}"
             )
             if id not in existing_ids:
                 return MovieID(id)  # type: ignore
@@ -112,7 +113,7 @@ class StorageManager:
 
     def create_unique_user_id(self) -> UserID:
         existing_ids = self.read("users").index
-        tries = 100
+        tries = 0
         while tries < 100:
             id = "usr_" + f"{random.randint(0, 0xFFF_FFF):06x}"
             if id not in existing_ids:
@@ -221,6 +222,8 @@ class StorageManager:
             file.truncate()
         flavor = self.flavor_from_file(tfile)
         index = flv.flavor_props(flavor)["shape"] == "entity"
+        if index:
+            data.index.name = "id"
         data.to_csv(tfile, index=index, lineterminator="\n")
         data.dtypes.apply(str).to_json(jfile)
 
@@ -243,6 +246,7 @@ class StorageManager:
         wants_exclusive = "+" in mode
 
         if not filepath[0].exists():
+            filepath[0].parent.mkdir(parents=True, exist_ok=True)
             if "movies" in filepath[0].name:
                 with open(filepath[0], "w") as file1:
                     with open(filepath[1], "w") as file2:

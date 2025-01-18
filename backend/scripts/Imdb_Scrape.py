@@ -2,9 +2,9 @@ import sys
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).parent.parent
-# LOGIC_DIR = BACKEND_DIR / "logic"
+PROJECT_ROOT = BACKEND_DIR.parent
 sys.path.append(
-    str(BACKEND_DIR)
+    str(PROJECT_ROOT)
 )  # Adds the parent directory to the path for module imports
 # Should be `backend/
 # N.B. first .parent goes from file to directory, second
@@ -89,7 +89,7 @@ def main():
     error_cutoff = args.cutoff or 2
 
     global storage
-    if args.use_test:
+    if args.test:
         storage = StorageManager(BACKEND_DIR / "test_database")
     else:
         storage = StorageManager(BACKEND_DIR / "database")
@@ -113,8 +113,7 @@ def fetch_imdb(year, error_cutoff):
         try:
             debug_print(f"Fetching data for {movId}")
             title = movie_data.loc[movId, MovieColumns.TITLE]
-            response = fetch_wrapper({"t": title})
-            response_dict = response.json()
+            response_dict = fetch_wrapper({"t": title})
 
             title_correct = ("Title" in response_dict) and (
                 response_dict["Title"] == title
@@ -183,7 +182,6 @@ def fetch_wrapper(params=None):
     response = BASE_SESSION.get(
         f"{BASE_SESSION.base_url}",
         params={"apikey": "b96f294f", "type": "movie", "y": year, **params},
-        headers=headers,
     )
     return response.json()
 
