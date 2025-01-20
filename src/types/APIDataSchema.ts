@@ -39,7 +39,7 @@ export const MovieSchema = z
     runtime_minutes: z.number().nullable(),
     numNoms: z.number().gte(1),
     isShort: z.boolean(),
-    posterPath: z.string().url().nullable(),
+    posterPath: z.string().regex(/^\/[0-9a-zA-Z]*\.jpg$/).nullable(),
   })
   .passthrough();
 

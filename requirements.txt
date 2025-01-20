@@ -8,3 +8,5 @@ Requests==2.32.3
 pydantic==2.10.5 # Just what you need for production
 pydantic[email]
 pandera==0.22.1
+flask_apscheduler
+lxml

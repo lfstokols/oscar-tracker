@@ -17,6 +17,7 @@ from backend.logic.MyTypes import UserStatsColumns
 MovieID = Annotated[str, StringConstraints(pattern=r"^mov_[0-9a-f]{6}$")]
 UserID = Annotated[str, StringConstraints(pattern=r"^usr_[0-9a-f]{6}$")]
 CategoryID = Annotated[str, StringConstraints(pattern=r"^cat_[a-z]{4}$")]
+PosterPath = Annotated[str, StringConstraints(pattern=r"^/[0-9a-zA-Z]*\.jpg$")]
 
 
 # * Enums
@@ -58,7 +59,7 @@ class db_Movie(BaseModel):
     ImdbId: Optional[str] = None
     movieDbId: Optional[int] = None
     runtime: Optional[int] = None  # Stored in minutes
-    posterPath: Optional[str] = None
+    posterPath: Optional[PosterPath] = None
 
 
 class db_Category(BaseModel):
@@ -104,7 +105,7 @@ class api_Movie(BaseModel):
     runtime_minutes: Optional[int] = None
     numNoms: int = Field(ge=1)
     isShort: bool
-    posterPath: Optional[HttpUrl] = None
+    posterPath: Optional[str] = None
 
 
 class api_MovieList(BaseModel):

@@ -17,7 +17,7 @@ sys.path.append(
 import argparse, requests, re, os
 from datetime import datetime
 import pandas as pd
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *

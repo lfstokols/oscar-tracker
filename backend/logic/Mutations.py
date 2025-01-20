@@ -1,15 +1,11 @@
 import pandas as pd
 from backend.data_management.api_schemas import (
-    db_Nom,
-    db_User,
-    db_Movie,
-    db_Watchlist,
-    db_Category,
     UserID,
     MovieID,
     CategoryID,
+    WatchStatus,
 )
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 from backend.logic.MyTypes import *
 from typing import Any
 
@@ -55,6 +51,24 @@ def delete_user(storage, userId):
     return storage.edit(operation, "users")
 
 
+def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
+    storage = StorageManager.get_storage()
+
+    def operation(data: pd.DataFrame):
+        last_val = pd.Timestamp(
+            data[UserColumns.LAST_CHECKED].fillna(pd.Timestamp.min).at[userId],
+            tz="UTC",
+        )
+        data.at[userId, UserColumns.LAST_CHECKED] = pd.Timestamp.now(tz="UTC")
+        print(
+            f"last_val: {last_val}, {type(last_val)}",
+            "======     +++++     =====     ======",
+        )
+        return data, last_val
+
+    return storage.edit(operation, "users")
+
+
 # Deletes existing entry if it exists
 # returns True if the entry already existed, False if it didn't
 def add_watchlist_entry(
@@ -91,7 +105,7 @@ def add_watchlist_entry(
 # Does NOT check if they actually exist in the database
 # 	If you didn't already add/confirm them yourstorage, you're doing something wrong
 # If `validate` is True, the function will at least check if there are too many nominations in a category
-def add_nomination(storage: StorageManager, year, nomination: db_Nom, validate=False):
+def add_nomination(storage: StorageManager, year, nomination: Nom, validate=False):
     """Adds a nomination to the database.
 
     Args:

@@ -2,8 +2,16 @@ import os
 import sys
 from pathlib import Path
 
-sys.path.append(str(Path(__file__).parent.parent))
+project_root_directory = Path(__file__).parent.parent
+sys.path.append(str(project_root_directory))
+
+from backend.logic.storage_manager import StorageManager
+
+StorageManager.make_storage(project_root_directory / "backend" / "database")
+
+from backend.scheduled_tasks.scheduling import Config
 from flask import Flask, jsonify, request, render_template, send_from_directory
+from flask_apscheduler import APScheduler
 from backend.oscarsEndpoint import oscars
 from flask_cors import CORS
 from dotenv import load_dotenv
@@ -21,6 +29,12 @@ except Exception as e:
 app = Flask(__name__)
 
 app.url_map.strict_slashes = False
+
+app.config.from_object(Config())
+
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 CORS(
     app,

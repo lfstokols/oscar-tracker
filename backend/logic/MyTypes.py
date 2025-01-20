@@ -1,4 +1,4 @@
-from typing import NewType, Literal, TypedDict, NotRequired
+from typing import NewType, Literal, TypedDict, NotRequired, Annotated
 from enum import Enum
 
 
@@ -22,6 +22,7 @@ GeneralDataFlavor = Literal[
     "usr",
     "cat",
 ]
+MovieDbID = Annotated[int, lambda x: x >= 0]
 # WatchStatus = Literal["seen", "todo", "blank"]
 
 
@@ -108,6 +109,7 @@ class UserColumns(myEnum):
     NAME = "username"
     LETTERBOXD = "letterboxd"
     EMAIL = "email"
+    LAST_CHECKED = "lastLetterboxdCheck"  # This is removed before reaching frontend
 
     # @classmethod
     # def values(cls):
@@ -131,7 +133,7 @@ class UserStatsColumns(myEnum):
     TODO_WATCHTIME = "todoWatchtime"
 
 
-class WatchStatus(myEnum):
+class WatchStatus(myEnum, str):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"
@@ -143,7 +145,7 @@ class WatchStatus(myEnum):
     #     ]
 
 
-class Grouping(myEnum):
+class Grouping(myEnum, Enum):
     BigThree = "big_three"
     Acting = "acting"
     Filmkraft = "filmkraft"
@@ -157,6 +159,7 @@ __all__ = [
     "MovID",
     "UserID",
     "CatID",
+    "MovieDbID",
     "Nom",
     "DataFlavor",
     "IDNum",

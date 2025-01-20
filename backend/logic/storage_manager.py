@@ -26,6 +26,21 @@ from backend.data_management.api_schemas import *
 # TODO      It can also abstract away the changes to the attributes. Only it knows what the attributes are stored as, everything else only sees the derived values
 class StorageManager:
 
+    _instance = None
+
+    @classmethod
+    def get_storage(cls):
+        if cls._instance is None:
+            raise ValueError("Storage not initialized")
+        return cls._instance
+
+    @classmethod
+    def make_storage(cls, database_directory):
+        if cls._instance is not None:
+            raise ValueError("Storage already exists")
+        cls._instance = cls(database_directory)
+        return cls._instance
+
     def __init__(self, database_directory):
         self.dir = Path(database_directory)
         self.should_retry = True
@@ -210,7 +225,7 @@ class StorageManager:
                 MovieColumns.ID == "id"
                 and UserColumns.ID == "id"
                 and CategoryColumns.ID == "id"
-            ), "The index field must always be called 'id'."
+            ), f"The index field must always be called 'id'. \nCurrently: MovieColumns.ID = {MovieColumns.ID}, UserColumns.ID = {UserColumns.ID}, CategoryColumns.ID = {CategoryColumns.ID}"
             #! This hardcodes that the index field must be called 'id'
             data.set_index("id", inplace=True)
         return data

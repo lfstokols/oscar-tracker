@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup, Tag
 import pandas as pd
 from backend.logic.MyTypes import Grouping
 import backend.logic.utils as utils
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 from backend.logic.MyTypes import *
 
 
@@ -65,9 +65,7 @@ def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = Non
     data = storage.read("movies", year)
     noms = storage.read("nominations", year)
     categories = storage.read("categories")
-    data[DerivedMovieColumns.NUM_NOMS] = (
-        noms.groupby(NomColumns.MOVIE).size()[data.index].fillna(0)
-    )
+    data[DerivedMovieColumns.NUM_NOMS] = noms.groupby(NomColumns.MOVIE).size()
     data = data.rename(
         columns={MovieColumns.RUNTIME: DerivedMovieColumns.RUNTIME_MINUTES}
     )
@@ -96,6 +94,7 @@ def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
     data[myUserDataColumns.PROFILE_PIC] = get_user_propic(
         data.at[userId, UserColumns.LETTERBOXD]
     )
+    data.drop(columns=[UserColumns.LAST_CHECKED], inplace=True)
     return data
 
 

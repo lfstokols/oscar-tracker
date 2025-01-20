@@ -20,7 +20,7 @@ sys.path.append(
 import argparse, requests, re
 from bs4 import BeautifulSoup
 from datetime import datetime
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *

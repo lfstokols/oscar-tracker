@@ -25,21 +25,22 @@ from backend.logic.utils import (
     YearError,
     MissingAPIArgumentError,
 )
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+project_root_directory = Path(__file__).parent.parent
+load_dotenv(project_root_directory / ".env")
 try:
     PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE") or "500")
 except Exception as e:
     print(f"The .env file is missing or has an error: {e}")
     raise
 
-project_root_directory = Path(__file__).parent.parent
-storage = StorageManager(project_root_directory / "backend" / "database")
-
+storage = StorageManager.get_storage()
+if not Path.exists(project_root_directory / "dist"):
+    raise FileNotFoundError("The dist folder is missing")
 oscars = Blueprint(
     "oscars",
     __name__,
@@ -111,13 +112,13 @@ def serve_users_GET():
     if has_flag(request, "myData") and userId:
         data = pr.get_my_user_data(storage, userId)
         return validate_my_user_data(data)
-    elif has_flag(request, "categoryCompletionData"):
-        year = request.args.get("year", None)
-        if year is None:
-            raise YearError("query params")
-        #! should this be here?
-        data = pr.get_category_completion_data(storage, year=year)
-        return validate_category_completion_dict(data)
+    # elif has_flag(request, "categoryCompletionData"):
+    #     year = request.args.get("year", None)
+    #     if year is None:
+    #         raise YearError("query params")
+    #     #! should this be here?
+    #     data = pr.get_category_completion_data(storage, year=year)
+    #     return validate_category_completion_dict(data)
     else:
         return validate_user_list(pr.get_users(storage))
 
@@ -270,4 +271,4 @@ def serve(relpath):
 
 
 if __name__ == "__main__":
-    oscars.run(debug=True)
+    raise Exception("This is not a standalone script")

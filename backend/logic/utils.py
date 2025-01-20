@@ -6,7 +6,7 @@ from flask import jsonify, Request
 import numpy as np
 import pandas as pd
 from backend.data_management.api_schemas import Flavor
-from backend.logic.StorageManager import StorageManager
+from backend.logic.storage_manager import StorageManager
 import backend.logic.Flavors as flv
 from backend.logic.MyTypes import *
 
