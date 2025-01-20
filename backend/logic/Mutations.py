@@ -5,6 +5,7 @@ from backend.data_management.api_schemas import (
     CategoryID,
     WatchStatus,
 )
+from backend.data_management.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
 from backend.logic.MyTypes import *
 from typing import Any
@@ -27,17 +28,18 @@ def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> 
     return storage.edit(operation, "users")
 
 
-def update_user(storage: StorageManager, userId, new_data: dict):
+def update_user(
+    storage: StorageManager, userId: UserID, new_data: dict[UserColumns, str]
+):
     storage.validate_id(userId, "users")
 
     def operation(data: pd.DataFrame):
         assert userId in data.index, f"User '{userId}' not found."
-        assert not (
-            "id" in new_data.keys() or "userId" in new_data.keys()
-        ), "Cannot update user id"
+        assert not ("id" in new_data or "userId" in new_data), "Cannot update user id"
         if not all([x in data.columns for x in new_data.keys()]):
             raise Exception(f"Invalid columns in new data: {new_data.keys()}.")
-        data.loc[userId, new_data.keys()] = new_data.values()
+        for key, value in new_data.items():
+            data.at[userId, key] = value
         return data, None
 
     return storage.edit(operation, "users")
@@ -164,10 +166,10 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
 # `new_data` is a dictionary of new data to add or update
 def update_movie(
     storage: StorageManager,
-    movie,
-    year,
+    movie: MovieID,
+    year: int | str,
     new_data: dict[str, Any] = {},
-    try_title_lookup=False,
+    try_title_lookup: bool = False,
 ) -> MovID | bool:
     for val in new_data.values():
         if "," in str(val):
@@ -180,31 +182,34 @@ def update_movie(
     if not try_title_lookup:
         movieId = movie
         try:
-            # storage.validate_id(movieId, "movies")
-            MovieID(movieId)
+            AnnotatedValidator(movie=movieId)
         except:
             raise Exception(
                 f"Invalid movie id '{movieId}'.\n"
                 "Did you mean to send a title? Consider try_title_lookup=True."
             )
 
-        def operation(data):
+        def update_existing_movie(data):
             was_there = movieId in data.index
-            data.loc[movieId, new_data.keys()] = new_data.values()
+            for key, value in new_data.items():
+                data.at[movieId, key] = value
             return data, was_there
+
+        return storage.edit(update_existing_movie, "movies", year)
 
     else:
 
-        def operation(data):
+        def update_or_create_movie(data):
             if movie in data[MovieColumns.TITLE].tolist():
                 movieId = data.loc[data[MovieColumns.TITLE] == movie].index[0]
-                data.at[movieId, new_data.keys()] = new_data.values()
+                for key, value in new_data.items():
+                    data.at[movieId, key] = value
             else:
                 movieId = storage.create_unique_movie_id(year=year)
                 data.at[movieId] = {MovieColumns.TITLE: movie, **new_data}
             return data, movieId
 
-    return storage.edit(operation, "movies", year)
+        return storage.edit(update_or_create_movie, "movies", year)
 
 
 def add_movie(storage: StorageManager, year: int | str, title: str) -> MovID:

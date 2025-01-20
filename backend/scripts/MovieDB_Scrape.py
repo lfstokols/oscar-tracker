@@ -39,7 +39,6 @@ BASE_SESSION = requests.Session()
 BASE_SESSION.headers.update(
     {"Authorization": f"Bearer {TMDB_API_KEY}", "accept": "application/json"}
 )
-BASE_SESSION.base_url = URL_BASE
 
 
 def parse_args():
@@ -179,18 +178,18 @@ def fetch_movie_db(year, error_cutoff):
                         f"Release status odd: they say the release status is <{details['status']}>"
                     )
                 if odd_tags:
-                    tags = []
+                    tags: list[str] = []
                     if details["adult"]:
                         tags.append("adult")
                     if details["video"]:
                         tags.append("video")
-                    print(f"The movie was tagged as <{str.join(tags, ', ')}>")
+                    print(f"The movie was tagged as <{', '.join(tags)}>")
                 print(
                     "\nAdditional info:",
                     f"Release date: <{details['release_date']}>",
                     f"Language: <{details['original_language']}>",
                     f"Country: <{details['origin_country']}>",
-                    f"Genres: <{str.join(details['genres'].map(lambda g: g['name']), ', ')}>",
+                    f"Genres: <{', '.join(details['genres'].map(lambda g: g['name']))}>",
                 )
 
                 keep = input(f"Assume it's still right movie? (y/N): ").lower() == "y"
@@ -198,7 +197,7 @@ def fetch_movie_db(year, error_cutoff):
                 keep = True
             if not keep:
                 continue
-            new_data = {
+            new_data: dict[str, int] = {
                 MovieColumns.MovieDB_ID: movie_db_id,
             }
             if details["imdb_id"]:
@@ -262,10 +261,8 @@ def fetch_wrapper(endpoint, params=None, headers=None):
     Returns the JSON response from the movieDB API (a dict).
     endpoint: everything after /3/, no leading/trailing slashes.
     """
-    # Use the session but customize for this specific request
-    response = BASE_SESSION.get(
-        f"{BASE_SESSION.base_url}/{endpoint}", params=params, headers=headers
-    )
+    #* Use the session but customize for this specific request
+    response = BASE_SESSION.get(f"{URL_BASE}/{endpoint}", params=params, headers=headers)
     return response.json()
 
 

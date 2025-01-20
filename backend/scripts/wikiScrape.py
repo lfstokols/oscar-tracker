@@ -1,5 +1,7 @@
 import sys
 from pathlib import Path
+from typing import Optional
+
 
 # from backend.logic.MyTypes import *
 
@@ -18,13 +20,14 @@ sys.path.append(
 # Fuck it, hope this works
 
 import argparse, requests, re
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from datetime import datetime
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
 from backend.logic.MyTypes import *
 from backend.data_management.api_schemas import MovieID
+import pandas as pd
 
 
 def parse_args():
@@ -112,7 +115,6 @@ def fetch_wikipedia(year):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
 
-    tables = soup.find_all("table")
     is_current = datetime.now() < datetime(
         year, 4, 1
     )  # Check if the Oscars ceremony has happened yet. Not super accurate, but good enough for our purposes.
@@ -123,7 +125,8 @@ def fetch_wikipedia(year):
     debug_print(f"Looking for section with id {section_id}")
     try:
         section_head = soup.find(id=section_id)
-        table = section_head.find_next("table")
+        assert section_head is not None
+        table: Optional[Tag] = section_head.find_next(name="table")  # type: ignore
     except Exception as e:
         debug_print(f"Error finding table: {e}")
         table = None
@@ -211,24 +214,49 @@ def parse_data(data_list):
             note = None
             too_many_dashes = len(re.findall(f" {dash_pattern} ", line)) != 1
             try:
-                title = re.match(pattern, line).group(group_num).strip()  # type: ignore
+                match = re.match(pattern, line)
+                if not match:
+                    raise ValueError(f"No match found for pattern: {pattern}")
+                title = match.group(group_num).strip()
                 assert not too_many_dashes
             except Exception as e:
                 print(f">\tUnable to parse title for {category}::{line}")
-                print(f">\tBest guess is <{title}>. Leave blank to use guess.")
-                title = input("\t>>Please enter the TITLE manually: ").strip() or title
+                if isinstance(e, AssertionError):
+                    print(f">\tBest guess is <{title}>. Leave blank to use guess.")
+                    title = (
+                        input("\t>>Please enter the TITLE manually: ").strip() or title
+                    )
+                else:
+                    while True:
+                        title = input("\t>>Please enter the TITLE manually: ").strip()
+                        if title:
+                            break
+                        else:
+                            print(f"Title cannot be empty.")
             if category_df.loc[category, "hasNote"]:
                 try:
-                    note = (
-                        re.match(pattern, line).group(3 - group_num).strip()
-                    )  # 3 - group_num is 2 if group_num is 1, and vice versa
+                    match = re.match(pattern, line)
+                    if not match:
+                        raise ValueError(f"No match found for pattern: {pattern}")
+                    note = match.group(
+                        3 - group_num
+                    ).strip()  # * 3-group_num is 2 if group_num is 1, and vice versa
                     assert not too_many_dashes
                 except Exception as e:
                     print(f">\tUnable to parse note for {category}::{line}")
-                    print(f">\tBest guess is <{note}>. Leave blank to use guess.")
-                    note = (
-                        input("\t>>Please enter the NOTE manually: ").strip() or title
-                    )
+                    if isinstance(e, AssertionError):
+                        print(f">\tBest guess is <{note}>. Leave blank to use guess.")
+                        note = (
+                            input("\t>>Please enter the NOTE manually: ").strip()
+                            or note
+                        )
+                    else:
+                        while True:
+                            note = input("\t>>Please enter the NOTE manually: ").strip()
+                            if note:
+                                break
+                            else:
+                                print(f"Note cannot be empty.")
             if not type(title) == str:
                 print(f"Invalid title '{title}' for {category}.")
                 continue
@@ -248,6 +276,7 @@ def parse_data(data_list):
                     NomColumns.CATEGORY: category,
                     NomColumns.NOTE: note,
                 }
+                nom = Nom(**nom)
                 mu.add_nomination(storage, year, nom, validate=False)
 
     if verbose:
@@ -272,9 +301,10 @@ def does_movie_exist(title: str) -> bool:
 
 def get_movie_id(
     title: str,
-) -> MovieID:  # Returns the id if it exists, otherwise creates one and adds to table
-    titleList = storage.read("movies", year)[MovieColumns.TITLE]
-    return titleList[titleList == title].index[0]
+) -> MovieID:
+    movies = storage.read("movies", year)
+    titleList = pd.Series(movies.index, index=movies[MovieColumns.TITLE])
+    return titleList.at[title]
 
 
 if __name__ == "__main__":

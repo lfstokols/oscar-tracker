@@ -34,7 +34,6 @@ URL_BASE = "http://www.omdbapi.com/"
 
 # Create base session with shared configs
 BASE_SESSION = requests.Session()
-BASE_SESSION.base_url = URL_BASE
 
 
 def parse_args():
@@ -158,11 +157,13 @@ def fetch_imdb(year, error_cutoff):
             else:
                 print(f"Missing imdbID for {title}")
             if "Runtime" in response_dict:
-                new_data["runtime"] = int(
-                    re.match(r"\d*", response_dict["Runtime"]).group()
-                )
+                groups = re.match(r"\d*", response_dict["Runtime"])
+                if groups is None:
+                    print(f"Missing runtime for {title}")
+                else:
+                    new_data["runtime"] = int(groups.group())
             else:
-                print(f"Missing data for {title}")
+                print(f"Missing runtime for {title}")
             if not new_data:
                 continue
             if not dry_run:
@@ -173,15 +174,15 @@ def fetch_imdb(year, error_cutoff):
             print(f"Error with {movId}: {e}")
 
 
-def fetch_wrapper(params=None):
+def fetch_wrapper(parameters={}):
     """
     Returns the JSON response from the Imdb API (a dict).
     endpoint: everything after /3/, no leading/trailing slashes.
     """
     # Use the session but customize for this specific request
     response = BASE_SESSION.get(
-        f"{BASE_SESSION.base_url}",
-        params={"apikey": "b96f294f", "type": "movie", "y": year, **params},
+        f"{URL_BASE}",
+        params={"apikey": IMDB_API_KEY, "type": "movie", "y": year, **parameters},
     )
     return response.json()
 

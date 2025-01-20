@@ -2,7 +2,7 @@ from flask import jsonify
 import pandas as pd
 from backend.data_management.api_schemas import *
 from backend.logic.MyTypes import DataFlavor
-from logic.utils import df_to_jsonable
+from backend.logic.utils import df_to_jsonable
 
 
 # def validate_user_id(user_id: str):
@@ -39,18 +39,25 @@ def validate_user_stats_list(user_stats_list: pd.DataFrame) -> list[api_UserStat
     return [api_UserStats(**record).model_dump() for record in records]  # type: ignore
 
 
-def validate_my_user_data(my_user_data: pd.DataFrame) -> api_MyUserData:
+def validate_my_user_data(my_user_data: pd.DataFrame):
     record = df_to_jsonable(my_user_data, Flavor.USERS)[0]
-    return api_MyUserData(**record).model_dump()  # type: ignore
+    return api_MyUserData(**record).model_dump()
 
 
 def validate_category_completion_dict(
-    category_completion_dict: dict[UserID, list[pd.DataFrame]]
-) -> api_CategoryCompletionsDict:
+    category_completion_dict: dict[UserID, list[dict[CategoryCompletionKey, int]]]
+) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
     return category_completion_dict
-    return api_CategoryCompletionsDict(
-        root={
-            UserID(k): list[api_CategoryCompletions(root=v.to_dict())]
-            for k, v in category_completion_dict.items()
-        }
-    ).model_dump()
+    # return api_CategoryCompletionsDict(
+    #     root={
+    #         UserID(k): list[api_CategoryCompletions(root=v.to_dict())]
+    #         for k, v in category_completion_dict.items()
+    #     }
+    # ).model_dump()
+
+
+class AnnotatedValidator(BaseModel):
+    movie: Optional[MovieID] = None
+    user: Optional[UserID] = None
+    category: Optional[CategoryID] = None
+    poster_path: Optional[PosterPath] = None

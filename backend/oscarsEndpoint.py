@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 import requests
+from backend.data_management.api_schemas import UserID
 from backend.data_management.api_validators import (
     validate_nom_list,
     validate_movie_list,
@@ -18,6 +19,7 @@ from backend.data_management.api_validators import (
     validate_my_user_data,
     validate_category_completion_dict,
     validate_user_stats_list,
+    AnnotatedValidator,
 )
 from backend.logic import utils
 from backend.logic.utils import (
@@ -131,8 +133,8 @@ def serve_users_POST():
     if request.json is None:
         raise ValueError("No body provided, what am I supposed to update?")
     username = request.json.get("username")
-    newUserId = mu.add_user(storage, username)
-    newUserId = UserID(newUserId)
+    newUserId: UserID = mu.add_user(storage, username)
+    AnnotatedValidator(user=newUserId)
     mu.update_user(storage, newUserId, request.json)
     newState = pr.get_users(storage)
     newState = validate_user_list(newState)
@@ -161,7 +163,7 @@ def serve_users_DELETE():
         raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
     cookie_id = request.cookies.get("activeUserId")
     param_id = request.args.get("userId")
-    body_id = request.json.get("userId")
+    body_id: UserID = request.json.get("userId")
     if not (request.json.get("forRealsies") and request.json.get("delete")):
         raise MissingAPIArgumentError(
             "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
@@ -171,7 +173,8 @@ def serve_users_DELETE():
             "Need matching ids in cookie, param, and body",
             [("activeUserId", "cookie"), ("userId", "param"), ("userId", "body")],
         )
-    mu.delete_user(storage, UserID(body_id))
+    AnnotatedValidator(user=body_id)
+    mu.delete_user(storage, body_id)
     return validate_user_list(pr.get_users(storage))
 
 
@@ -253,6 +256,8 @@ def serve_letterboxd_search():
 # Serve React App
 @oscars.route("/")
 def serve_root():
+    if not oscars.static_folder:
+        return abort(404)
     return send_from_directory(oscars.static_folder, "index.html")
 
 
@@ -263,11 +268,14 @@ def serve_favicon(_):
 
 @oscars.route("/<path:relpath>")
 def serve(relpath):
+    if not oscars.static_folder:
+        return abort(404)
     filepath = Path(oscars.static_folder) / relpath
     if not filepath.is_relative_to(oscars.static_folder):
         return abort(403)
     if filepath.exists():
         return send_from_directory(filepath.parent, filepath.name)
+    return abort(404)
 
 
 if __name__ == "__main__":

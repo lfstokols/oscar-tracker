@@ -1,10 +1,10 @@
-from typing import NewType, Literal, TypedDict, NotRequired, Annotated
+from typing import NewType, Literal, TypedDict, NotRequired, Annotated, TypeVar
 from enum import Enum
 
 
 IDNum = NewType("IDNum", str)
 MovID = NewType("MovID", IDNum)
-UserID = NewType("UserID", IDNum)
+UseID = NewType("UseID", IDNum)
 CatID = NewType("CatID", IDNum)
 DataFlavor = Literal["movies", "users", "nominations", "categories", "watchlist"]
 GeneralDataFlavor = Literal[
@@ -54,6 +54,13 @@ class MovieColumns(myEnum):
     #     return [
     #         v for k, v in vars(cls).items() if not k.startswith("_") and not callable(v)
     #     ]
+
+
+# This creates a Literal that can only be the literal values of MovieColumns class attributes
+# _movie_column_values = tuple(
+#     val for (key, val) in MovieColumns.__dict__.items() if not key.startswith("_")
+# )
+# MovieColumnKey = Literal[_movie_column_values]
 
 
 class DerivedMovieColumns(MovieColumns):
@@ -157,7 +164,7 @@ class Grouping(myEnum, Enum):
 
 __all__ = [
     "MovID",
-    "UserID",
+    "UseID",
     "CatID",
     "MovieDbID",
     "Nom",

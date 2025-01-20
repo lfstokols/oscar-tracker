@@ -6,8 +6,6 @@ from backend.data_management.api_schemas import UserID
 import requests
 from bs4 import BeautifulSoup
 
-import os, pathlib
-
 import backend.logic.Mutations as mu
 
 
@@ -23,17 +21,20 @@ def update_user_watchlist(user_id: UserID) -> bool:
     # * compute parameters
     account = storage.read("users").at[user_id, UserColumns.LETTERBOXD]
     cutoff = mu.get_and_set_rss_timestamp(user_id)
-    print(f"cutoff: {cutoff}, {type(cutoff)}")
-    print("================================================")
-    current_year = datetime.now().year - 1
+    if cutoff is None:
+        print("cutoff was None in check_rss.update_user_watchlist")
+        cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(weeks=52)
     # * fetch the data
     soup = fetch_rss(account)
     idlist = parse_rss(soup, cutoff)
     # * identify the movies
-    movies = storage.read("movies", year=current_year)
-    t_to_me = pd.Series(movies.index, index=movies[MovieColumns.MovieDB_ID])
+    movies = storage.read("movies")
+    t_to_me = pd.Series(movies.index, index=movies["alternate_id_column"])
     idlist = t_to_me[t_to_me.index.isin(idlist)]
     # * add to watchlist
+    current_year = (
+        datetime.now().year - 1
+    )  # * while the system is live, the movies are from last year
     for id in idlist:
         mu.add_watchlist_entry(
             storage, current_year, user_id, id, WatchStatus(WatchStatus.SEEN)
@@ -45,14 +46,7 @@ def update_user_watchlist(user_id: UserID) -> bool:
 
 def fetch_rss(account: str) -> BeautifulSoup:
     response = requests.get(f"https://letterboxd.com/{account}/rss")
-    # * Uncomment for debugging
-    # with open(
-    #     pathlib.Path(__file__).parent.parent.parent / "fyi" / "rss_debug.xml",
-    #     "w",
-    #     encoding="utf-8",
-    # ) as f:
-    #     f.write(response.text)
-    soup = BeautifulSoup(response.text, "lxml-xml")
+    soup = BeautifulSoup(response.text, "html.parser")
     return soup
 
 
@@ -60,12 +54,8 @@ def parse_rss(soup: BeautifulSoup, cutoff: pd.Timestamp) -> list[MovieDbID]:
     items = soup.find_all("item")
     movie_ids = []
     for item in items:
-        pubDate = pd.Timestamp(item.find("pubDate").text).tz_convert("UTC")
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        print("      HEY! LOGAN!")
-        print(f"pubDate: {pubDate}, {type(pubDate)} \ncutoff: {cutoff}, {type(cutoff)}")
-        print("++++++++++++++++++++++++++++++++++++++++++++++++++++")
-        if pubDate < pd.Timestamp(cutoff):
+        pubDate = pd.Timestamp(item.find("pubDate").text)
+        if pubDate < cutoff:
             break
         movie_id = item.find("tmdb:movieId").text
         movie_ids.append(int(movie_id))

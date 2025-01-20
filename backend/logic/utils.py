@@ -5,7 +5,8 @@ from typing import Any
 from flask import jsonify, Request
 import numpy as np
 import pandas as pd
-from backend.data_management.api_schemas import Flavor
+from backend.data_management.api_schemas import Flavor, UserID
+from backend.data_management.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Flavors as flv
 from backend.logic.MyTypes import *
@@ -94,4 +95,5 @@ def get_active_user_id(storage: StorageManager, request: Request) -> UserID | No
     users = storage.read("users")
     if active_user_id not in users.index:
         return None
-    return UserID(active_user_id)  # type: ignore
+    AnnotatedValidator(user=active_user_id)
+    return active_user_id

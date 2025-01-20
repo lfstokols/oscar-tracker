@@ -11,6 +11,7 @@ from backend.logic.MyTypes import Grouping
 import backend.logic.utils as utils
 from backend.logic.storage_manager import StorageManager
 from backend.logic.MyTypes import *
+from backend.data_management.api_schemas import UserID
 
 
 def are_movies_short(
@@ -123,7 +124,7 @@ def get_user_propic(letterboxd_username: str) -> str | None:
 
 
 def get_category_completion_dict(
-    storage: StorageManager, year, userIdList: list[UserID] | None = None
+    storage: StorageManager, year
 ) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
     """
     This is for the 'by category' view.
@@ -148,7 +149,7 @@ def get_category_completion_dict(
                 edges.loc[
                     (edges[WatchlistColumns.USER] == user)
                     & (edges[NomColumns.CATEGORY] == category),
-                    WatchStatus.SEEN,
+                    [WatchStatus.SEEN],
                 ]
                 .sum()
                 .sum()
@@ -169,7 +170,7 @@ def get_category_completion_dict(
                 edges.loc[
                     (edges[WatchlistColumns.USER] == user)
                     & (edges[CategoryColumns.GROUPING] == group),
-                    WatchStatus.SEEN,
+                    [WatchStatus.SEEN],
                 ]
                 .sum()
                 .item()

@@ -7,16 +7,19 @@ import re
 from contextlib import contextmanager
 
 from backend.data_management.api_schemas import Flavor
+from backend.data_management.api_validators import AnnotatedValidator
 
-if sys.platform.startswith("win"):
+from collections.abc import Callable
+from backend.logic.MyTypes import *
+from typing import IO, Any, TYPE_CHECKING, cast
+import backend.logic.Flavors as flv
+from backend.data_management.api_schemas import *
+
+IS_WINDOWS = sys.platform.startswith("win")
+if IS_WINDOWS:
     import msvcrt
 else:
     import fcntl
-from collections.abc import Callable
-from backend.logic.MyTypes import *
-from typing import IO, Any
-import backend.logic.Flavors as flv
-from backend.data_management.api_schemas import *
 
 # import backend.logic.utils as utils
 
@@ -110,7 +113,7 @@ class StorageManager:
 
     # So far I only use this inside of an `operation` function,
     # 		so I should take the existing list directly instead of reading from a file
-    def create_unique_movie_id(self, year: int | str) -> MovID:
+    def create_unique_movie_id(self, year: int | str) -> MovieID:
         existing_ids = self.read("movies", year).index
         tries = 0
         while tries < 100:
@@ -120,7 +123,9 @@ class StorageManager:
                 + f"{random.randint(0, 0xFF_FF):04x}"
             )
             if id not in existing_ids:
-                return MovieID(id)  # type: ignore
+                AnnotatedValidator(movie=id)
+                validated_id: MovieID = id
+                return validated_id
             tries += 1
         raise Exception(
             "Unable to create unique ID. Erroring out to avoid infinite loop."
@@ -132,7 +137,9 @@ class StorageManager:
         while tries < 100:
             id = "usr_" + f"{random.randint(0, 0xFFF_FFF):06x}"
             if id not in existing_ids:
-                return UserID(id)  # type: ignore
+                AnnotatedValidator(user=id)
+                validated_id: UserID = id
+                return validated_id
             tries += 1
         raise Exception(
             "Unable to create unique ID. Erroring out to avoid infinite loop."
@@ -288,7 +295,7 @@ class StorageManager:
             with open(filepath[0], mode, encoding="utf-8") as file:
                 with open(filepath[1], mode, encoding="utf-8") as file2:
                     try:
-                        if sys.platform.startswith("win"):
+                        if IS_WINDOWS:
                             msvcrt.locking(
                                 file.fileno(),
                                 (
@@ -298,7 +305,6 @@ class StorageManager:
                                 ),
                                 1,
                             )
-                            # print(f"locked {file}")
                         else:
                             fcntl.flock(
                                 file.fileno(),
@@ -306,7 +312,7 @@ class StorageManager:
                             )
                         yield file, file2
                     finally:
-                        if sys.platform.startswith("win"):
+                        if IS_WINDOWS:
                             file.seek(0)
                             msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 1)
                             # print(f"unlocked {file}")
@@ -426,13 +432,13 @@ class StorageManager:
         nominations = self.read("nominations", year)
         category_counts = nominations[NomColumns.CATEGORY].value_counts()
         cat_df = self.read("categories")
-        expected_counts: pd.Series[int] = cat_df[CategoryColumns.MAX_NOMS]
+        expected_counts = cat_df[CategoryColumns.MAX_NOMS].astype("Int64")
         bad_cats = []
         for category, count in category_counts.items():
             if (
                 (category not in expected_counts.index)
-                or (count > expected_counts[category])
-                or (expect_full and count < expected_counts[category])
+                or (count > expected_counts.at[category])
+                or (expect_full and count < expected_counts.at[category])
             ):
                 bad_cats.append(category)
         return bad_cats
