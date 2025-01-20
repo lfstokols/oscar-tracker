@@ -165,11 +165,11 @@ def get_category_completion_dict(
                 .sum()
                 .item()
             )
-        for group in Grouping.values():
+        for group in list(Grouping):
             data[user][0][group] = (
                 edges.loc[
                     (edges[WatchlistColumns.USER] == user)
-                    & (edges[CategoryColumns.GROUPING] == group),
+                    & (edges[CategoryColumns.GROUPING].astype(str) == group.value),
                     [WatchStatus.SEEN],
                 ]
                 .sum()
@@ -178,7 +178,7 @@ def get_category_completion_dict(
             data[user][1][group] = (
                 edges.loc[
                     (edges[WatchlistColumns.USER] == user)
-                    & (edges[CategoryColumns.GROUPING] == group),
+                    & (edges[CategoryColumns.GROUPING].astype(str) == group.value),
                     [WatchStatus.TODO, WatchStatus.SEEN],
                 ]
                 .sum()
@@ -379,7 +379,7 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
             total_todo_runtime,
         ],
         axis="columns",
-    ).fillna(0)
+    ).infer_objects()
     result.index.name = "id"
     return result
 

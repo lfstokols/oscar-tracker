@@ -78,7 +78,7 @@ def add_watchlist_entry(
 ) -> bool:
     storage.validate_id(userId, "users")
     storage.validate_id(movieId, "movies")
-    assert status in WatchStatus.values(), f"Invalid status '{status}'."
+    assert status in list(WatchStatus), f"Invalid status '{status}'."
 
     def operation(data: pd.DataFrame):
         existing_entry = data[
@@ -123,9 +123,11 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
     Returns:
         None: The function does not return anything.
     """
-    movie = nomination[NomColumns.MOVIE]
-    category = nomination[NomColumns.CATEGORY]
-    note = nomination[NomColumns.NOTE] if NomColumns.NOTE in nomination else None
+    movie = nomination[str(NomColumns.MOVIE)]
+    category = nomination[str(NomColumns.CATEGORY)]
+    note = (
+        nomination[str(NomColumns.NOTE)] if str(NomColumns.NOTE) in nomination else None
+    )
     storage.validate_id(movie, "movies")
     storage.validate_id(category, "categories")
 

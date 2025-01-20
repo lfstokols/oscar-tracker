@@ -41,7 +41,7 @@ class Nom(TypedDict):
     note: NotRequired[str | None]
 
 
-class MovieColumns(myEnum):
+class MovieColumns(str, Enum):
     ID = "id"
     TITLE = "title"
     Imdb_ID = "ImdbId"
@@ -63,7 +63,7 @@ class MovieColumns(myEnum):
 # MovieColumnKey = Literal[_movie_column_values]
 
 
-class DerivedMovieColumns(MovieColumns):
+class DerivedMovieColumns(str, Enum):
     RUNTIME_HOURS = "runtime_hours"
     RUNTIME_MINUTES = "runtime_minutes"
     NUM_NOMS = "numNoms"
@@ -71,7 +71,7 @@ class DerivedMovieColumns(MovieColumns):
     IS_SHORT = "isShort"
 
 
-class NomColumns(myEnum):
+class NomColumns(str, Enum):
     MOVIE = "movieId"
     CATEGORY = "categoryId"
     NOTE = "note"
@@ -83,7 +83,7 @@ class NomColumns(myEnum):
     #     ]
 
 
-class CategoryColumns(myEnum):
+class CategoryColumns(str, Enum):
     ID = "id"
     SHORT_NAME = "shortName"
     FULL_NAME = "fullName"
@@ -99,7 +99,7 @@ class CategoryColumns(myEnum):
     #     ]
 
 
-class WatchlistColumns(myEnum):
+class WatchlistColumns(str, Enum):
     MOVIE = "movieId"
     USER = "userId"
     STATUS = "status"
@@ -111,7 +111,7 @@ class WatchlistColumns(myEnum):
     #     ]
 
 
-class UserColumns(myEnum):
+class UserColumns(str, Enum):
     ID = "id"
     NAME = "username"
     LETTERBOXD = "letterboxd"
@@ -125,11 +125,11 @@ class UserColumns(myEnum):
     #     ]
 
 
-class myUserDataColumns(UserColumns):
+class myUserDataColumns(str, Enum):
     PROFILE_PIC = "propic"
 
 
-class UserStatsColumns(myEnum):
+class UserStatsColumns(str, Enum):
     NUM_SEEN_SHORT = "numSeenShort"
     NUM_SEEN_FEATURE = "numSeenFeature"
     NUM_TODO_SHORT = "numTodoShort"
@@ -140,7 +140,7 @@ class UserStatsColumns(myEnum):
     TODO_WATCHTIME = "todoWatchtime"
 
 
-class WatchStatus(myEnum, str):
+class WatchStatus(str, Enum):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"
@@ -152,7 +152,7 @@ class WatchStatus(myEnum, str):
     #     ]
 
 
-class Grouping(myEnum, Enum):
+class Grouping(str, Enum):
     BigThree = "big_three"
     Acting = "acting"
     Filmkraft = "filmkraft"

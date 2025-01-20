@@ -22,7 +22,7 @@ class Config:
             "id": "check_letterboxd",
             "func": "backend.scheduled_tasks.scheduling:check_letterboxd",
             "trigger": "interval",
-            "minutes": 1,
+            "hours": 1,
         },
         {
             "id": "backup_database",

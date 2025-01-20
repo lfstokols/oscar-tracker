@@ -52,7 +52,7 @@ class StorageManager:
 
         # Default dataframes for file creation
         self.DEFAULT_MOVIES = pd.DataFrame(
-            columns=[col for col in MovieColumns.values()]
+            columns=[col for col in list(MovieColumns)]
         ).set_index(MovieColumns.ID)
         self.DEFAULT_MOVIES.astype(
             {
@@ -62,7 +62,7 @@ class StorageManager:
             }
         )
         self.DEFAULT_NOMINATIONS = pd.DataFrame(
-            columns=[col for col in NomColumns.values()]
+            columns=[col for col in list(NomColumns)]
         )
         self.DEFAULT_NOMINATIONS.astype(
             {
@@ -72,7 +72,7 @@ class StorageManager:
             }
         )
         self.DEFAULT_USERS = pd.DataFrame(
-            columns=[col for col in UserColumns.values()]
+            columns=[col for col in list(UserColumns)]
         ).set_index(UserColumns.ID)
         self.DEFAULT_USERS.astype(
             {
@@ -82,7 +82,7 @@ class StorageManager:
             }
         )
         self.DEFAULT_CATEGORIES = pd.DataFrame(
-            columns=[col for col in CategoryColumns.values()]
+            columns=[col for col in list(CategoryColumns)]
         ).set_index(CategoryColumns.ID)
         self.DEFAULT_CATEGORIES.astype(
             {
@@ -95,7 +95,7 @@ class StorageManager:
             }
         )
         self.DEFAULT_WATCHLIST = pd.DataFrame(
-            columns=[col for col in WatchlistColumns.values()]
+            columns=[col for col in list(WatchlistColumns)]
         )
         self.DEFAULT_WATCHLIST.astype(
             {

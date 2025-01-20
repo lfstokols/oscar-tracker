@@ -1,8 +1,9 @@
 from flask import jsonify
+import numpy as np
 import pandas as pd
 from backend.data_management.api_schemas import *
 from backend.logic.MyTypes import DataFlavor
-from backend.logic.utils import df_to_jsonable
+import backend.logic.Flavors as flv
 
 
 # def validate_user_id(user_id: str):
@@ -61,3 +62,15 @@ class AnnotatedValidator(BaseModel):
     user: Optional[UserID] = None
     category: Optional[CategoryID] = None
     poster_path: Optional[PosterPath] = None
+
+
+def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
+    """
+    Converts a pandas DataFrame to a list of dictionaries.
+    It's not a json, but it's easily castable to json.
+    """
+    # flavor = flv.format_flavor(flavor)
+    if flv.flavor_props(flavor)["shape"] == "entity":
+        df = df.reset_index()
+    df = df.replace({np.nan: None})
+    return df.to_dict(orient="records")
