@@ -8,7 +8,7 @@ export default async function SearchProfileDatabase(
   snippet: string,
 ): Promise<LProfile[]> {
   // const base_url = 'https://letterboxd.com/s/search/members/';
-  const base_url = '/oscars/api/letterboxd/search';
+  const base_url = '/api/letterboxd/search';
   const url = `${base_url}?searchTerm=${snippet}`;
   const response = await fetch(url);
   const html = await response.text();

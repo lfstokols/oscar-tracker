@@ -47,7 +47,7 @@ oscars = Blueprint(
     "oscars",
     __name__,
     static_folder=project_root_directory / "dist",
-    static_url_path="/oscars/",
+    static_url_path="/api/",
 )
 # CORS(oscars)  # Enable CORS for all routes
 
@@ -88,7 +88,7 @@ def handle_errors(func):
 
 
 # Serve data
-@oscars.route("/api/nominations", methods=["GET"])
+@oscars.route("/nominations", methods=["GET"])
 @handle_errors
 def serve_noms():
     if not (year := request.args.get("year")):
@@ -98,7 +98,7 @@ def serve_noms():
     return validate_nom_list(data)
 
 
-@oscars.route("/api/movies", methods=["GET"])
+@oscars.route("/movies", methods=["GET"])
 @handle_errors
 def serve_movies():
     if not (year := request.args.get("year")):
@@ -107,7 +107,7 @@ def serve_movies():
     return validate_movie_list(data)
 
 
-@oscars.route("/api/users", methods=["GET"])
+@oscars.route("/users", methods=["GET"])
 @handle_errors
 def serve_users_GET():
     userId = utils.get_active_user_id(storage, request)
@@ -125,7 +125,7 @@ def serve_users_GET():
         return validate_user_list(pr.get_users(storage))
 
 
-@oscars.route("/api/users", methods=["POST"])
+@oscars.route("/users", methods=["POST"])
 @handle_errors
 def serve_users_POST():
     # * Expects a body with a username field
@@ -141,7 +141,7 @@ def serve_users_POST():
     return jsonify({"userId": newUserId, "users": newState})
 
 
-@oscars.route("/api/users", methods=["PUT"])
+@oscars.route("/users", methods=["PUT"])
 @handle_errors
 def serve_users_PUT():
     # * Expects any dictionary of user data
@@ -156,7 +156,7 @@ def serve_users_PUT():
     return jsonify(newState)
 
 
-@oscars.route("/api/users", methods=["DELETE"])
+@oscars.route("/users", methods=["DELETE"])
 @handle_errors
 def serve_users_DELETE():
     if request.json is None:
@@ -178,7 +178,7 @@ def serve_users_DELETE():
     return validate_user_list(pr.get_users(storage))
 
 
-@oscars.route("/api/categories", methods=["GET"])
+@oscars.route("/categories", methods=["GET"])
 @handle_errors
 def serve_categories():
     return validate_category_list(storage.read("categories"))
@@ -186,7 +186,7 @@ def serve_categories():
 
 # Expect justMe = bool
 # If PUT, expect movieId and status
-@oscars.route("/api/watchlist", methods=["GET"])
+@oscars.route("/watchlist", methods=["GET"])
 @handle_errors
 def serve_watchlist_GET():
     userId = utils.get_active_user_id(storage, request)
@@ -203,7 +203,7 @@ def serve_watchlist_GET():
         return validate_watchlist(storage.read("watchlist", year))
 
 
-@oscars.route("/api/watchlist", methods=["PUT"])
+@oscars.route("/watchlist", methods=["PUT"])
 @handle_errors
 def serve_watchlist_PUT():
     userId = utils.get_active_user_id(storage, request)
@@ -217,7 +217,7 @@ def serve_watchlist_PUT():
     return validate_watchlist(storage.read("watchlist", year))
 
 
-@oscars.route("/api/by_user", methods=["GET"])
+@oscars.route("/by_user", methods=["GET"])
 @handle_errors
 def serve_by_user():
     year = request.args.get("year")
@@ -227,7 +227,7 @@ def serve_by_user():
     return validate_user_stats_list(data)
 
 
-@oscars.route("/api/by_category", methods=["GET"])
+@oscars.route("/by_category", methods=["GET"])
 @handle_errors
 def serve_by_category():
     year = request.args.get("year")
@@ -237,7 +237,7 @@ def serve_by_category():
     return validate_category_completion_dict(data)
 
 
-@oscars.route("/api/letterboxd/search", methods=["GET"])
+@oscars.route("/letterboxd/search", methods=["GET"])
 @handle_errors
 def serve_letterboxd_search():
     """

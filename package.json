@@ -2,7 +2,7 @@
 	"name": "oscar-tracker",
 	"version": "0.1.0",
 	"private": true,
-	"homepage": "/oscars",
+	"homepage": "/",
 	"dependencies": {
 		"react": "^18.2.0",
 		"react-data-table-component": "",
