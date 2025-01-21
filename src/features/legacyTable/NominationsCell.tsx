@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {TableCell, Tooltip, ClickAwayListener, Box} from '@mui/material';
+import {TableCell, Tooltip, ClickAwayListener, Box, Stack} from '@mui/material';
 import {getNominationCategoriesForMovie} from '../../utils/dataSelectors';
 import {
   NomList,
@@ -19,6 +19,7 @@ type NoteProps = {
 
 const countryCodes: {name: string; flag: string; code: string}[] = countries;
 const songUrls: {title: string; url: string}[] = musicVideos;
+const numNomsToShow = 4;
 
 export default function NominationsCell({
   movieId,
@@ -37,22 +38,16 @@ export default function NominationsCell({
     nominations,
     categories,
   );
-  const notedCats = catList.filter(cat => cat.hasNote);
-  const needsTooltip = notedCats.length > 0;
-  const notedNoms = MyNoms.filter(
-    nom => notedCats.find(cat => cat.id === nom.categoryId) != null,
-  );
 
-  const content = catList.map(cat => cat.shortName).join(', ');
+  const entries = MyNoms.map(nom => makeEntry(nom, categories));
 
-  const popupContent = notedNoms.map(nom => {
-    const cat = categories.find(c => c.id === nom.categoryId);
-    return {
-      catName: cat?.shortName ?? '???',
-      text: nom.note ?? '???',
-      catId: nom.categoryId,
-    };
-  });
+  const tooBig = entries.length > numNomsToShow;
+  const remainingEntries = tooBig ? entries.splice(numNomsToShow - 1) : [];
+  const content = arrayToDisplay([
+    ...entries,
+    ...(tooBig ? [<>{remainingEntries.length} more...</>] : []),
+  ]);
+  const popupContent = arrayToDisplay([...entries, ...remainingEntries]);
 
   return (
     <TableCell
@@ -61,77 +56,44 @@ export default function NominationsCell({
         className: 'nominations-column',
       }}
       {...tableCellProps}>
-      {makeCellContent(movieId, content, popupContent, needsTooltip)}
+      {makeCellContent(content, popupContent)}
     </TableCell>
   );
 }
 
 function makeCellContent(
-  movieId: MovieId,
-  content: string,
-  popupContent: NoteProps[],
-  needsTooltip: boolean,
+  // movieId: MovieId,
+  content: React.ReactNode,
+  popupContent: React.ReactNode,
+  // needsTooltip: boolean,
 ) {
   const [open, setOpen] = useState(false);
-  if (needsTooltip) {
-    const handleTooltipOpen = () => {
-      setOpen(true);
-    };
-    const handleTooltipClose = () => {
-      setOpen(false);
-    };
-    return (
-      <ClickAwayListener onClickAway={handleTooltipClose}>
-        <Tooltip
-          key={movieId}
-          open={open}
-          onClose={handleTooltipClose}
-          onOpen={handleTooltipOpen}
-          disableFocusListener
-          slotProps={{
-            popper: {
-              disablePortal: true,
-            },
-          }}
-          title={
-            <React.Fragment>
-              {popupContent.map(props => {
-                const formattedText =
-                  props.catId === 'cat_frgn' ? (
-                    <em>
-                      {getEmoji(props.text)} {props.text}
-                    </em>
-                  ) : props.catId === 'cat_song' ? (
-                    <>{getSong(props.text)}</>
-                  ) : (
-                    <i>{props.text}</i>
-                  );
-                return (
-                  <React.Fragment key={props.catId + props.text}>
-                    <b>{props.catName}:</b>
-                    {formattedText}
-                    <br />
-                  </React.Fragment>
-                );
-              })}
-            </React.Fragment>
-          }>
-          <span>
-            <Box onClick={handleTooltipOpen}>{content}</Box>
-            <InfoOutlinedIcon
-              sx={{
-                fontSize: '0.8rem',
-                marginLeft: '4px',
-                // verticalAlign: 'super',
-                opacity: 0.7,
-              }}
-            />
-          </span>
-        </Tooltip>
-      </ClickAwayListener>
-    );
-  }
-  return content;
+  // if (needsTooltip) {
+  const handleTooltipOpen = () => {
+    setOpen(true);
+  };
+  const handleTooltipClose = () => {
+    setOpen(false);
+  };
+  return (
+    <ClickAwayListener onClickAway={handleTooltipClose}>
+      <Tooltip
+        open={open}
+        onClose={handleTooltipClose}
+        onOpen={handleTooltipOpen}
+        disableFocusListener
+        slotProps={{
+          popper: {
+            disablePortal: true,
+          },
+        }}
+        title={popupContent}>
+        <span>
+          <Box onClick={handleTooltipOpen}>{content}</Box>
+        </span>
+      </Tooltip>
+    </ClickAwayListener>
+  );
 }
 
 function getNote(nom: Nom, categories: CategoryList) {
@@ -151,4 +113,33 @@ function getSong(song: string): React.ReactNode {
   const url = songUrls.find(s => s.title === song)?.url;
   if (!url) return <>{song}</>;
   return <a href={url}>{song}</a>;
+}
+
+function makeEntry(nom: Nom, categories: CategoryList) {
+  const cat = categories.find(cat => cat.id === nom.categoryId);
+  if (!cat) return <>???</>;
+  const formattedText =
+    cat.id === 'cat_frgn' ? (
+      <em>
+        {getEmoji(nom.note ?? '')} {nom.note ?? ''}
+      </em>
+    ) : cat.id === 'cat_song' ? (
+      <>{getSong(nom.note ?? '')}</>
+    ) : (
+      <i>{nom.note}</i>
+    );
+  return (
+    <Box key={cat.id + nom.note} sx={{overflow: 'visible'}}>
+      <b>{cat.shortName + (cat.hasNote ? ':' : '')}</b>
+      {formattedText}
+    </Box>
+  );
+}
+
+function arrayToDisplay(arr: React.ReactNode[]) {
+  return (
+    <Stack direction="column" padding={1}>
+      {...arr}
+    </Stack>
+  );
 }
