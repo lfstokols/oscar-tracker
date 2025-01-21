@@ -21,6 +21,8 @@ import {
   userOptions,
 } from '../../hooks/dataOptions';
 import NominationsCell from './NominationsCell';
+import {CategoryIdSchema} from '../../types/APIDataSchema';
+import {LogToConsole} from '../../utils/Logger';
 
 function LegacyTable(): React.ReactElement {
   const {year, preferences} = useOscarAppContext();
@@ -43,6 +45,11 @@ function LegacyTable(): React.ReactElement {
     movies,
     nominations,
   );
+
+  const bestPicCategoryId = CategoryIdSchema.parse('cat_pict');
+  const bestPicNominees = nominations
+    .filter(nom => nom.categoryId === bestPicCategoryId)
+    .map(nom => nom.movieId);
 
   const sortedUsers = sortUsers(users);
   const sortedData = features.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
@@ -135,7 +142,7 @@ function LegacyTable(): React.ReactElement {
                     }
                   : {}),
               }}>
-              <TitleCell movie={movie} />
+              <TitleCell movie={movie} bestPicNominees={bestPicNominees} />
               <NominationsCell
                 movieId={movie.id}
                 nominations={nominations}
@@ -258,10 +265,29 @@ export default function LegacyTableWrapper() {
   );
 }
 
-function TitleCell({movie}: {movie: Movie}): React.ReactElement {
+function TitleCell({
+  movie,
+  bestPicNominees,
+}: {
+  movie: Movie;
+  bestPicNominees?: string[];
+}): React.ReactElement {
   return (
-    <TableCell title={movie.id} sx={{className: 'title-column'}}>
-      <b style={{fontSize: '1.2em', whiteSpace: 'nowrap'}}>{movie.mainTitle}</b>
+    <TableCell
+      title={movie.id}
+      sx={{
+        className: 'title-column',
+        backgroundColor: bestPicNominees?.includes(movie.id)
+          ? 'rgba(255, 215, 0, 0.1)'
+          : 'inherit',
+      }}>
+      <b
+        style={{
+          fontSize: '1.2em',
+          whiteSpace: 'nowrap',
+        }}>
+        {movie.mainTitle}
+      </b>
       <br />
       {movie.subtitle ? (
         <i

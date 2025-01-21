@@ -1,3 +1,5 @@
+import { Grouping } from "../types/Enums";
+
 // Default year in year selector
 export const DEFAULT_YEAR = 2023; // ? How ought this be set?
 

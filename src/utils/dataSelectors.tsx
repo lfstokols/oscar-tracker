@@ -1,6 +1,6 @@
 import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
-import {WatchStatus} from '../types/Enums';
+import {Grouping, WatchStatus} from '../types/Enums';
 import {LogToConsole} from './Logger';
 
 export function getMovieWatchStatusForUser(
@@ -53,7 +53,7 @@ function getByCategory(
   movies: Movie[],
   nominations: Nom[],
   category: CategoryId,
-) {
+): Movie[] {
   return movies.filter(movie =>
     nominations.find(
       nom => nom.movieId == movie.id && nom.categoryId == category,
@@ -98,4 +98,24 @@ export function sortUsers(users: User[]): User[] {
     return users;
   }
   return [activeUser, ...users.filter(user => user.id !== activeUserId)];
+}
+
+export function getNominees(catId: CategoryId, nominations: Nom[]): MovieId[] {
+  return nominations
+    ?.filter(nom => nom.categoryId === catId)
+    .map(nom => nom.movieId);
+}
+
+export function catssByGrouping(
+  categories: Category[],
+  // grouping?: Grouping,
+): Record<Grouping, Category[]> {
+  const result: Record<Grouping, Category[]> = {} as Record<
+    Grouping,
+    Category[]
+  >;
+  for (const grouping of Object.values(Grouping)) {
+    result[grouping] = categories.filter(cat => cat.grouping === grouping);
+  }
+  return result;
 }
