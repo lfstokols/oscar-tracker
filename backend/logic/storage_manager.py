@@ -17,9 +17,9 @@ from backend.data_management.api_schemas import *
 
 IS_WINDOWS = sys.platform.startswith("win")
 if IS_WINDOWS:
-    import msvcrt
+    from backend.logic.locking_modules.windows_locking import lock_file, unlock_file
 else:
-    import fcntl
+    from backend.logic.locking_modules.unix_locking import lock_file, unlock_file
 
 # import backend.logic.utils as utils
 
@@ -295,29 +295,10 @@ class StorageManager:
             with open(filepath[0], mode, encoding="utf-8") as file:
                 with open(filepath[1], mode, encoding="utf-8") as file2:
                     try:
-                        if IS_WINDOWS:
-                            msvcrt.locking(
-                                file.fileno(),
-                                (
-                                    msvcrt.LK_NBLCK
-                                    if wants_exclusive
-                                    else msvcrt.LK_NBRLCK
-                                ),
-                                1,
-                            )
-                        else:
-                            fcntl.flock(
-                                file.fileno(),
-                                fcntl.LOCK_EX if wants_exclusive else fcntl.LOCK_SH,
-                            )
+                        lock_file(file, wants_exclusive)
                         yield file, file2
                     finally:
-                        if IS_WINDOWS:
-                            file.seek(0)
-                            msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 1)
-                            # print(f"unlocked {file}")
-                        else:
-                            fcntl.flock(file.fileno(), fcntl.LOCK_UN)
+                        unlock_file(file)
         except (BlockingIOError, OSError) as e:
             print(f"Error opening file {filepath[0].name}.")
             raise
