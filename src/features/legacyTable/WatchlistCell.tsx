@@ -16,7 +16,7 @@ import {
 import {useOscarAppContext} from '../../providers/AppContext';
 import {useNotifications} from '../../providers/NotificationContext';
 import {WatchListSchema} from '../../types/APIDataSchema';
-
+import {Typography} from '@mui/material';
 type Props = {
   movieId: MovieId;
   userId: UserId;
@@ -91,7 +91,7 @@ function display(watchstate: WatchStatus): string {
     ? 'Seen'
     : watchstate === WatchStatus.todo
     ? 'To-Do'
-    : '';
+    : ' ';
 }
 
 type FillProps = {
@@ -126,7 +126,9 @@ export function MyFill({
         justifyContent: 'center',
         userSelect: 'none',
       }}>
-      {display(watchstate)}
+      <Typography variant="h6" sx={{minHeight: '32px'}}>
+        {display(watchstate)}
+      </Typography>
     </div>
   );
 }

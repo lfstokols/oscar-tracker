@@ -10,8 +10,10 @@ import {
   TableRow,
   Paper,
   Divider,
+  Typography,
 } from '@mui/material';
 import DefaultCatcher from '../../components/LoadScreen';
+import {ColumnLabel} from '../../components/TableHeader';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {
@@ -90,6 +92,7 @@ function LegacyTable(): React.ReactElement {
         <TableRow
           key={localMovies.reduce((acc, movie) => acc + movie.id, '')}
           sx={{
+            backgroundColor: 'secondary.light',
             ...(getsUpperBorder
               ? {
                   borderTop: theme =>
@@ -135,6 +138,7 @@ function LegacyTable(): React.ReactElement {
             <TableRow
               key={movie.id}
               sx={{
+                backgroundColor: 'secondary.light',
                 ...(getsUpperBorder && index === 0
                   ? {
                       borderTop: theme =>
@@ -168,7 +172,7 @@ function LegacyTable(): React.ReactElement {
   }
   return (
     <>
-      <style>{`
+      {/* <style>{`
       .title-column {
         border: 5px solid #ccc;
       }
@@ -183,13 +187,13 @@ function LegacyTable(): React.ReactElement {
         flex-grow: 1;
         overflow: auto;
         height: 100%;
-        scrollbar-width: none; /* Firefox */
-        -ms-overflow-style: none;  /* Internet Explorer 10+ */
+        scrollbar-width: none; // Firefox 
+        -ms-overflow-style: none;  // Internet Explorer 10+ 
       }
-      .scrollable-table::-webkit-scrollbar { /* WebKit */
+      .scrollable-table::-webkit-scrollbar { // WebKit
         display: none;
       }
-    `}</style>
+    `}</style> */}
       <Paper
         sx={{
           width: '100%',
@@ -198,36 +202,24 @@ function LegacyTable(): React.ReactElement {
           flexDirection: 'column',
           overflow: 'auto',
           scrollbarWidth: '8px',
-        }}
-        className="table-container">
-        <TableContainer
-          className="scrollable-table"
-          sx={{scrollBehavior: 'smooth'}}>
+        }}>
+        <TableContainer sx={{scrollBehavior: 'smooth'}}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell sx={{minWidth: 200, className: 'title-column'}}>
-                  Film
-                </TableCell>
-                <TableCell
-                  sx={{minWidth: 200, className: 'nominations-column'}}>
-                  Nominated For
-                </TableCell>
-                <TableCell
-                  sx={{minWidth: 200, className: 'runtime-column'}}
+                <ColumnLabel
+                  text="Film"
+                  sx={{maxWidth: '10ch', overflow: 'wrap'}}
+                />
+                <ColumnLabel text="Nominated For" />
+                <ColumnLabel
+                  text="Runtime"
                   onClick={() => setRuntimeFormatted(!runtimeFormatted)}
                   style={{cursor: 'pointer'}}
-                  align="center"
-                  title="Click to toggle runtime format">
-                  Runtime
-                </TableCell>
+                  title="Click to toggle runtime format"
+                />
                 {sortedUsers.map(user => (
-                  <TableCell
-                    key={user.id}
-                    align="center"
-                    sx={{className: 'watchlist-column'}}>
-                    {user.username}
-                  </TableCell>
+                  <ColumnLabel key={user.id} text={user.username} />
                 ))}
               </TableRow>
             </TableHead>
@@ -277,9 +269,12 @@ function TitleCell({
       title={movie.id}
       sx={{
         className: 'title-column',
+        maxWidth: '30ch',
+        overflow: 'auto',
         backgroundColor: bestPicNominees?.includes(movie.id)
-          ? 'rgba(255, 215, 0, 0.1)'
+          ? 'gold'
           : 'inherit',
+        scrollbarWidth: 'none',
       }}>
       <b
         style={{
@@ -314,7 +309,9 @@ function RuntimeCell({
 }): React.ReactElement {
   return (
     <TableCell sx={{minWidth: 200, className: 'runtime-column'}} align="center">
-      {display_formatted ? runtime_hours : runtime_minutes}
+      <Typography variant="h6">
+        {display_formatted ? runtime_hours : runtime_minutes}
+      </Typography>
     </TableCell>
   );
 }

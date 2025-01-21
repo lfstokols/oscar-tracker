@@ -107,13 +107,13 @@ export default function CategoryCompletionTable(): React.ReactElement {
           color: 'text.secondary',
         }}>
         <TableCell />
-        <TableCell>
+        <TableCell sx={{paddingLeft: '50px'}}>
           <Typography variant="h6">
             <i>{cat.shortName}</i>
           </Typography>
         </TableCell>
         {userList.map(user => (
-          <TableCell key={user.id}>
+          <TableCell key={user.id} align="center">
             <Tooltip
               title={makeCategoryTooltip(
                 cat.id,
@@ -177,8 +177,8 @@ export default function CategoryCompletionTable(): React.ReactElement {
           </Typography>
         </TableCell>
         {userList.map(user => (
-          <TableCell key={user.id}>
-            <Typography variant="body1">
+          <TableCell key={user.id} align="center">
+            <Typography variant="h6">
               {data[user.id][i][grouping].toString() +
                 ' / ' +
                 groupNomCounts[grouping].toString()}
@@ -203,8 +203,8 @@ export default function CategoryCompletionTable(): React.ReactElement {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <ColumnLabel text="" />
-              <ColumnLabel text="Category" />
+              <ColumnLabel width="50px" text="" />
+              <ColumnLabel width="300px" text="Category" />
               {userList.map(user => (
                 <ColumnLabel key={user.id} text={user.username} />
               ))}

@@ -1,6 +1,14 @@
-import {useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
 import React from 'react';
-import {Table, TableHead, TableRow, TableCell, TableBody} from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Typography,
+  TableContainer,
+} from '@mui/material';
 import {
   movieOptions,
   userOptions,
@@ -12,12 +20,18 @@ import {
   NUM_SHORT_CATEGORIES,
   NUM_SHORT_FILMS_PER_CATEGORY,
 } from '../../config/GlobalConstants';
-import {getUsernameFromId} from '../../utils/dataSelectors';
+import {getUsernameFromId, sortUsers} from '../../utils/dataSelectors';
+import {ColumnLabel} from '../../components/TableHeader';
+import Countdown from '../../components/Countdown';
+
 export default function UserStatsTable(): React.ReactElement {
   const year = useOscarAppContext().year;
-  const userStats = useSuspenseQuery(userStatsOptions(year)).data;
-  const users = useSuspenseQuery(userOptions()).data;
-  const movieList = useSuspenseQuery(movieOptions(year)).data;
+  const [userStatsQ, usersQ, movieListQ] = useSuspenseQueries({
+    queries: [userStatsOptions(year), userOptions(), movieOptions(year)],
+  });
+  const userStats = userStatsQ.data;
+  const users = sortUsers(usersQ.data);
+  const movieList = movieListQ.data;
   const {shortsAreOneFilm} = useOscarAppContext().preferences;
   const numMoviesTotal = movieList.length;
   const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
@@ -26,10 +40,14 @@ export default function UserStatsTable(): React.ReactElement {
 
   function makeRow(title: string, values: (user: UserStats) => string) {
     return (
-      <TableRow key={title}>
-        <TableCell>{title}</TableCell>
+      <TableRow key={title} sx={{backgroundColor: 'secondary.light'}}>
+        <TableCell>
+          <Typography variant="h6">{title}</Typography>
+        </TableCell>
         {userStats.map(user => (
-          <TableCell key={user.id}>{values(user)}</TableCell>
+          <TableCell key={user.id} align="center">
+            <Typography variant="h6">{values(user)}</Typography>
+          </TableCell>
         ))}
       </TableRow>
     );
@@ -51,53 +69,64 @@ export default function UserStatsTable(): React.ReactElement {
   }
 
   return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableCell />
-          {userStats.map(user => (
-            <TableCell key={user.id}>
-              {getUsernameFromId(user.id, users)}
-            </TableCell>
-          ))}
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {makeRow('Movies Seen', user =>
-          makeFraction(
-            user.numSeenFeature ?? 0,
-            user.numSeenShort ?? 0,
-            shortsAreOneFilm,
-            false,
-          ),
-        )}
-        {makeRow('Movies Seen (planned)', user =>
-          makeFraction(
-            (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
-            (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
-            shortsAreOneFilm,
-            false,
-          ),
-        )}
-        {makeRow('Multiple Nominations', user =>
-          makeFraction(user.numSeenMultinom ?? 0, 0, shortsAreOneFilm, true),
-        )}
-        {makeRow('Multiple Nominations (planned)', user =>
-          makeFraction(
-            (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
-            0,
-            shortsAreOneFilm,
-            true,
-          ),
-        )}
-        {makeRow('Total Watchtime Completed', user =>
-          minutesToHours(user.seenWatchtime),
-        )}
-        {makeRow('Total Watchtime Remaining', user =>
-          minutesToHours(user.todoWatchtime),
-        )}
-      </TableBody>
-    </Table>
+    <>
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <ColumnLabel text="" />
+              {userStats.map(user => (
+                <ColumnLabel
+                  key={user.id}
+                  text={getUsernameFromId(user.id, users) ?? ''}
+                />
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {makeRow('Movies Seen', user =>
+              makeFraction(
+                user.numSeenFeature ?? 0,
+                user.numSeenShort ?? 0,
+                shortsAreOneFilm,
+                false,
+              ),
+            )}
+            {makeRow('Movies Seen (planned)', user =>
+              makeFraction(
+                (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
+                (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
+                shortsAreOneFilm,
+                false,
+              ),
+            )}
+            {makeRow('Multiple Nominations', user =>
+              makeFraction(
+                user.numSeenMultinom ?? 0,
+                0,
+                shortsAreOneFilm,
+                true,
+              ),
+            )}
+            {makeRow('Multiple Nominations (planned)', user =>
+              makeFraction(
+                (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
+                0,
+                shortsAreOneFilm,
+                true,
+              ),
+            )}
+            {makeRow('Total Watchtime Completed', user =>
+              minutesToHours(user.seenWatchtime),
+            )}
+            {makeRow('Total Watchtime Remaining', user =>
+              minutesToHours(user.todoWatchtime),
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Countdown />
+    </>
   );
 }
 
