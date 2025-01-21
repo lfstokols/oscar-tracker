@@ -1,24 +1,16 @@
-import OscarAppContextProvider, {
-  useOscarAppContext,
-} from '../providers/AppContext';
+/// <reference types="vite/client" />
+import OscarAppContextProvider from '../providers/AppContext';
 import NotificationsContextProvider from '../providers/NotificationContext';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CssBaseline} from '@mui/material';
 import ThemeConfig from '../config/ThemeConfig';
 import QueryClientConfig from '../config/QueryClientConfig';
-// import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+import App from './App';
 
-// const router = createBrowserRouter([
-//   {
-//     path: '/',
-//     element: <App />,
-//   },
-//   {
-//     path: '/playground',
-//     element: <SignUpModal />,
-//   },
-// ]);
+const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;
+console.log('ROUTE_BASENAME', ROUTE_BASENAME);
 
 const theme = createTheme(ThemeConfig);
 const queryClient = new QueryClient(QueryClientConfig);
@@ -29,16 +21,17 @@ export default function AppProvider({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <QueryClientProvider client={queryClient}>
-        <OscarAppContextProvider>
-          <NotificationsContextProvider>
-            {/*<RouterProvider router={router} />*/}
-            {children}
-          </NotificationsContextProvider>
-        </OscarAppContextProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <BrowserRouter basename={ROUTE_BASENAME}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <QueryClientProvider client={queryClient}>
+          <OscarAppContextProvider>
+            <NotificationsContextProvider>
+              {children}
+            </NotificationsContextProvider>
+          </OscarAppContextProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }

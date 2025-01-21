@@ -2,15 +2,18 @@ import React from 'react';
 import DefaultCatcher from '../components/LoadScreen';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import SiteHeader from '../features/siteHeader/SiteHeader';
+import {Routes, Route, Navigate} from 'react-router-dom';
+import HomeTab from './routes/HomeTab';
+import UserTab from './routes/UserTab';
+import CategoryTab from './routes/CategoryTab';
 import AppProvider from './AppProvider';
-import AppContent from './AppContent';
+import PageContainer from './AppContent';
 
 export default function App(): React.ReactElement {
   return (
     <DefaultCatcher>
       <AppProvider>
         <ReactQueryDevtools />
-        {/* <style>{`@import url('./scrollbar.css');`}</style> */}
         <div
           className="App"
           style={{
@@ -22,7 +25,21 @@ export default function App(): React.ReactElement {
             paddingBottom: '12px',
           }}>
           <SiteHeader />
-          <AppContent />
+          <Routes>
+            <Route path="/" element={<Navigate to="/legacy" replace />} />
+            <Route
+              path="/legacy"
+              element={<PageContainer currentTab={<HomeTab />} />}
+            />
+            <Route
+              path="/users"
+              element={<PageContainer currentTab={<UserTab />} />}
+            />
+            <Route
+              path="/categories"
+              element={<PageContainer currentTab={<CategoryTab />} />}
+            />
+          </Routes>
         </div>
       </AppProvider>
     </DefaultCatcher>

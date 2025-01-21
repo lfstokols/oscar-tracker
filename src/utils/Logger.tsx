@@ -1,15 +1,15 @@
-import env from '../../env.json';
+/// <reference types="vite/client" />
 
-const RUN_DEBUG = env.RUN_DEBUG;
+const RUN_DEBUG = import.meta.env.VITE_RUN_DEBUG;
 
 export function LogToConsole(message: any) {
-  if (RUN_DEBUG === 'true') {
+  if (RUN_DEBUG) {
     console.log(message);
   }
 }
 
 export function LogToConsoleError(message: any) {
-  if (RUN_DEBUG === 'true') {
+  if (RUN_DEBUG) {
     console.error(message);
   }
 }
