@@ -96,7 +96,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
     planned: boolean,
     isOpen: boolean,
   ): React.ReactElement {
-    if (!isOpen) return <></>;
+    // if (!isOpen) return <></>;
     const i = planned ? 1 : 0;
     const denominator = categoryNomCounts(cat.id, preferences.shortsAreOneFilm);
     return (
@@ -105,6 +105,27 @@ export default function CategoryCompletionTable(): React.ReactElement {
         sx={{
           backgroundColor: 'secondary.light',
           color: 'text.secondary',
+          // opacity: isOpen ? 1 : 0,
+          maxHeight: isOpen ? '33px' : '0px',
+          overflow: 'hidden',
+          visibility: isOpen ? 'visible' : 'collapse',
+          gridTemplateRows: isOpen ? '1fr' : '0fr',
+          transition: 'all 200ms ease-in-out',
+          '& > td': {
+            maxHeight: isOpen ? '33px' : '0px',
+            // padding: isOpen ? undefined : 0,
+            border: '0px',
+            height: isOpen ? '25px' : '0px',
+            overflow: 'hidden',
+            visibility: isOpen ? 'visible' : 'collapse',
+            transition: 'all 200ms ease-in-out',
+            '& > *': {
+              transform: isOpen ? 'translateY(0px)' : 'translateY(-100%)',
+              visibility: isOpen ? 'visible' : 'collapse',
+              opacity: isOpen ? 1 : 0,
+              transition: 'all 200ms ease-in-out, opacity 100ms ease-in-out',
+            },
+          },
         }}>
         <TableCell />
         <TableCell sx={{paddingLeft: '50px'}}>
@@ -228,10 +249,9 @@ export default function CategoryCompletionTable(): React.ReactElement {
                           })),
                         planned: i === 1,
                       })}
-                      {isExpanded &&
-                        groupingDict[grouping].map(cat =>
-                          makeCategoryRow(cat, i === 1, isExpanded),
-                        )}
+                      {groupingDict[grouping].map(cat =>
+                        makeCategoryRow(cat, i === 1, isExpanded),
+                      )}
                     </React.Fragment>
                   );
                 })}
