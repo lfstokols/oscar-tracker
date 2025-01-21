@@ -17,6 +17,7 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {useNotifications} from '../../providers/NotificationContext';
 import {WatchListSchema} from '../../types/APIDataSchema';
 import {Typography} from '@mui/material';
+import {ClickableTooltip} from '../../components/ClickableTooltip';
 type Props = {
   movieId: MovieId;
   userId: UserId;
@@ -59,9 +60,9 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   //		const newState = nextStatus(prevState);
   //	};
   return (
-    <Tooltip
-      title={isEditingDisabled ? 'You can only edit your own watchlist' : ''}
-      arrow>
+    <ClickableTooltip
+      popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}
+      arrow={true}>
       <div>
         <MyFill
           watchstate={localWatchState}
@@ -73,7 +74,7 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
           disabled={isEditingDisabled}
         />
       </div>
-    </Tooltip>
+    </ClickableTooltip>
   );
 }
 

@@ -1,20 +1,16 @@
 import React from 'react';
-import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQueries} from '@tanstack/react-query';
 import {
   Table,
   TableHead,
   TableRow,
   TableCell,
   TableBody,
-  Tooltip,
   Typography,
   TableContainer,
-  IconButton,
-  Collapse,
   Stack,
   Paper,
 } from '@mui/material';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import {ColumnLabel} from '../../components/TableHeader';
@@ -35,6 +31,7 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {Grouping} from '../../types/Enums';
 import {WatchList} from '../../types/APIDataSchema';
 import {groupCounts, categoryNomCounts} from '../../utils/hardcodedFunctions';
+import {ClickableTooltip} from '../../components/ClickableTooltip';
 const grouping_display_names: {[key in Grouping]: string} = {
   [Grouping.big_three]: 'Big Three',
   [Grouping.acting]: 'Acting',
@@ -44,16 +41,6 @@ const grouping_display_names: {[key in Grouping]: string} = {
   [Grouping.best_in_class]: 'Best in Class',
   [Grouping.short]: 'Short',
 };
-
-// const grouping_tooltips: {[key in Grouping]: string} = {
-//   [Grouping.big_three]: ,
-//   [Grouping.acting]: 'Acting',
-//   [Grouping.filmkraft]: 'Filmkraft',
-//   [Grouping.art]: 'Art',
-//   [Grouping.audio]: 'Audio',
-//   [Grouping.best_in_class]: 'Best in Class',
-//   [Grouping.short]: 'Short',
-// };
 
 export default function CategoryCompletionTable(): React.ReactElement {
   const {year, preferences} = useOscarAppContext();
@@ -135,8 +122,8 @@ export default function CategoryCompletionTable(): React.ReactElement {
         </TableCell>
         {userList.map(user => (
           <TableCell key={user.id} align="center">
-            <Tooltip
-              title={makeCategoryTooltip(
+            <ClickableTooltip
+              popup={makeCategoryTooltip(
                 cat.id,
                 user.id,
                 nominations,
@@ -148,7 +135,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
                   ' / ' +
                   denominator.toString()}
               </Typography>
-            </Tooltip>
+            </ClickableTooltip>
           </TableCell>
         ))}
       </TableRow>
