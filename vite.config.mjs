@@ -13,7 +13,7 @@ export default defineConfig({
     port: process.env.VITE_PORT,
     proxy: {
       '/api/': {
-        target: `http://127.0.0.1:${env.DEVSERVER_PORT}`,
+        target: `http://127.0.0.1:${process.env.DEVSERVER_PORT}`,
         changeOrigin: true,
       },
     },
