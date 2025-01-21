@@ -1,9 +1,9 @@
 from flask import jsonify
 import numpy as np
 import pandas as pd
-from backend.data_management.api_schemas import *
-from backend.logic.MyTypes import DataFlavor
-import backend.logic.Flavors as flv
+from backend.types.api_schemas import *
+from backend.types.my_types import DataFlavor
+import backend.types.flavors as flv
 
 
 # def validate_user_id(user_id: str):

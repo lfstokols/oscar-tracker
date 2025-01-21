@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Optional, Annotated, Literal, Union, KeysView
 from enum import Enum
 
-from backend.logic.MyTypes import UserStatsColumns
+from backend.types.my_types import UserStatsColumns
 
 
 # * Primitives

@@ -16,9 +16,9 @@ sys.path.append(str(project_root))
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-import backend.logic.utils as utils
-import backend.logic.Flavors as flv
-from backend.logic.MyTypes import *
+import backend.routing_lib.utils as utils
+import backend.types.flavors as flv
+from backend.types.my_types import *
 
 
 def parse_args():

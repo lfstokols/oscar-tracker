@@ -25,8 +25,8 @@ from datetime import datetime
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-from backend.logic.MyTypes import *
-from backend.data_management.api_schemas import MovieID
+from backend.types.my_types import *
+from backend.types.api_schemas import MovieID
 import pandas as pd
 
 

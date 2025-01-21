@@ -1,5 +1,5 @@
 from typing import Literal, TypedDict
-from backend.logic.MyTypes import DataFlavor, GeneralDataFlavor
+from backend.types.my_types import DataFlavor, GeneralDataFlavor
 
 
 flavor_list: list[DataFlavor] = [

@@ -67,6 +67,7 @@ declare global {
   type Preferences = {
     shortsAreOneFilm: boolean;
     highlightAnimated: boolean;
+    lockSeenToggle: boolean; // * if true, the user can only toggle between blank and todo. 'seen' can't be entered or exited, except via letterboxd (or changing the preference)
   };
 
   //type Movie = {

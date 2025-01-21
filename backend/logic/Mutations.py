@@ -1,5 +1,5 @@
 import pandas as pd
-from backend.data_management.api_schemas import (
+from backend.types.api_schemas import (
     UserID,
     MovieID,
     CategoryID,
@@ -7,7 +7,7 @@ from backend.data_management.api_schemas import (
 )
 from backend.data_management.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
-from backend.logic.MyTypes import *
+from backend.types.my_types import *
 from typing import Any
 
 

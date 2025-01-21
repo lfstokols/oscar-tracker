@@ -9,7 +9,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 import requests
-from backend.data_management.api_schemas import UserID
+from backend.types.api_schemas import UserID
 from backend.data_management.api_validators import (
     validate_nom_list,
     validate_movie_list,
@@ -21,8 +21,8 @@ from backend.data_management.api_validators import (
     validate_user_stats_list,
     AnnotatedValidator,
 )
-from backend.logic import utils
-from backend.logic.utils import (
+from backend.routing_lib import utils
+from backend.routing_lib.utils import (
     has_flag,
     YearError,
     MissingAPIArgumentError,
@@ -30,7 +30,7 @@ from backend.logic.utils import (
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-from backend.logic.MyTypes import *
+from backend.types.my_types import *
 
 project_root_directory = Path(__file__).parent.parent
 load_dotenv(project_root_directory / ".env")

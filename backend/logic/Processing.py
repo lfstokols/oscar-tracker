@@ -1,6 +1,6 @@
 import re
 from typing import Hashable, overload, Any
-from backend.data_management.api_schemas import (
+from backend.types.api_schemas import (
     api_CategoryCompletionsDict,
     MovieID,
     CategoryCompletionKey,
@@ -8,11 +8,11 @@ from backend.data_management.api_schemas import (
 import requests
 from bs4 import BeautifulSoup, Tag
 import pandas as pd
-from backend.logic.MyTypes import Grouping
-import backend.logic.utils as utils
+from backend.types.my_types import Grouping
+from backend.routing_lib import utils
 from backend.logic.storage_manager import StorageManager
-from backend.logic.MyTypes import *
-from backend.data_management.api_schemas import UserID
+from backend.types.api_schemas import UserID
+from backend.types.my_types import *
 
 
 def are_movies_short(

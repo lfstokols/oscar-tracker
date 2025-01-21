@@ -38,8 +38,9 @@ export default function OscarAppContextProvider(
   const [year, setYear] = useState<number>(DEFAULT_YEAR);
   const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
   const [preferences, setPreferences] = useState<Preferences>({
-    shortsAreOneFilm: true,
-    highlightAnimated: true,
+    shortsAreOneFilm: false,
+    highlightAnimated: false,
+    lockSeenToggle: false,
   });
 
   //* The username and userId need special handling, since they're set from cookies

@@ -5,11 +5,11 @@ from typing import Any
 from flask import jsonify, Request
 import numpy as np
 import pandas as pd
-from backend.data_management.api_schemas import Flavor, UserID
+from backend.types.api_schemas import Flavor, UserID
 from backend.data_management.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
-import backend.logic.Flavors as flv
-from backend.logic.MyTypes import *
+import backend.types.flavors as flv
+from backend.types.my_types import *
 
 
 class MissingAPIArgumentError(Exception):
