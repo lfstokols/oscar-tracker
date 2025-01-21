@@ -72,5 +72,5 @@ def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
     # flavor = flv.format_flavor(flavor)
     if flv.flavor_props(flavor)["shape"] == "entity":
         df = df.reset_index()
-    df = df.replace({np.nan: None})
+    df = df.replace({pd.NA: None, np.nan: None})
     return df.to_dict(orient="records")

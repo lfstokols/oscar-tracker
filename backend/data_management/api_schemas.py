@@ -99,6 +99,8 @@ class api_UserList(BaseModel):
 class api_Movie(BaseModel):
     id: MovieID
     title: str
+    mainTitle: str
+    subtitle: str
     ImdbId: Optional[str] = None
     movieDbId: Optional[int] = None
     runtime_hours: Optional[str] = None

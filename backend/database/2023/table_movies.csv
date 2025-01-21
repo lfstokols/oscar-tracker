@@ -1,54 +1,55 @@
-id,title,ImdbId,movieDbId,runtime,posterPath,imdbId
-mov_604c63,Oppenheimer,tt15398776,872585.0,181.0,/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg,tt15398776
-mov_6012dc,American Fiction,tt23561236,1056360.0,117.0,/57MFWGHarg9jid7yfDTka4RmcMU.jpg,tt23561236
-mov_60f4be,Anatomy of a Fall,tt17009710,915935.0,151.0,/kQs6keheMwCxJxrzV83VUwFtHkB.jpg,tt17009710
-mov_6060ce,Barbie,tt1517268,346698.0,114.0,/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg,tt1517268
-mov_60576e,The Holdovers,tt14849194,840430.0,133.0,/VHSzNBTwxV8vh7wylo7O9CLdac.jpg,tt14849194
-mov_60c224,Killers of the Flower Moon,tt5537002,466420.0,206.0,/dB6Krk806zeqd0YNp2ngQ9zXteH.jpg,tt5537002
-mov_6069d3,Maestro,tt5535276,523607.0,129.0,/kxj7rMco6RNYsVcNwuGAIlfWu64.jpg,tt5535276
-mov_60c4f0,Past Lives,tt13238346,666277.0,106.0,/rzO71VFu7CpJMfF5TQNMj0d1lSV.jpg,tt13238346
-mov_6075b4,Poor Things,tt14230458,792307.0,141.0,/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg,tt14230458
-mov_601f65,The Zone of Interest,tt7160372,467244.0,105.0,/hUu9zyZmDd8VZegKi1iK1Vk0RYS.jpg,tt7160372
-mov_608f17,Rustin,tt14160834,898713.0,108.0,/lCawCmTJhKT7c2ZOzLBTXDIR8JS.jpg,tt14160834
-mov_609f63,Nyad,tt5302918,895549.0,121.0,/ydSqUhKFvg5cZ5OwImmf3K1R6SS.jpg,tt5302918
-mov_609ff1,The Color Purple,tt1200263,558915.0,141.0,/h5bqIxM8GO4TewJ0u6Rzkg58ssJ.jpg,tt1200263
-mov_60a53c,May December,tt13651794,839369.0,117.0,/zhV7B610l7hjlri4ywikJ18ONuq.jpg,tt13651794
-mov_60ceeb,The Boy and the Heron,tt6587046,508883.0,124.0,/f4oZTcfGrVTXKTWg157AwikXqmP.jpg,tt6587046
-mov_60ad6e,Elemental,tt15789038,976573.0,102.0,/4Y1WNkd88JXmGfhtWR7dmDAo1T2.jpg,tt15789038
-mov_6070fb,Nimona,tt19500164,961323.0,99.0,/2NQljeavtfl22207D1kxLpa4LS3.jpg,tt19500164
-mov_606919,Robot Dreams,tt13429870,838240.0,102.0,/ds402Qq09ybgBcXKiQNTZfzsP5o.jpg,tt13429870
-mov_608f22,Spider-Man: Across the Spider-Verse,tt9362722,569094.0,140.0,/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg,tt9362722
-mov_600ec3,Io capitano,tt14225838,937746.0,121.0,/kGlZFwUQI5gAUdySNFfqGIkAF9n.jpg,tt14225838
-mov_6052da,Perfect Days,tt27503384,976893.0,124.0,/tvUHVSTJV9ITON3oyHaWp7oaAc8.jpg,tt27503384
-mov_60332a,Society of the Snow,tt16277242,906126.0,144.0,/2e853FDVSIso600RqAMunPxiZjq.jpg,tt16277242
-mov_60cf47,The Teachers' Lounge,tt26612950,998022.0,98.0,/kWXA6PfQ0PpZpoCXoeBFRciRrUw.jpg,tt26612950
-mov_60f0c3,20 Days in Mariupol,tt24082438,1058616.0,94.0,/zIRp1IeuPh4GgqFCH3y0DQuY9xP.jpg,tt24082438
-mov_609c65,Bobi Wine: The People's President,tt21376900,1004683.0,113.0,/gehzAC8zE85Qiyn5HcXgiky7W1W.jpg,
-mov_60d911,The Eternal Memory,tt24082488,1032760.0,85.0,/dKIcHpK6EtKocvE2PHVfmkYtrdK.jpg,tt24082488
-mov_60f6bc,Four Daughters,tt27502426,1069193.0,108.0,/iSpJ6fg1OOSO30IUkZskZDufVzN.jpg,tt27502426
-mov_6046c8,To Kill a Tiger,tt21688772,1015356.0,128.0,/qxzaYYRAH6gZoyJlnajCvYeL6Ms.jpg,
-mov_60542f,The Last Repair Shop,tt29118186,1171861.0,40.0,/9BWy7bgE4nTXf7hhooFNqVBJXgU.jpg,tt29118186
-mov_606d51,The ABCs of Book Banning,tt29361805,1186227.0,27.0,/wcgYS6gv9dA0jBaQQft2eLjPAh0.jpg,tt29361805
-mov_60ad15,The Barber of Little Rock,tt28627868,1186247.0,35.0,/eSikhf6EozXT94zCG4uX2eIuE16.jpg,tt28627868
-mov_60f938,Island in Between,tt30523942,1203439.0,20.0,/2tTXYn0BulJurNxtiSMV6eAfrTF.jpg,tt30523942
-mov_601ed8,Nǎi Nai & Wài Pó,tt26218316,1085779.0,17.0,/uHYoNVM5vhgTO7zYgDsQsewEYLO.jpg,tt26218316
-mov_607bea,The Wonderful Story of Henry Sugar,tt16968450,923939.0,39.0,/fDUywEHwHh6nsLnVXAdPN9m4ZUG.jpg,tt16968450
-mov_6089ef,The After,tt28532006,1169455.0,18.0,/su2APJLMwx4IzAcPHhvoak2k2U1.jpg,tt28532006
-mov_60bbb4,Invincible,tt22749100,1084765.0,30.0,/8mVNi6eq2vbtmEK3elBxIxqAAOD.jpg,
-mov_60c94c,Knight of Fortune,tt26600054,971468.0,25.0,/d64iSdrRYuBrEDuKXJpW0XSrhiJ.jpg,
-mov_60bf18,"Red, White and Blue",tt27759823,1194636.0,24.0,/4h1fIQ1b5P21N7tt5dZWDNOjYD7.jpg,tt27759823
-mov_60b5a5,War Is Over! Inspired by the Music of John and Yoko,tt29795707,1214020.0,11.0,/9KYGdXn49rFgjDdVIEc9jKiHDAP.jpg,
-mov_60afc9,Letter to a Pig,tt10346066,950810.0,17.0,/fu5xL4pEFBOt8FhDgCqyeDICTqt.jpg,
-mov_607919,Ninety-Five Senses,,,,,
-mov_60a35a,Our Uniform,tt28058015,1140605.0,7.0,/snlg7HFl14pJLTROxdpG0i5EFDX.jpg,tt28058015
-mov_6057cb,Pachyderme,tt20862526,950822.0,11.0,/kmXoJpg0Zu3r1RoupIvyXWLcJeq.jpg,
-mov_6060ec,Indiana Jones and the Dial of Destiny,tt1462764,335977.0,155.0,/Af4bXE63pVsb2FtbW8uYIyPBadD.jpg,tt1462764
-mov_603a90,Flamin' Hot,tt8105234,626332.0,99.0,/a7KyFMPXj0iY4EoLq1PIGU1WJPw.jpg,tt8105234
-mov_602ea6,American Symphony,tt28865980,1171816.0,104.0,/skfO62LOEg805x9fMYeEDQRorXP.jpg,tt28865980
-mov_602269,The Creator,tt11858890,670292.0,134.0,/3dSivDtOuyxLDxPH4v2tcNG1fP7.jpg,tt11858890
-mov_6063de,Mission: Impossible – Dead Reckoning Part One,tt9603212,575264.0,164.0,/NNxYkU70HPurnNCSiCjYAmacwm.jpg,tt9603212
-mov_6035a4,Napoleon,tt13287846,753342.0,158.0,/vcZWJGvB5xydWuUO1vaTLI82tGi.jpg,tt13287846
-mov_60c9ef,El Conde,tt21113540,991708.0,112.0,/5tcbdLbMzYEMBeJwf5PWcgUnmVa.jpg,tt21113540
-mov_609470,Golda,tt14454876,899524.0,101.0,/fqOOLq12rOMCTcWzxaJ5VUROxp3.jpg,tt14454876
-mov_605563,Godzilla Minus One,tt23289160,940721.0,124.0,/hkxxMIGaiCTmrEArK7J56JTKUlB.jpg,tt23289160
-mov_608b01,Guardians of the Galaxy Vol. 3,tt6791350,447365,150,/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg,tt6791350
+id,title,ImdbId,movieDbId,runtime,posterPath,imdbId,subtitlePosition
+mov_604c63,Oppenheimer,tt15398776,872585.0,181.0,/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg,tt15398776,-1
+mov_6012dc,American Fiction,tt23561236,1056360.0,117.0,/57MFWGHarg9jid7yfDTka4RmcMU.jpg,tt23561236,-1
+mov_60f4be,Anatomy of a Fall,tt17009710,915935.0,151.0,/kQs6keheMwCxJxrzV83VUwFtHkB.jpg,tt17009710,-1
+mov_6060ce,Barbie,tt1517268,346698.0,114.0,/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg,tt1517268,-1
+mov_60576e,The Holdovers,tt14849194,840430.0,133.0,/VHSzNBTwxV8vh7wylo7O9CLdac.jpg,tt14849194,-1
+mov_60c224,Killers of the Flower Moon,tt5537002,466420.0,206.0,/dB6Krk806zeqd0YNp2ngQ9zXteH.jpg,tt5537002,-1
+mov_6069d3,Maestro,tt5535276,523607.0,129.0,/kxj7rMco6RNYsVcNwuGAIlfWu64.jpg,tt5535276,-1
+mov_60c4f0,Past Lives,tt13238346,666277.0,106.0,/rzO71VFu7CpJMfF5TQNMj0d1lSV.jpg,tt13238346,-1
+mov_6075b4,Poor Things,tt14230458,792307.0,141.0,/kCGlIMHnOm8JPXq3rXM6c5wMxcT.jpg,tt14230458,-1
+mov_601f65,The Zone of Interest,tt7160372,467244.0,105.0,/hUu9zyZmDd8VZegKi1iK1Vk0RYS.jpg,tt7160372,-1
+mov_608f17,Rustin,tt14160834,898713.0,108.0,/lCawCmTJhKT7c2ZOzLBTXDIR8JS.jpg,tt14160834,-1
+mov_609f63,Nyad,tt5302918,895549.0,121.0,/ydSqUhKFvg5cZ5OwImmf3K1R6SS.jpg,tt5302918,-1
+mov_609ff1,The Color Purple,tt1200263,558915.0,141.0,/h5bqIxM8GO4TewJ0u6Rzkg58ssJ.jpg,tt1200263,-1
+mov_60a53c,May December,tt13651794,839369.0,117.0,/zhV7B610l7hjlri4ywikJ18ONuq.jpg,tt13651794,-1
+mov_60ceeb,The Boy and the Heron,tt6587046,508883.0,124.0,/f4oZTcfGrVTXKTWg157AwikXqmP.jpg,tt6587046,-1
+mov_60ad6e,Elemental,tt15789038,976573.0,102.0,/4Y1WNkd88JXmGfhtWR7dmDAo1T2.jpg,tt15789038,-1
+mov_6070fb,Nimona,tt19500164,961323.0,99.0,/2NQljeavtfl22207D1kxLpa4LS3.jpg,tt19500164,-1
+mov_606919,Robot Dreams,tt13429870,838240.0,102.0,/ds402Qq09ybgBcXKiQNTZfzsP5o.jpg,tt13429870,-1
+mov_608f22,Spider-Man: Across the Spider-Verse,tt9362722,569094.0,140.0,/8Vt6mWEReuy4Of61Lnj5Xj704m8.jpg,tt9362722,11
+mov_600ec3,Io capitano,tt14225838,937746.0,121.0,/kGlZFwUQI5gAUdySNFfqGIkAF9n.jpg,tt14225838,-1
+mov_6052da,Perfect Days,tt27503384,976893.0,124.0,/tvUHVSTJV9ITON3oyHaWp7oaAc8.jpg,tt27503384,-1
+mov_60332a,Society of the Snow,tt16277242,906126.0,144.0,/2e853FDVSIso600RqAMunPxiZjq.jpg,tt16277242,-1
+mov_60cf47,The Teachers' Lounge,tt26612950,998022.0,98.0,/kWXA6PfQ0PpZpoCXoeBFRciRrUw.jpg,tt26612950,-1
+mov_60f0c3,20 Days in Mariupol,tt24082438,1058616.0,94.0,/zIRp1IeuPh4GgqFCH3y0DQuY9xP.jpg,tt24082438,-1
+mov_609c65,Bobi Wine: The People's President,tt21376900,1004683.0,113.0,/gehzAC8zE85Qiyn5HcXgiky7W1W.jpg,,10
+mov_60d911,The Eternal Memory,tt24082488,1032760.0,85.0,/dKIcHpK6EtKocvE2PHVfmkYtrdK.jpg,tt24082488,-1
+mov_60f6bc,Four Daughters,tt27502426,1069193.0,108.0,/iSpJ6fg1OOSO30IUkZskZDufVzN.jpg,tt27502426,-1
+mov_6046c8,To Kill a Tiger,tt21688772,1015356.0,128.0,/qxzaYYRAH6gZoyJlnajCvYeL6Ms.jpg,,-1
+mov_60542f,The Last Repair Shop,tt29118186,1171861.0,40.0,/9BWy7bgE4nTXf7hhooFNqVBJXgU.jpg,tt29118186,-1
+mov_606d51,The ABCs of Book Banning,tt29361805,1186227.0,27.0,/wcgYS6gv9dA0jBaQQft2eLjPAh0.jpg,tt29361805,-1
+mov_60ad15,The Barber of Little Rock,tt28627868,1186247.0,35.0,/eSikhf6EozXT94zCG4uX2eIuE16.jpg,tt28627868,-1
+mov_60f938,Island in Between,tt30523942,1203439.0,20.0,/2tTXYn0BulJurNxtiSMV6eAfrTF.jpg,tt30523942,-1
+mov_601ed8,Nǎi Nai & Wài Pó,tt26218316,1085779.0,17.0,/uHYoNVM5vhgTO7zYgDsQsewEYLO.jpg,tt26218316,-1
+mov_607bea,The Wonderful Story of Henry Sugar,tt16968450,923939.0,39.0,/fDUywEHwHh6nsLnVXAdPN9m4ZUG.jpg,tt16968450,-1
+mov_6089ef,The After,tt28532006,1169455.0,18.0,/su2APJLMwx4IzAcPHhvoak2k2U1.jpg,tt28532006,-1
+mov_60bbb4,Invincible,tt22749100,1084765.0,30.0,/8mVNi6eq2vbtmEK3elBxIxqAAOD.jpg,,-1
+mov_60c94c,Knight of Fortune,tt26600054,971468.0,25.0,/d64iSdrRYuBrEDuKXJpW0XSrhiJ.jpg,,-1
+mov_60bf18,"Red, White and Blue",tt27759823,1194636.0,24.0,/4h1fIQ1b5P21N7tt5dZWDNOjYD7.jpg,tt27759823,-1
+mov_60b5a5,War Is Over! Inspired by the Music of John and Yoko,tt29795707,1214020.0,11.0,/9KYGdXn49rFgjDdVIEc9jKiHDAP.jpg,,12
+mov_60afc9,Letter to a Pig,tt10346066,950810.0,17.0,/fu5xL4pEFBOt8FhDgCqyeDICTqt.jpg,,-1
+mov_607919,Ninety-Five Senses,,,,,,-1
+mov_60a35a,Our Uniform,tt28058015,1140605.0,7.0,/snlg7HFl14pJLTROxdpG0i5EFDX.jpg,tt28058015,-1
+mov_6057cb,Pachyderme,tt20862526,950822.0,11.0,/kmXoJpg0Zu3r1RoupIvyXWLcJeq.jpg,,-1
+mov_6060ec,Indiana Jones and the Dial of Destiny,tt1462764,335977.0,155.0,/Af4bXE63pVsb2FtbW8uYIyPBadD.jpg,tt1462764,13
+mov_603a90,Flamin' Hot,tt8105234,626332.0,99.0,/a7KyFMPXj0iY4EoLq1PIGU1WJPw.jpg,tt8105234,-1
+mov_602ea6,American Symphony,tt28865980,1171816.0,104.0,/skfO62LOEg805x9fMYeEDQRorXP.jpg,tt28865980,-1
+mov_602269,The Creator,tt11858890,670292.0,134.0,/3dSivDtOuyxLDxPH4v2tcNG1fP7.jpg,tt11858890,-1
+mov_6063de,Mission: Impossible – Dead Reckoning Part One,tt9603212,575264.0,164.0,/NNxYkU70HPurnNCSiCjYAmacwm.jpg,tt9603212,19
+mov_6035a4,Napoleon,tt13287846,753342.0,158.0,/vcZWJGvB5xydWuUO1vaTLI82tGi.jpg,tt13287846,-1
+mov_60c9ef,El Conde,tt21113540,991708.0,112.0,/5tcbdLbMzYEMBeJwf5PWcgUnmVa.jpg,tt21113540,-1
+mov_609470,Golda,tt14454876,899524.0,101.0,/fqOOLq12rOMCTcWzxaJ5VUROxp3.jpg,tt14454876,-1
+mov_605563,Godzilla Minus One,tt23289160,940721.0,124.0,/hkxxMIGaiCTmrEArK7J56JTKUlB.jpg,tt23289160,-1
+mov_608b01,Guardians of the Galaxy Vol. 3,tt6791350,447365.0,150.0,/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg,tt6791350,23
+

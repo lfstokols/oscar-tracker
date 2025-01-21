@@ -1,5 +1,5 @@
-import React from 'react';
-import {TableCell, Tooltip} from '@mui/material';
+import React, {useState} from 'react';
+import {TableCell, Tooltip, ClickAwayListener, Box} from '@mui/material';
 import {getNominationCategoriesForMovie} from '../../utils/dataSelectors';
 import {
   NomList,
@@ -24,10 +24,12 @@ export default function NominationsCell({
   movieId,
   nominations,
   categories,
+  tableCellProps,
 }: {
   movieId: MovieId;
   nominations: NomList;
   categories: CategoryList;
+  tableCellProps?: Record<string, unknown>;
 }) {
   const MyNoms = nominations.filter(nom => nom.movieId === movieId);
   const catList = getNominationCategoriesForMovie(
@@ -57,7 +59,8 @@ export default function NominationsCell({
       sx={{
         whiteSpace: 'pre-wrap',
         className: 'nominations-column',
-      }}>
+      }}
+      {...tableCellProps}>
       {makeCellContent(movieId, content, popupContent, needsTooltip)}
     </TableCell>
   );
@@ -69,45 +72,63 @@ function makeCellContent(
   popupContent: NoteProps[],
   needsTooltip: boolean,
 ) {
+  const [open, setOpen] = useState(false);
   if (needsTooltip) {
+    const handleTooltipOpen = () => {
+      setOpen(true);
+    };
+    const handleTooltipClose = () => {
+      setOpen(false);
+    };
     return (
-      <Tooltip
-        key={movieId}
-        title={
-          <React.Fragment>
-            {popupContent.map(props => {
-              const formattedText =
-                props.catId === 'cat_frgn' ? (
-                  <em>
-                    {getEmoji(props.text)} {props.text}
-                  </em>
-                ) : props.catId === 'cat_song' ? (
-                  <>{getSong(props.text)}</>
-                ) : (
-                  <i>{props.text}</i>
+      <ClickAwayListener onClickAway={handleTooltipClose}>
+        <Tooltip
+          key={movieId}
+          open={open}
+          onClose={handleTooltipClose}
+          onOpen={handleTooltipOpen}
+          disableFocusListener
+          slotProps={{
+            popper: {
+              disablePortal: true,
+            },
+          }}
+          title={
+            <React.Fragment>
+              {popupContent.map(props => {
+                const formattedText =
+                  props.catId === 'cat_frgn' ? (
+                    <em>
+                      {getEmoji(props.text)} {props.text}
+                    </em>
+                  ) : props.catId === 'cat_song' ? (
+                    <>{getSong(props.text)}</>
+                  ) : (
+                    <i>{props.text}</i>
+                  );
+                return (
+                  <React.Fragment key={props.catId + props.text}>
+                    <b>{props.catName}:</b>
+                    {formattedText}
+                    <br />
+                  </React.Fragment>
                 );
-              return (
-                <React.Fragment key={props.catId + props.text}>
-                  <b>{props.catName}:</b>
-                  {formattedText}
-                  <br />
-                </React.Fragment>
-              );
-            })}
-          </React.Fragment>
-        }>
-        <span>
-          {content}
-          <InfoOutlinedIcon
-            sx={{
-              fontSize: '0.8rem',
-              marginLeft: '4px',
-              // verticalAlign: 'super',
-              opacity: 0.7,
-            }}
-          />
-        </span>
-      </Tooltip>
+              })}
+            </React.Fragment>
+          }>
+          <span>
+            <Box onClick={handleTooltipOpen}>{content}</Box>
+            <InfoOutlinedIcon
+              sx={{
+                fontSize: '0.8rem',
+                marginLeft: '4px',
+                // verticalAlign: 'super',
+                opacity: 0.7,
+              }}
+            />
+          </span>
+        </Tooltip>
+      </ClickAwayListener>
     );
   }
   return content;

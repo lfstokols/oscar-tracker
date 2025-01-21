@@ -4,7 +4,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import {LinearProgress, Tooltip} from '@mui/material';
+import {LinearProgress, Tooltip, TableCell} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
 import {WatchStatus} from '../../types/Enums';
 import {watchlistOptions} from '../../hooks/dataOptions';
@@ -22,10 +22,7 @@ type Props = {
   userId: UserId;
 };
 
-export default function WatchlistCell({
-  movieId,
-  userId,
-}: Props): React.ReactElement {
+function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   const queryClient = useQueryClient();
   const notifications = useNotifications();
 
@@ -131,5 +128,19 @@ export function MyFill({
       }}>
       {display(watchstate)}
     </div>
+  );
+}
+
+export default function WatchlistCellWrapper({
+  movieId,
+  userId,
+}: Props): React.ReactElement {
+  return (
+    <TableCell
+      key={userId}
+      sx={{display: 'fill', className: 'watchlist-column'}}
+      align="center">
+      <WatchlistCell userId={userId} movieId={movieId} />
+    </TableCell>
   );
 }

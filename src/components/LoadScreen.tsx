@@ -1,19 +1,20 @@
 import React, {Suspense} from 'react';
-import {Backdrop, CircularProgress} from '@mui/material';
+import {Container, CircularProgress} from '@mui/material';
 import {QueryErrorResetBoundary} from '@tanstack/react-query';
 
 export function LoadScreen(): React.ReactElement {
   return (
-    <Backdrop
+    <Container
       sx={theme => ({
         color: '#fff',
-        zIndex: theme.zIndex.drawer + 1,
+        // zIndex: theme.zIndex.drawer + 1,
         flexGrow: 1,
       })}
-      open={true}
-      onClick={() => {}}>
+      // open={true}
+      // onClick={() => {}}>
+    >
       <CircularProgress color="inherit" />
-    </Backdrop>
+    </Container>
   );
 }
 

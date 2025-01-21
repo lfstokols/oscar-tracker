@@ -1,3 +1,5 @@
+import {useOscarAppContext} from '../providers/AppContext';
+import {CategoryIdSchema} from '../types/APIDataSchema';
 import {WatchStatus} from '../types/Enums';
 import {LogToConsole} from './Logger';
 
@@ -45,4 +47,55 @@ export function getUsernameFromId(
   users: User[],
 ): string | null {
   return users.find(user => user.id === userId)?.username ?? null;
+}
+
+function getByCategory(
+  movies: Movie[],
+  nominations: Nom[],
+  category: CategoryId,
+) {
+  return movies.filter(movie =>
+    nominations.find(
+      nom => nom.movieId == movie.id && nom.categoryId == category,
+    ),
+  );
+}
+
+export function groupByShort(movies: Movie[], nominations: Nom[]) {
+  const shorts = movies.filter(movie => movie.isShort);
+  const features = movies.filter(movie => !movie.isShort);
+  const anim = getByCategory(
+    shorts,
+    nominations,
+    CategoryIdSchema.parse('cat_sanm'),
+  );
+  const live = getByCategory(
+    shorts,
+    nominations,
+    CategoryIdSchema.parse('cat_shla'),
+  );
+  const doc = getByCategory(
+    shorts,
+    nominations,
+    CategoryIdSchema.parse('cat_sdoc'),
+  );
+  return {
+    shortsAnimated: anim,
+    shortsLive: live,
+    shortsDoc: doc,
+    features: features,
+  };
+}
+
+export function sortUsers(users: User[]): User[] {
+  const {activeUserId} = useOscarAppContext();
+  if (activeUserId == null) {
+    return users;
+  }
+  const activeUser = users.find(user => user.id === activeUserId);
+  if (activeUser == null) {
+    LogToConsole(`Unknown active user id: ${activeUserId}`);
+    return users;
+  }
+  return [activeUser, ...users.filter(user => user.id !== activeUserId)];
 }

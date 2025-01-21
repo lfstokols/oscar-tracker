@@ -1,9 +1,6 @@
 import React, {useState} from 'react';
 import WatchlistCell from './WatchlistCell';
-import {
-  getNominationCategoriesForMovie,
-  getMovieWatchStatusForUser,
-} from '../../utils/dataSelectors';
+import {groupByShort, sortUsers} from '../../utils/dataSelectors';
 import {
   Table,
   TableBody,
@@ -12,14 +9,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TablePagination,
+  Divider,
 } from '@mui/material';
-import {DataFlavor, WatchStatus} from '../../types/Enums';
 import DefaultCatcher from '../../components/LoadScreen';
-import {
-  QueryErrorResetBoundary,
-  useSuspenseQueries,
-} from '@tanstack/react-query';
+import {useSuspenseQueries} from '@tanstack/react-query';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {
   categoryOptions,
@@ -30,7 +23,8 @@ import {
 import NominationsCell from './NominationsCell';
 
 function LegacyTable(): React.ReactElement {
-  const year = useOscarAppContext().year;
+  const {year, preferences} = useOscarAppContext();
+  const [runtimeFormatted, setRuntimeFormatted] = useState(true);
 
   const [usersQ, nominationsQ, categoriesQ, moviesQ] = useSuspenseQueries({
     queries: [
@@ -45,9 +39,126 @@ function LegacyTable(): React.ReactElement {
   const categories = categoriesQ.data;
   const movies = moviesQ.data;
 
-  const sortedData = movies.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
-  const [runtimeFormatted, setRuntimeFormatted] = useState(true);
+  const {features, shortsAnimated, shortsLive, shortsDoc} = groupByShort(
+    movies,
+    nominations,
+  );
 
+  const sortedUsers = sortUsers(users);
+  const sortedData = features.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
+  const sortedShortsAnimated = shortsAnimated.sort((a, b) =>
+    a.mainTitle.localeCompare(b.mainTitle),
+  );
+  const sortedShortsLive = shortsLive.sort((a, b) =>
+    a.mainTitle.localeCompare(b.mainTitle),
+  );
+  const sortedShortsDoc = shortsDoc.sort((a, b) =>
+    a.mainTitle.localeCompare(b.mainTitle),
+  );
+
+  //* If merge is false, the "isSelected" parameters should be null
+  function makeSubTable(
+    localMovies: Movie[],
+    merge: boolean,
+    getsUpperBorder: boolean,
+  ): React.ReactElement {
+    if (merge && localMovies.length !== 5) {
+      throw new Error('Tried to merge too many rows');
+    }
+    if (merge) {
+      const total_runtime_minutes = localMovies.every(
+        movie => movie['runtime_minutes'] !== null,
+      )
+        ? localMovies.reduce(
+            (acc, movie) => acc + (movie['runtime_minutes'] ?? 0),
+            0,
+          )
+        : null;
+      const total_runtime_hours = total_runtime_minutes
+        ? Math.floor(total_runtime_minutes / 60).toString() +
+          ':' +
+          (total_runtime_minutes % 60).toString().padStart(2, '0')
+        : null;
+      return (
+        <TableRow
+          key={localMovies.reduce((acc, movie) => acc + movie.id, '')}
+          sx={{
+            ...(getsUpperBorder
+              ? {
+                  borderTop: theme =>
+                    `${theme.spacing(2)} solid rgba(0, 0, 0, 0.2)`,
+                }
+              : {}),
+          }}>
+          <TableCell>
+            <Table>
+              <TableBody>
+                {localMovies.map(movie => (
+                  <TableRow key={movie.id + 'mini'}>
+                    <TitleCell movie={movie} />
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableCell>
+          <NominationsCell
+            movieId={localMovies[0].id}
+            nominations={nominations}
+            categories={categories}
+          />
+          <RuntimeCell
+            runtime_minutes={total_runtime_minutes}
+            runtime_hours={total_runtime_hours}
+            display_formatted={runtimeFormatted}
+          />
+          {sortedUsers.map(user => (
+            <WatchlistCell
+              key={user.id}
+              userId={user.id}
+              movieId={localMovies[0].id}
+            />
+          ))}
+        </TableRow>
+      );
+    }
+    return (
+      <>
+        {localMovies.map((movie, index) => {
+          return (
+            <TableRow
+              key={movie.id}
+              sx={{
+                ...(getsUpperBorder && index === 0
+                  ? {
+                      borderTop: theme =>
+                        `${theme.spacing(2)} solid rgba(0, 0, 0, 0.2)`,
+                    }
+                  : {}),
+              }}>
+              <TitleCell movie={movie} />
+              <NominationsCell
+                movieId={movie.id}
+                nominations={nominations}
+                categories={categories}
+              />
+              <RuntimeCell
+                runtime_minutes={movie['runtime_minutes']}
+                runtime_hours={movie['runtime_hours']}
+                display_formatted={runtimeFormatted}
+              />
+              {sortedUsers.map(user => (
+                <WatchlistCell
+                  key={user.id}
+                  userId={user.id}
+                  movieId={movie.id}
+                />
+              ))}
+            </TableRow>
+          );
+        })}
+      </>
+    );
+  }
   return (
     <>
       <style>{`
@@ -75,12 +186,16 @@ function LegacyTable(): React.ReactElement {
       <Paper
         sx={{
           width: '100%',
-          height: 'calc(100vh - var(--template-frame-height, 0))',
+          height: '100%',
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'auto',
+          scrollbarWidth: '8px',
         }}
         className="table-container">
-        <TableContainer className="scrollable-table">
+        <TableContainer
+          className="scrollable-table"
+          sx={{scrollBehavior: 'smooth'}}>
           <Table stickyHeader>
             <TableHead>
               <TableRow>
@@ -99,7 +214,7 @@ function LegacyTable(): React.ReactElement {
                   title="Click to toggle runtime format">
                   Runtime
                 </TableCell>
-                {users.map(user => (
+                {sortedUsers.map(user => (
                   <TableCell
                     key={user.id}
                     align="center"
@@ -110,36 +225,22 @@ function LegacyTable(): React.ReactElement {
               </TableRow>
             </TableHead>
             <TableBody>
-              {sortedData.map((row, index) => (
-                <TableRow key={row.title} hover>
-                  <TableCell title={row.id} sx={{className: 'title-column'}}>
-                    {sortedData[index].title}
-                  </TableCell>
-                  <NominationsCell
-                    movieId={row.id}
-                    nominations={nominations}
-                    categories={categories}
-                  />
-                  <TableCell
-                    sx={{minWidth: 200, className: 'runtime-column'}}
-                    align="center">
-                    {runtimeFormatted
-                      ? sortedData[index]['runtime_hours']
-                      : sortedData[index]['runtime_minutes']}
-                  </TableCell>
-                  {users.map(user => (
-                    <TableCell
-                      key={user.id}
-                      sx={{display: 'fill', className: 'watchlist-column'}}
-                      align="center">
-                      <WatchlistCell
-                        userId={user.id}
-                        movieId={sortedData[index].id}
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {makeSubTable(sortedData, false, false)}
+              {makeSubTable(
+                sortedShortsLive,
+                preferences.shortsAreOneFilm,
+                true,
+              )}
+              {makeSubTable(
+                sortedShortsAnimated,
+                preferences.shortsAreOneFilm,
+                true,
+              )}
+              {makeSubTable(
+                sortedShortsDoc,
+                preferences.shortsAreOneFilm,
+                true,
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -154,5 +255,40 @@ export default function LegacyTableWrapper() {
     <DefaultCatcher>
       <LegacyTable />
     </DefaultCatcher>
+  );
+}
+
+function TitleCell({movie}: {movie: Movie}): React.ReactElement {
+  return (
+    <TableCell title={movie.id} sx={{className: 'title-column'}}>
+      <b style={{fontSize: '1.2em', whiteSpace: 'nowrap'}}>{movie.mainTitle}</b>
+      <br />
+      {movie.subtitle ? (
+        <i
+          style={{
+            fontSize: '0.8em',
+            whiteSpace: 'nowrap',
+            overflow: 'auto',
+          }}>
+          {movie.subtitle}
+        </i>
+      ) : null}
+    </TableCell>
+  );
+}
+
+function RuntimeCell({
+  runtime_minutes,
+  runtime_hours,
+  display_formatted,
+}: {
+  runtime_minutes: number | null;
+  runtime_hours: string | null;
+  display_formatted: boolean;
+}): React.ReactElement {
+  return (
+    <TableCell sx={{minWidth: 200, className: 'runtime-column'}} align="center">
+      {display_formatted ? runtime_hours : runtime_minutes}
+    </TableCell>
   );
 }

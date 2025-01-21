@@ -33,6 +33,8 @@ export const MovieSchema = z
   .object({
     id: MovieIdSchema,
     title: z.string(),
+    mainTitle: z.string(),
+    subtitle: z.string(),
     ImdbId: z.string().nullable(),
     movieDbId: z.number().nullable(),
     runtime_hours: z.string().nullable(),

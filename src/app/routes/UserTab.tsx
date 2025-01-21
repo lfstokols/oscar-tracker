@@ -1,14 +1,14 @@
 import {Suspense} from 'react';
 import UserStatsTable from '../../features/userStatsTable/UserStatsTable';
-import {LoadScreen} from '../../components/LoadScreen';
+import DefaultCatcher, {LoadScreen} from '../../components/LoadScreen';
 
 export default function UserTab(): React.ReactElement {
   return (
-    <Suspense fallback={<LoadScreen />}>
+    <DefaultCatcher>
       <UserStatsTable />
       <div style={{display: 'flex', justifyContent: 'center'}}>
         {/* <Countdown /> */}
       </div>
-    </Suspense>
+    </DefaultCatcher>
   );
 }

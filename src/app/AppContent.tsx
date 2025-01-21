@@ -26,7 +26,7 @@ export default function AppContent(): React.ReactElement {
     <Container
       sx={{
         flexGrow: 1,
-        overflow: 'auto',
+        overflow: 'hidden',
         scrollBehavior: 'smooth',
         height: 0, // This forces the container to respect the flex layout
         display: 'flex',

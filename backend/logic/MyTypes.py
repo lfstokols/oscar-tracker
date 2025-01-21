@@ -48,7 +48,7 @@ class MovieColumns(str, Enum):
     MovieDB_ID = "movieDbId"
     RUNTIME = "runtime"  # This is removed before reaching frontend
     POSTER_PATH = "posterPath"
-
+    SUBTITLE_POSITION = "subtitlePosition"
     # @classmethod
     # def values(cls):
     #     return [
@@ -69,6 +69,8 @@ class DerivedMovieColumns(str, Enum):
     NUM_NOMS = "numNoms"
     IS_MULTI_NOM = "isMultiNom"
     IS_SHORT = "isShort"
+    MAIN_TITLE = "mainTitle"
+    SUBTITLE = "subtitle"
 
 
 class NomColumns(str, Enum):

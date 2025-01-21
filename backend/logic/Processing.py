@@ -1,3 +1,4 @@
+import re
 from typing import Hashable, overload, Any
 from backend.data_management.api_schemas import (
     api_CategoryCompletionsDict,
@@ -23,17 +24,17 @@ def are_movies_short(
     columns name: CategoryColumns.IS_SHORT
     """
     enriched_nominations = nominations.merge(
-        categories, left_on=NomColumns.CATEGORY, right_index=True
+        categories, left_on=NomColumns.CATEGORY.value, right_index=True
     )
-    num_short_noms = enriched_nominations.groupby(NomColumns.MOVIE)[
-        CategoryColumns.IS_SHORT
+    num_short_noms = enriched_nominations.groupby(NomColumns.MOVIE.value)[
+        CategoryColumns.IS_SHORT.value
     ].sum()
-    return (num_short_noms > 0).rename(DerivedMovieColumns.IS_SHORT)
+    return (num_short_noms > 0).rename(DerivedMovieColumns.IS_SHORT.value)
 
 
 def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:
-    return (nominations.groupby(NomColumns.MOVIE).size() > 1).rename(
-        DerivedMovieColumns.IS_MULTI_NOM
+    return (nominations.groupby(NomColumns.MOVIE.value).size() > 1).rename(
+        DerivedMovieColumns.IS_MULTI_NOM.value
     )
 
     # Create boolean series indicating if each movie has any short nominations
@@ -54,26 +55,58 @@ def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:
 def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> int:
     total = storage.read("movies", year).shape[0]
     categories = storage.read("categories")
-    num_shorts = categories.loc[categories[CategoryColumns.IS_SHORT] == 1][
-        CategoryColumns.MAX_NOMS
+    num_shorts = categories.loc[categories[CategoryColumns.IS_SHORT.value] == 1][
+        CategoryColumns.MAX_NOMS.value
     ].sum()
     if shortsIsOne:
         return total - num_shorts + 3
     return total
 
 
+def break_into_subtitles(fullTitle: str, subtitlePosition: int) -> tuple[str, str]:
+    if subtitlePosition == -1:
+        return fullTitle, ""
+    mainTitle = fullTitle[:subtitlePosition].strip()
+    subtitle = fullTitle[subtitlePosition:]
+    subtitle = re.search(r"(\w.*)$", subtitle)
+    if subtitle:
+        subtitle = subtitle.group(0).strip()
+    else:
+        subtitle = ""
+    return mainTitle, subtitle
+
+
 def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = None):
     data = storage.read("movies", year)
     noms = storage.read("nominations", year)
     categories = storage.read("categories")
-    data[DerivedMovieColumns.NUM_NOMS] = noms.groupby(NomColumns.MOVIE).size()
+    data[DerivedMovieColumns.NUM_NOMS.value] = noms.groupby(
+        NomColumns.MOVIE.value
+    ).size()
     data = data.rename(
-        columns={MovieColumns.RUNTIME: DerivedMovieColumns.RUNTIME_MINUTES}
+        columns={MovieColumns.RUNTIME.value: DerivedMovieColumns.RUNTIME_MINUTES.value}
     )
-    data[DerivedMovieColumns.RUNTIME_HOURS] = data[
-        DerivedMovieColumns.RUNTIME_MINUTES
+    data[DerivedMovieColumns.RUNTIME_HOURS.value] = data[
+        DerivedMovieColumns.RUNTIME_MINUTES.value
     ].apply(lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None)
     data = pd.concat([data, are_movies_short(data, noms, categories)], axis="columns")
+    titles_df = pd.DataFrame(
+        data[[MovieColumns.TITLE.value, MovieColumns.SUBTITLE_POSITION.value]].apply(
+            lambda x: break_into_subtitles(
+                x[MovieColumns.TITLE.value], x[MovieColumns.SUBTITLE_POSITION.value]
+            ),
+            axis="columns",
+            result_type="expand",
+        ),
+        dtype=str,
+    ).rename(
+        columns={
+            0: DerivedMovieColumns.MAIN_TITLE.value,
+            1: DerivedMovieColumns.SUBTITLE.value,
+        }
+    )
+    data = pd.concat([data, titles_df], axis="columns")
+    data = data.drop(columns=[MovieColumns.SUBTITLE_POSITION.value])
     data.index.name = "id"
     if idList:
         data = data.loc[idList]

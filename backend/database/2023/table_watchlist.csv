@@ -71,7 +71,6 @@ usr_ca512f,mov_6012dc,seen
 usr_ca512f,mov_60f4be,seen
 usr_ca512f,mov_60576e,seen
 usr_ca512f,mov_601f65,seen
-usr_ca512f,mov_6035a4,seen
 usr_ca512f,mov_60c4f0,seen
 usr_ca512f,mov_609f63,seen
 usr_ca512f,mov_602269,seen
@@ -87,7 +86,10 @@ usr_ca512f,mov_6052da,todo
 usr_ca512f,mov_606d51,todo
 usr_ca512f,mov_6089ef,seen
 usr_ca512f,mov_607bea,seen
-usr_ca512f,mov_60bbb4,seen
-usr_ca512f,mov_60c94c,seen
 usr_ca512f,mov_60bf18,seen
 usr_ca512f,mov_604c63,seen
+usr_ca512f,mov_60bbb4,seen
+usr_ca512f,mov_60f938,todo
+usr_ca512f,mov_6035a4,seen
+usr_ca512f,mov_60c94c,seen
+usr_ca512f,mov_60afc9,seen
