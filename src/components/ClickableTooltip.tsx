@@ -5,10 +5,12 @@ export function ClickableTooltip({
   children,
   popup,
   arrow = false,
+  followCursor = false,
 }: {
   children: React.ReactNode;
   popup: React.ReactNode;
   arrow?: boolean;
+  followCursor?: boolean;
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
   const handleTooltipOpen = () => {
@@ -30,10 +32,12 @@ export function ClickableTooltip({
             disablePortal: true,
           },
         }}
-        title={popup}>
-        <span>
-          <Box onClick={handleTooltipOpen}>{children}</Box>
-        </span>
+        title={popup}
+        followCursor={followCursor}>
+        {/* <span> */}
+        {/* <Box onClick={handleTooltipOpen}>{children}</Box> */}
+        {children}
+        {/* </span> */}
       </Tooltip>
     </ClickAwayListener>
   );

@@ -49,7 +49,7 @@ export default function SignUp({closer}: Props) {
 
     let isValid = true;
 
-    if (email.value && !/\S+@\S+\.\S+/.test(email.value)) {
+    if (email.value && !/\S{1,20}@\S{1,15}\.\S{1,15}/.test(email.value)) {
       setEmailError(true);
       setEmailErrorMessage("That's not a valid email address.");
       isValid = false;
@@ -64,11 +64,15 @@ export default function SignUp({closer}: Props) {
     const username = document.getElementById('username') as HTMLInputElement;
 
     let isValid = true;
-    if (!username.value || !/^[a-zA-Z0-9_]+$/.test(username.value)) {
+    if (!username.value || !/^[a-zA-Z0-9_]*$/.test(username.value)) {
       setUsernameError(true);
       setUsernameErrorMessage(
         'Username must consist of only letters, numbers, and underscores.',
       );
+      isValid = false;
+    } else if (username.value.length > 15) {
+      setUsernameError(true);
+      setUsernameErrorMessage('Max username length is 15 characters.');
       isValid = false;
     } else {
       setUsernameError(false);

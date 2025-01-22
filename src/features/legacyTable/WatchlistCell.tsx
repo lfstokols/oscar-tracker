@@ -73,17 +73,17 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
     <ClickableTooltip
       popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}
       arrow={true}>
-      <div>
-        <MyFill
-          watchstate={localWatchState}
-          handleInteract={() => {
-            if (!isEditingDisabled) {
-              mutation.mutate(nextStatus(localWatchState));
-            }
-          }}
-          disabled={isEditingDisabled}
-        />
-      </div>
+      {/* <div> */}
+      <MyFill
+        watchstate={localWatchState}
+        handleInteract={() => {
+          if (!isEditingDisabled) {
+            mutation.mutate(nextStatus(localWatchState));
+          }
+        }}
+        disabled={isEditingDisabled}
+      />
+      {/* </div> */}
     </ClickableTooltip>
   );
 }
@@ -116,7 +116,9 @@ export function MyFill({
   disabled,
 }: FillProps): React.ReactElement {
   return (
-    <div
+    <Typography
+      variant="h6"
+      sx={{minHeight: '32px'}}
       onClick={handleInteract}
       style={{
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -127,9 +129,9 @@ export function MyFill({
             ? SEEN_COLOR
             : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,
-        minWidth: '50px',
+        // minWidth: '80px',
         minHeight: '20px',
-        width: '100%',
+        width: '80px',
         height: '100%',
         borderRadius: '5px',
         display: 'flex',
@@ -137,10 +139,9 @@ export function MyFill({
         justifyContent: 'center',
         userSelect: 'none',
       }}>
-      <Typography variant="h6" sx={{minHeight: '32px'}}>
-        {display(watchstate)}
-      </Typography>
-    </div>
+      {/* <> */}
+      {display(watchstate)}
+    </Typography>
   );
 }
 

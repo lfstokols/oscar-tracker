@@ -1,6 +1,7 @@
-import React from 'react';
-import DefaultCatcher from '../components/LoadScreen';
+import React, {Suspense} from 'react';
+import {LoadScreen} from '../components/LoadScreen';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
+import {Container} from '@mui/material';
 import SiteHeader from '../features/siteHeader/SiteHeader';
 import {Routes, Route, Navigate} from 'react-router-dom';
 import HomeTab from './routes/HomeTab';
@@ -8,41 +9,62 @@ import UserTab from './routes/UserTab';
 import CategoryTab from './routes/CategoryTab';
 import AppProvider from './AppProvider';
 import PageContainer from './AppContent';
+import {ErrorBoundary} from 'react-error-boundary';
+import ErrorPage from '../assets/ErrorPage.png';
 
 export default function App(): React.ReactElement {
   return (
-    <DefaultCatcher>
-      <AppProvider>
-        <ReactQueryDevtools />
-        <div
-          className="App"
-          style={{
+    <ErrorBoundary
+      fallback={
+        <Container
+          sx={{
             height: '100vh',
             width: '100vw',
-            overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column',
-            paddingBottom: '12px',
+            justifyContent: 'center',
+            alignItems: 'center',
           }}>
-          <SiteHeader />
-          <Routes>
-            <Route path="/" element={<Navigate to="/legacy" replace />} />
-            <Route
-              path="/legacy"
-              element={<PageContainer currentTab={<HomeTab />} />}
-            />
-            <Route
-              path="/users"
-              element={<PageContainer currentTab={<UserTab />} />}
-            />
-            <Route
-              path="/categories"
-              element={<PageContainer currentTab={<CategoryTab />} />}
-            />
-          </Routes>
-        </div>
-      </AppProvider>
-    </DefaultCatcher>
+          <img
+            src={ErrorPage}
+            alt="Error"
+            height={Math.min(window.innerHeight, window.innerWidth) * 0.8}
+            width={Math.min(window.innerHeight, window.innerWidth) * 0.8}
+          />
+        </Container>
+      }>
+      <Suspense fallback={<LoadScreen />}>
+        <AppProvider>
+          <ReactQueryDevtools />
+          <div
+            className="App"
+            style={{
+              height: '100vh',
+              width: '100vw',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              paddingBottom: '12px',
+            }}>
+            <SiteHeader />
+            <Routes>
+              <Route path="/" element={<Navigate to="/legacy" replace />} />
+              <Route
+                path="/legacy"
+                element={<PageContainer currentTab={<HomeTab />} />}
+              />
+              <Route
+                path="/users"
+                element={<PageContainer currentTab={<UserTab />} />}
+              />
+              <Route
+                path="/categories"
+                element={<PageContainer currentTab={<CategoryTab />} />}
+              />
+            </Routes>
+          </div>
+        </AppProvider>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

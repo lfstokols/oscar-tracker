@@ -95,9 +95,10 @@ export default function CategoryCompletionTable(): React.ReactElement {
     return (
       <TableRow
         key={cat.id}
+        // color="secondary"
         sx={{
           backgroundColor: TABLE_ROW_MINOR_COLOR,
-          color: 'text.secondary',
+          // color: 'text.secondary',
           // opacity: isOpen ? 1 : 0,
           maxHeight: isOpen ? '33px' : '0px',
           overflow: 'hidden',
@@ -112,7 +113,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
             overflow: 'hidden',
             visibility: isOpen ? 'visible' : 'collapse',
             transition: 'all 200ms ease-in-out',
-            '& > *': {
+            '& > .MuiTypography-root:not(.MuiTooltip-popper *)': {
               transform: isOpen ? 'translateY(0px)' : 'translateY(-100%)',
               visibility: isOpen ? 'visible' : 'collapse',
               opacity: isOpen ? 1 : 0,
@@ -135,7 +136,8 @@ export default function CategoryCompletionTable(): React.ReactElement {
                 nominations,
                 watchlist,
                 movies,
-              )}>
+              )}
+              followCursor>
               <Typography variant="h6">
                 {data[user.id][i][cat.id].toString() +
                   ' / ' +
@@ -177,9 +179,11 @@ export default function CategoryCompletionTable(): React.ReactElement {
     return (
       <TableRow
         key={grouping}
-        sx={{
-          backgroundColor: TABLE_ROW_COLOR,
-        }}
+        sx={
+          {
+            // backgroundColor: TABLE_ROW_COLOR,
+          }
+        }
         onClick={handleClick}>
         <TableCell>
           {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
@@ -205,6 +209,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
   return (
     <Paper
       sx={{
+        marginTop: '16px',
         width: '100%',
         height: '100%',
         display: 'flex',
@@ -285,36 +290,60 @@ function makeCategoryTooltip(
     <Stack spacing={3} direction="row" justifyContent="space-between">
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <u style={{fontSize: '1.2em'}}>Seen</u>
+          <Typography variant="h6">
+            <u>Seen</u>
+          </Typography>
         </div>
-        <ul style={{paddingLeft: '12px', marginTop: '0px'}}>
+        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
           {myMovieIds.map(id => {
             const movie = movies.find(m => m.id === id);
-            return <li key={id}>{movie ? movie.mainTitle : '???'}</li>;
+            return (
+              <div key={id}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                  {movie ? movie.mainTitle : '??? '}
+                </Typography>
+              </div>
+            );
           })}
-        </ul>
+        </Stack>
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <u style={{fontSize: '1.2em'}}>Planned</u>
+          <Typography variant="h6">
+            <u>Planned</u>
+          </Typography>
         </div>
-        <ul style={{paddingLeft: '12px', marginTop: '0px'}}>
+        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
           {myPlannedMovieIds.map(id => {
             const movie = movies.find(m => m.id === id);
-            return <li key={id}>{movie ? movie.mainTitle : '???'}</li>;
+            return (
+              <div key={id}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                  {movie ? movie.mainTitle : '??? '}
+                </Typography>
+              </div>
+            );
           })}
-        </ul>
+        </Stack>
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <u style={{fontSize: '1.2em'}}>Missing</u>
+          <Typography variant="h6">
+            <u>Missing</u>
+          </Typography>
         </div>
-        <ul style={{paddingLeft: '12px', marginTop: '0px'}}>
+        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
           {myMissingMovieIds.map(id => {
             const movie = movies.find(m => m.id === id);
-            return <li key={id}>{movie ? movie.mainTitle : '???'}</li>;
+            return (
+              <div key={id}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                  {movie ? movie.mainTitle : '???'}
+                </Typography>
+              </div>
+            );
           })}
-        </ul>
+        </Stack>
       </div>
     </Stack>
   );
@@ -324,7 +353,7 @@ const plannedBanner = (
     <TableCell
       colSpan={100}
       sx={{
-        backgroundColor: TODO_COLOR,
+        // backgroundColor: TODO_COLOR,
         position: 'sticky',
         top: 56,
         zIndex: 2,

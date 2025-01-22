@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 import requests
+from backend.routing_lib.user_session import SessionArgs, session_added_user
 from backend.types.api_schemas import UserID
 from backend.data_management.api_validators import (
     validate_nom_list,
@@ -135,6 +136,7 @@ def serve_users_POST():
     username = request.json.get("username")
     newUserId: UserID = mu.add_user(storage, username)
     AnnotatedValidator(user=newUserId)
+    session_added_user()
     mu.update_user(storage, newUserId, request.json)
     newState = pr.get_users(storage)
     newState = validate_user_list(newState)
@@ -197,7 +199,7 @@ def serve_watchlist_GET():
         raise YearError()
     if justMe:
         data = storage.read("watchlist", year)
-        data = data.loc[data[WatchlistColumns.USER] == userId]
+        data = data.loc[data[WatchlistColumns.USER.value] == userId]
         return validate_watchlist(data)
     else:
         return validate_watchlist(storage.read("watchlist", year))

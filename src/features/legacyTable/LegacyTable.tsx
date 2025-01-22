@@ -101,9 +101,11 @@ function LegacyTable(): React.ReactElement {
       return (
         <TableRow
           key={localMovies.reduce((acc, movie) => acc + movie.id, '')}
-          sx={{
-            backgroundColor: TABLE_ROW_COLOR,
-          }}>
+          sx={
+            {
+              // backgroundColor: TABLE_ROW_COLOR,
+            }
+          }>
           <TableCell sx={{padding: 0}}>
             <Table>
               <TableBody>
@@ -137,7 +139,7 @@ function LegacyTable(): React.ReactElement {
             <WatchlistCell
               key={user.id}
               userId={user.id}
-              movieId={localMovies[0].id}
+              movieId={localMovies.map(movie => movie.id)}
             />
           ))}
         </TableRow>
@@ -149,9 +151,11 @@ function LegacyTable(): React.ReactElement {
           return (
             <TableRow
               key={movie.id}
-              sx={{
-                backgroundColor: TABLE_ROW_COLOR,
-              }}>
+              sx={
+                {
+                  // backgroundColor: TABLE_ROW_COLOR,
+                }
+              }>
               <TitleCell
                 movie={movie}
                 bestPicNominees={bestPicNominees}
@@ -182,68 +186,46 @@ function LegacyTable(): React.ReactElement {
     );
   }
   return (
-    <>
-      {/* <style>{`
-      .title-column {
-        border: 5px solid #ccc;
-      }
-      .nominations-column {
-        max-width: 300px;
-      }
-      .table-container {
-        display: flex;
-        flex-direction: column;
-      }
-      .scrollable-table {
-        flex-grow: 1;
-        overflow: auto;
-        height: 100%;
-        scrollbar-width: none; // Firefox 
-        -ms-overflow-style: none;  // Internet Explorer 10+ 
-      }
-      .scrollable-table::-webkit-scrollbar { // WebKit
-        display: none;
-      }
-    `}</style> */}
-      <Paper
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'auto',
-          scrollbarWidth: '8px',
-        }}>
-        <TableContainer sx={{scrollBehavior: 'smooth'}}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <ColumnLabel
-                  text="Film"
-                  sx={{maxWidth: '10ch', overflow: 'wrap'}}
-                />
-                <ColumnLabel text="Nominated For" />
-                <ColumnLabel
-                  text="Runtime"
-                  onClick={() => setRuntimeFormatted(!runtimeFormatted)}
-                  style={{cursor: 'pointer'}}
-                  title="Click to toggle runtime format"
-                />
-                {sortedUsers.map(user => (
-                  <ColumnLabel key={user.id} text={user.username} />
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {makeSubTable(sortedData, false)}
-              {makeSubTable(sortedShortsLive, preferences.shortsAreOneFilm)}
-              {makeSubTable(sortedShortsAnimated, preferences.shortsAreOneFilm)}
-              {makeSubTable(sortedShortsDoc, preferences.shortsAreOneFilm)}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Paper>
-    </>
+    <Paper
+      sx={{
+        marginTop: '16px',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'auto',
+        scrollbarHeight: '8px',
+        // backgroundColor: 'secondary.light',
+      }}>
+      <TableContainer sx={{scrollBehavior: 'smooth'}}>
+        <Table stickyHeader>
+          <TableHead>
+            <TableRow>
+              <ColumnLabel
+                text="Film"
+                sx={{maxWidth: '10ch', overflow: 'wrap'}}
+              />
+              <ColumnLabel text="Nominated For" />
+              <ColumnLabel
+                text="Runtime"
+                onClick={() => setRuntimeFormatted(!runtimeFormatted)}
+                style={{cursor: 'pointer'}}
+                title="Click to toggle runtime format"
+              />
+              {sortedUsers.map(user => (
+                <ColumnLabel key={user.id} text={user.username} />
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody sx={{borderRadius: 5}}>
+            {makeSubTable(sortedData, false)}
+            {makeSubTable(sortedShortsLive, preferences.shortsAreOneFilm)}
+            {makeSubTable(sortedShortsAnimated, preferences.shortsAreOneFilm)}
+            {makeSubTable(sortedShortsDoc, preferences.shortsAreOneFilm)}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Paper>
   );
 }
 
@@ -271,41 +253,112 @@ function TitleCell({
   sx?: SxProps<Theme>;
   props?: Record<string, unknown>;
 }): React.ReactElement {
+  //*----------------------
+  const y_radius = 15;
+  const x_radius = getTextWidth(movie.mainTitle) * 0.7;
+  const ratio = 1.5;
+  const diff = 10;
+  const upper_angles = Array(6)
+    .fill(0)
+    .map((_, i) => (5 * Math.PI) / 4 + (i / 5) * (Math.PI / 2));
+  const angles = [
+    ...Array(6)
+      .fill(0)
+      .map((_, i) => Math.PI / 4 + (i / 5) * (Math.PI / 2)),
+    ...upper_angles,
+  ];
+  //*----------------------
+
   return (
     <TableCell
       title={movie.id}
       sx={{
+        textAlign: 'center',
         className: 'title-column',
         maxWidth: '30ch',
-        overflow: 'auto',
-        backgroundColor: bestPicNominees?.includes(movie.id)
-          ? BEST_PICTURE_COLOR
-          : preferences?.highlightAnimated &&
-            bestAnimatedNominees?.includes(movie.id)
-          ? HIGHLIGHT_ANIMATED_COLOR
-          : 'inherit',
+        overflow: 'visible',
         scrollbarWidth: 'none',
+        position: 'relative',
         ...sxProps,
       }}
       {...props}>
-      <b
-        style={{
-          fontSize: '1.2em',
-          whiteSpace: 'nowrap',
-        }}>
-        {movie.mainTitle}
-      </b>
-      <br />
-      {movie.subtitle ? (
-        <i
+      {bestPicNominees?.includes(movie.id) && (
+        <svg
           style={{
-            fontSize: '0.8em',
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: '0%',
+            left: '0%',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+          viewBox="0 0 150 100">
+          {angles.map((angle, i) => {
+            const innerX = 75 + x_radius * Math.cos(angle); // Wider x radius
+            const innerY = 50 + y_radius * Math.sin(angle); // Shorter y radius
+            const outerX = 75 + (x_radius + diff) * Math.cos(angle); // Wider x radius
+            const outerY = 50 + (y_radius + diff) * Math.sin(angle); // Shorter y radius
+            return (
+              <line
+                key={i}
+                x1={innerX}
+                y1={innerY}
+                x2={outerX}
+                y2={outerY}
+                stroke="rgba(255,215,0,0.6)"
+                strokeWidth="1.5"
+              />
+            );
+          })}
+        </svg>
+      )}
+      <div
+        style={
+          preferences?.highlightAnimated &&
+          bestAnimatedNominees?.includes(movie.id)
+            ? {
+                border: `1px dashed ${HIGHLIGHT_ANIMATED_COLOR}`,
+                padding: '8px',
+                borderRadius: '30px',
+              }
+            : {}
+        }>
+        <b
+          style={{
+            fontSize: '1.2em',
             whiteSpace: 'nowrap',
-            overflow: 'auto',
+            position: 'relative',
+            zIndex: 1,
+            color: bestPicNominees?.includes(movie.id)
+              ? BEST_PICTURE_COLOR
+              : preferences?.highlightAnimated &&
+                bestAnimatedNominees?.includes(movie.id)
+              ? HIGHLIGHT_ANIMATED_COLOR
+              : 'inherit',
+            // backgroundColor: bestPicNominees?.includes(movie.id)
+            //   ? BEST_PICTURE_COLOR
+            //   : preferences?.highlightAnimated &&
+            //     bestAnimatedNominees?.includes(movie.id)
+            //   ? HIGHLIGHT_ANIMATED_COLOR
+            //   : 'inherit',
           }}>
-          {movie.subtitle}
-        </i>
-      ) : null}
+          {movie.mainTitle}
+        </b>
+        <br />
+        {movie.subtitle ? (
+          <i
+            style={{
+              fontSize: '0.8em',
+              whiteSpace: 'nowrap',
+              overflow: 'auto',
+              position: 'relative',
+              zIndex: 1,
+            }}>
+            {movie.subtitle}
+          </i>
+        ) : null}
+      </div>
     </TableCell>
   );
 }
@@ -326,4 +379,11 @@ function RuntimeCell({
       </Typography>
     </TableCell>
   );
+}
+
+function getTextWidth(text: string) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+  context.font = 'Roboto, sans-serif';
+  return context.measureText(text).width;
 }

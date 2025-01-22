@@ -8,7 +8,11 @@ sys.path.append(str(project_root_directory))
 
 from datetime import datetime, timedelta
 from backend.data_management.api_validators import AnnotatedValidator
-from backend.routing_lib.user_session import start_new_session, log_session_activity
+from backend.routing_lib.user_session import (
+    start_new_session,
+    log_session_activity,
+    SessionArgs,
+)
 from backend.logic.storage_manager import StorageManager
 
 StorageManager.make_storage(project_root_directory / "backend" / "database")
@@ -107,7 +111,8 @@ def before_request():
     except Exception as e:
         print(f"Invalid user id {e} found in cookie.")
         login = None
-        session.clear()
+        session[SessionArgs.user_id.value] = None
+        session[SessionArgs.last_activity.value] = None
 
     if login and session.get("session_token") != login:
         start_new_session(login)

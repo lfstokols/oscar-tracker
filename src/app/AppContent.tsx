@@ -7,23 +7,23 @@ import HomeTab from './routes/HomeTab';
 import UserTab from './routes/UserTab';
 import CategoryTab from './routes/CategoryTab';
 
-export function AppContent(): React.ReactElement {
-  const {selectedTab} = useOscarAppContext();
-  let currentTab = null;
-  switch (selectedTab) {
-    case AppTabType.legacy:
-      currentTab = <HomeTab />;
-      break;
-    case AppTabType.byUser:
-      currentTab = <UserTab />;
-      break;
-    case AppTabType.byCategory:
-      currentTab = <CategoryTab />;
-      break;
-  }
+// export function AppContent(): React.ReactElement {
+//   const {selectedTab} = useOscarAppContext();
+//   let currentTab = null;
+//   switch (selectedTab) {
+//     case AppTabType.legacy:
+//       currentTab = <HomeTab />;
+//       break;
+//     case AppTabType.byUser:
+//       currentTab = <UserTab />;
+//       break;
+//     case AppTabType.byCategory:
+//       currentTab = <CategoryTab />;
+//       break;
+//   }
 
-  return mainPageContainer({currentTab});
-}
+//   return mainPageContainer({currentTab});
+// }
 
 export default function mainPageContainer({
   currentTab,
@@ -32,14 +32,18 @@ export default function mainPageContainer({
 }): React.ReactElement {
   return (
     <Container
+      maxWidth={false}
       sx={{
         flexGrow: 1,
         overflow: 'hidden',
+        // width: '100vw',
         scrollBehavior: 'smooth',
         height: 0, // This forces the container to respect the flex layout
         display: 'flex',
+        // backgroundColor: 'secondary.light',
       }}>
-      <Box sx={{my: 4, borderRadius: 2, width: '90vw'}}>{currentTab}</Box>
+      {/* <Box sx={{my: 4, borderRadius: 2, width: '90vw'}}>{currentTab}</Box> */}
+      {currentTab}
     </Container>
   );
 }

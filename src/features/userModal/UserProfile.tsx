@@ -123,6 +123,14 @@ export default function UserProfile({closer}: Props) {
             text="Treat each 'shorts' category as a single film when calculating cumulative stats"
             whichPref="shortsAreOneFilm"
           />
+          <Preference
+            text="Highlight 'Best Animated Film' nominees in the main table"
+            whichPref="highlightAnimated"
+          />
+          <Preference
+            text="Disallow manual marking movies as 'seen' (giving letterboxd full control)"
+            whichPref="lockSeenToggle"
+          />
         </List>
       </Box>
       <Divider />

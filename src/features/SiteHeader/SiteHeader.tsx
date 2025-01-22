@@ -13,7 +13,7 @@ import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
 import TabDrawer from '../tabDrawer/tabDrawer';
 import {useNavigate, useLocation} from 'react-router-dom';
-
+import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
 import {useIsMobile} from '../../hooks/useIsMobile';
@@ -33,7 +33,7 @@ export default function SiteHeader(props: Props): React.ReactElement {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" sx={{backgroundColor: SITE_HEADER_COLOR}}>
       <Toolbar
         sx={{
           display: 'flex',

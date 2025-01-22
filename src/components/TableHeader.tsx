@@ -3,20 +3,20 @@ import {TABLE_HEADER_COLOR} from '../config/StyleChoices';
 
 export function ColumnLabel({
   text,
-  ...props
-}: {text: string} & React.ComponentProps<
-  typeof TableCell
->): React.ReactElement {
+  sx,
+}: // ...props
+{text: string} & React.ComponentProps<typeof TableCell>): React.ReactElement {
   return (
     <TableCell
-      {...props}
       align="center"
-      color={TABLE_HEADER_COLOR}
+      // color={TABLE_HEADER_COLOR}
       sx={{
-        // color: 'primary',
+        ...sx,
+        backgroundColor: TABLE_HEADER_COLOR,
         // justifyContent: 'center',
-        ...props.sx,
-      }}>
+      }}
+      // {...props}
+    >
       <Typography variant="h5">{text}</Typography>
     </TableCell>
   );

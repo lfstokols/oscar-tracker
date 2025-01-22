@@ -8,6 +8,7 @@ import {
   TableBody,
   Typography,
   TableContainer,
+  Stack,
 } from '@mui/material';
 import {
   movieOptions,
@@ -39,21 +40,6 @@ export default function UserStatsTable(): React.ReactElement {
   const numMoviesFeature = numMoviesTotal - numMoviesShort;
   const numMultinomTotal = movieList.filter(movie => movie.numNoms > 1).length;
 
-  function makeRow(title: string, values: (user: UserStats) => string) {
-    return (
-      <TableRow key={title} sx={{backgroundColor: TABLE_ROW_COLOR}}>
-        <TableCell>
-          <Typography variant="h6">{title}</Typography>
-        </TableCell>
-        {userStats.map(user => (
-          <TableCell key={user.id} align="center">
-            <Typography variant="h6">{values(user)}</Typography>
-          </TableCell>
-        ))}
-      </TableRow>
-    );
-  }
-
   function makeFraction(
     numFeature: number,
     numShort: number,
@@ -69,65 +55,87 @@ export default function UserStatsTable(): React.ReactElement {
     return `${numerator}/${denominator}`;
   }
 
+  // Define the stats columns configuration
+  const statsColumns = [
+    {
+      title: 'Movies Seen',
+      getValue: (user: UserStats) =>
+        makeFraction(
+          user.numSeenFeature ?? 0,
+          user.numSeenShort ?? 0,
+          shortsAreOneFilm,
+          false,
+        ),
+    },
+    {
+      title: 'Movies Seen (planned)',
+      getValue: (user: UserStats) =>
+        makeFraction(
+          (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
+          (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
+          shortsAreOneFilm,
+          false,
+        ),
+    },
+    {
+      title: 'Multiple Nominations',
+      getValue: (user: UserStats) =>
+        makeFraction(user.numSeenMultinom ?? 0, 0, shortsAreOneFilm, true),
+    },
+    {
+      title: 'Multiple Nominations (planned)',
+      getValue: (user: UserStats) =>
+        makeFraction(
+          (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
+          0,
+          shortsAreOneFilm,
+          true,
+        ),
+    },
+    {
+      title: 'Total Watchtime Completed',
+      getValue: (user: UserStats) => minutesToHours(user.seenWatchtime),
+    },
+    {
+      title: 'Total Watchtime Remaining',
+      getValue: (user: UserStats) => minutesToHours(user.todoWatchtime),
+    },
+  ];
+
   return (
-    <>
+    <Stack direction="column" spacing={2}>
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
               <ColumnLabel text="" />
-              {userStats.map(user => (
-                <ColumnLabel
-                  key={user.id}
-                  text={getUsernameFromId(user.id, users) ?? ''}
-                />
+              {statsColumns.map(column => (
+                <ColumnLabel key={column.title} text={column.title} />
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {makeRow('Movies Seen', user =>
-              makeFraction(
-                user.numSeenFeature ?? 0,
-                user.numSeenShort ?? 0,
-                shortsAreOneFilm,
-                false,
-              ),
-            )}
-            {makeRow('Movies Seen (planned)', user =>
-              makeFraction(
-                (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
-                (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
-                shortsAreOneFilm,
-                false,
-              ),
-            )}
-            {makeRow('Multiple Nominations', user =>
-              makeFraction(
-                user.numSeenMultinom ?? 0,
-                0,
-                shortsAreOneFilm,
-                true,
-              ),
-            )}
-            {makeRow('Multiple Nominations (planned)', user =>
-              makeFraction(
-                (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
-                0,
-                shortsAreOneFilm,
-                true,
-              ),
-            )}
-            {makeRow('Total Watchtime Completed', user =>
-              minutesToHours(user.seenWatchtime),
-            )}
-            {makeRow('Total Watchtime Remaining', user =>
-              minutesToHours(user.todoWatchtime),
-            )}
+            {userStats.map(user => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Typography variant="h6">
+                    {getUsernameFromId(user.id, users) ?? ''}
+                  </Typography>
+                </TableCell>
+                {statsColumns.map(column => (
+                  <TableCell key={column.title} align="center">
+                    <Typography variant="h6">
+                      {column.getValue(user)}
+                    </Typography>
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
       <Countdown />
-    </>
+    </Stack>
   );
 }
 

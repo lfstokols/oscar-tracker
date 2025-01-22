@@ -7,7 +7,8 @@ export default {
   palette: {
     mode: 'dark',
     secondary: {
-      main: '#b71c1c',
+      // main: '#b71c1c',
+      main: '#EEBD22',
     },
     // secondary: {
     //   main: '#E3D026',

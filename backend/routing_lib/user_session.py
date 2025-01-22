@@ -29,6 +29,13 @@ def log_session_activity():
     session[SessionArgs.last_activity.value] = datetime.now()
 
 
+def session_added_user():
+    if SessionArgs.new_user_additions.value not in session:
+        session[SessionArgs.new_user_additions.value] = []
+    session[SessionArgs.new_user_additions.value].append(datetime.now())
+
+
 class SessionArgs(Enum):
     user_id = "user_id"
     last_activity = "last_activity"
+    new_user_additions = "new_user_additions"
