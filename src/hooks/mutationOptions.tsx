@@ -12,8 +12,8 @@ import {LogToConsole} from '../utils/Logger';
 
 // *
 // * Genera Stuff // *
-
 // *
+
 export function updateCacheOnSuccess<T>(
   queryKey: any,
   parser: (data: any) => T,
@@ -41,9 +41,9 @@ export function onMutateError(
 // * Mutation Functions // *
 // *
 
-export function updateWatchlistMutationFn(movieId: MovieId, year: number) {
+export function updateWatchlistMutationFn(movieIds: MovieId[], year: number) {
   return async (newState: WatchStatus) => {
-    const body = JSON.stringify({movieId, status: newState, year});
+    const body = JSON.stringify({movieIds, status: newState, year});
     return await fetch('api/watchlist', {
       method: 'PUT',
       body,

@@ -1,4 +1,5 @@
 import {TableCell, Typography} from '@mui/material';
+import {TABLE_HEADER_COLOR} from '../config/StyleChoices';
 
 export function ColumnLabel({
   text,
@@ -10,9 +11,9 @@ export function ColumnLabel({
     <TableCell
       {...props}
       align="center"
+      color={TABLE_HEADER_COLOR}
       sx={{
-        backgroundColor: 'primary.main',
-        color: 'primary.contrastText',
+        // color: 'primary',
         // justifyContent: 'center',
         ...props.sx,
       }}>

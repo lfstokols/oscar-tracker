@@ -18,3 +18,10 @@ export const NUM_SHORT_FILMS_PER_CATEGORY = 5;
 
 //* How to get tmdb posters
 export const MovieDb_POSTER_URL = "https://image.tmdb.org/t/p/w185";
+
+//* Default preferences
+export const DEFAULT_PREFERENCES = {
+  shortsAreOneFilm: false,
+  highlightAnimated: false,
+  lockSeenToggle: false,
+};

@@ -23,6 +23,7 @@ import {
 import {getUsernameFromId, sortUsers} from '../../utils/dataSelectors';
 import {ColumnLabel} from '../../components/TableHeader';
 import Countdown from '../../components/Countdown';
+import {TABLE_ROW_COLOR} from '../../config/StyleChoices';
 
 export default function UserStatsTable(): React.ReactElement {
   const year = useOscarAppContext().year;
@@ -40,7 +41,7 @@ export default function UserStatsTable(): React.ReactElement {
 
   function makeRow(title: string, values: (user: UserStats) => string) {
     return (
-      <TableRow key={title} sx={{backgroundColor: 'secondary.light'}}>
+      <TableRow key={title} sx={{backgroundColor: TABLE_ROW_COLOR}}>
         <TableCell>
           <Typography variant="h6">{title}</Typography>
         </TableCell>

@@ -8,6 +8,12 @@ export function LogToConsole(message: any) {
   }
 }
 
+export function WarnToConsole(message: any) {
+  if (RUN_DEBUG) {
+    console.warn(message);
+  }
+}
+
 export function LogToConsoleError(message: any) {
   if (RUN_DEBUG) {
     console.error(message);

@@ -18,21 +18,31 @@ import {useNotifications} from '../../providers/NotificationContext';
 import {WatchListSchema} from '../../types/APIDataSchema';
 import {Typography} from '@mui/material';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
-type Props = {
-  movieId: MovieId;
-  userId: UserId;
-};
+import {
+  TODO_COLOR,
+  SEEN_COLOR,
+  NO_STATUS_COLOR,
+} from '../../config/StyleChoices';
+type Props =
+  | {
+      movieId: MovieId;
+      userId: UserId;
+    }
+  | {
+      movieId: MovieId[];
+      userId: UserId;
+    };
 
 function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   const queryClient = useQueryClient();
   const notifications = useNotifications();
-
   const watchlistDataPromise = useSuspenseQuery(
     watchlistOptions(useOscarAppContext().year),
   );
+  const idList = movieId instanceof Array ? movieId : [movieId];
   const year = useOscarAppContext().year;
   const mutation = useMutation({
-    mutationFn: updateWatchlistMutationFn(movieId, year),
+    mutationFn: updateWatchlistMutationFn(idList, year),
     onSuccess: updateCacheOnSuccess(
       watchlistOptions(year).queryKey,
       WatchListSchema.parse,
@@ -112,10 +122,10 @@ export function MyFill({
         cursor: disabled ? 'not-allowed' : 'pointer',
         backgroundColor:
           watchstate === WatchStatus.blank
-            ? 'lightgrey'
+            ? NO_STATUS_COLOR
             : watchstate === WatchStatus.seen
-            ? 'lightgreen'
-            : 'lightgoldenrodyellow',
+            ? SEEN_COLOR
+            : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,
         minWidth: '50px',
         minHeight: '20px',
@@ -134,16 +144,13 @@ export function MyFill({
   );
 }
 
-export default function WatchlistCellWrapper({
-  movieId,
-  userId,
-}: Props): React.ReactElement {
+export default function WatchlistCellWrapper(props: Props): React.ReactElement {
   return (
     <TableCell
-      key={userId}
+      key={props.userId}
       sx={{display: 'fill', className: 'watchlist-column'}}
       align="center">
-      <WatchlistCell userId={userId} movieId={movieId} />
+      <WatchlistCell {...props} />
     </TableCell>
   );
 }

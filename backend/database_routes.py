@@ -209,11 +209,12 @@ def serve_watchlist_PUT():
     userId = utils.get_active_user_id(storage, request)
     if request.json is None:
         raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
-    movieId = request.json.get("movieId")
-    status = request.json.get("status")
     if not (year := request.json.get("year")):
         raise YearError()
-    mu.add_watchlist_entry(storage, year, userId, movieId, status)
+    movieIds = request.json.get("movieIds")
+    status = request.json.get("status")
+    for movieId in movieIds:
+        mu.add_watchlist_entry(storage, year, userId, movieId, status)
     return validate_watchlist(storage.read("watchlist", year))
 
 

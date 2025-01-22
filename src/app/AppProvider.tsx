@@ -10,7 +10,6 @@ import {BrowserRouter, Routes, Route} from 'react-router-dom';
 import App from './App';
 
 const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;
-console.log('ROUTE_BASENAME', ROUTE_BASENAME);
 
 const theme = createTheme(ThemeConfig);
 const queryClient = new QueryClient(QueryClientConfig);

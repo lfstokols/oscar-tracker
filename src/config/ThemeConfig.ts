@@ -5,14 +5,15 @@ import { red } from '@mui/material/colors';
 export default {
   cssVariables: true,
   palette: {
-    primary: {
-      main: '#556cd6',
-    },
+    mode: 'dark',
     secondary: {
-      main: '#19857b',
+      main: '#b71c1c',
     },
-    error: {
-      main: red.A400,
-    },
+    // secondary: {
+    //   main: '#E3D026',
+    // },
+    // error: {
+    //   main: red.A400,
+    // },
   },
 } satisfies Parameters<typeof createTheme>[0];

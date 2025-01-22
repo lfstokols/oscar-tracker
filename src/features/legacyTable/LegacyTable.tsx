@@ -11,6 +11,8 @@ import {
   Paper,
   Divider,
   Typography,
+  SxProps,
+  Theme,
 } from '@mui/material';
 import DefaultCatcher from '../../components/LoadScreen';
 import {ColumnLabel} from '../../components/TableHeader';
@@ -24,6 +26,11 @@ import {
 } from '../../hooks/dataOptions';
 import NominationsCell from './NominationsCell';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
+import {
+  BEST_PICTURE_COLOR,
+  HIGHLIGHT_ANIMATED_COLOR,
+  TABLE_ROW_COLOR,
+} from '../../config/StyleChoices';
 import {LogToConsole} from '../../utils/Logger';
 
 function LegacyTable(): React.ReactElement {
@@ -52,6 +59,10 @@ function LegacyTable(): React.ReactElement {
   const bestPicNominees = nominations
     .filter(nom => nom.categoryId === bestPicCategoryId)
     .map(nom => nom.movieId);
+  const bestAnimatedCategoryId = CategoryIdSchema.parse('cat_anim');
+  const bestAnimatedNominees = nominations
+    .filter(nom => nom.categoryId === bestAnimatedCategoryId)
+    .map(nom => nom.movieId);
 
   const sortedUsers = sortUsers(users);
   const sortedData = features.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
@@ -69,7 +80,6 @@ function LegacyTable(): React.ReactElement {
   function makeSubTable(
     localMovies: Movie[],
     merge: boolean,
-    getsUpperBorder: boolean,
   ): React.ReactElement {
     if (merge && localMovies.length !== 5) {
       throw new Error('Tried to merge too many rows');
@@ -92,20 +102,22 @@ function LegacyTable(): React.ReactElement {
         <TableRow
           key={localMovies.reduce((acc, movie) => acc + movie.id, '')}
           sx={{
-            backgroundColor: 'secondary.light',
-            ...(getsUpperBorder
-              ? {
-                  borderTop: theme =>
-                    `${theme.spacing(2)} solid rgba(0, 0, 0, 0.2)`,
-                }
-              : {}),
+            backgroundColor: TABLE_ROW_COLOR,
           }}>
-          <TableCell>
+          <TableCell sx={{padding: 0}}>
             <Table>
               <TableBody>
-                {localMovies.map(movie => (
+                {localMovies.map((movie, index) => (
                   <TableRow key={movie.id + 'mini'}>
-                    <TitleCell movie={movie} />
+                    <TitleCell
+                      movie={movie}
+                      sx={{
+                        borderBottom:
+                          index === 4
+                            ? 'none'
+                            : '1px solid --mui-palette-text-primary',
+                      }}
+                    />
                   </TableRow>
                 ))}
               </TableBody>
@@ -138,15 +150,14 @@ function LegacyTable(): React.ReactElement {
             <TableRow
               key={movie.id}
               sx={{
-                backgroundColor: 'secondary.light',
-                ...(getsUpperBorder && index === 0
-                  ? {
-                      borderTop: theme =>
-                        `${theme.spacing(2)} solid rgba(0, 0, 0, 0.2)`,
-                    }
-                  : {}),
+                backgroundColor: TABLE_ROW_COLOR,
               }}>
-              <TitleCell movie={movie} bestPicNominees={bestPicNominees} />
+              <TitleCell
+                movie={movie}
+                bestPicNominees={bestPicNominees}
+                bestAnimatedNominees={bestAnimatedNominees}
+                preferences={preferences}
+              />
               <NominationsCell
                 movieId={movie.id}
                 nominations={nominations}
@@ -224,22 +235,10 @@ function LegacyTable(): React.ReactElement {
               </TableRow>
             </TableHead>
             <TableBody>
-              {makeSubTable(sortedData, false, false)}
-              {makeSubTable(
-                sortedShortsLive,
-                preferences.shortsAreOneFilm,
-                true,
-              )}
-              {makeSubTable(
-                sortedShortsAnimated,
-                preferences.shortsAreOneFilm,
-                true,
-              )}
-              {makeSubTable(
-                sortedShortsDoc,
-                preferences.shortsAreOneFilm,
-                true,
-              )}
+              {makeSubTable(sortedData, false)}
+              {makeSubTable(sortedShortsLive, preferences.shortsAreOneFilm)}
+              {makeSubTable(sortedShortsAnimated, preferences.shortsAreOneFilm)}
+              {makeSubTable(sortedShortsDoc, preferences.shortsAreOneFilm)}
             </TableBody>
           </Table>
         </TableContainer>
@@ -260,9 +259,17 @@ export default function LegacyTableWrapper() {
 function TitleCell({
   movie,
   bestPicNominees,
+  bestAnimatedNominees,
+  preferences,
+  sx: sxProps,
+  ...props
 }: {
   movie: Movie;
   bestPicNominees?: string[];
+  bestAnimatedNominees?: string[];
+  preferences?: Preferences;
+  sx?: SxProps<Theme>;
+  props?: Record<string, unknown>;
 }): React.ReactElement {
   return (
     <TableCell
@@ -272,10 +279,15 @@ function TitleCell({
         maxWidth: '30ch',
         overflow: 'auto',
         backgroundColor: bestPicNominees?.includes(movie.id)
-          ? 'gold'
+          ? BEST_PICTURE_COLOR
+          : preferences?.highlightAnimated &&
+            bestAnimatedNominees?.includes(movie.id)
+          ? HIGHLIGHT_ANIMATED_COLOR
           : 'inherit',
         scrollbarWidth: 'none',
-      }}>
+        ...sxProps,
+      }}
+      {...props}>
       <b
         style={{
           fontSize: '1.2em',

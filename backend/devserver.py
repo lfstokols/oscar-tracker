@@ -1,32 +1,25 @@
 import os
 import sys
 from pathlib import Path
-from datetime import datetime, timedelta
-from backend.data_management.api_validators import AnnotatedValidator
-from backend.routing_lib.user_session import start_new_session, log_session_activity
 
 project_root_directory = Path(__file__).parent.parent
 sys.path.append(str(project_root_directory))
 
+
+from datetime import datetime, timedelta
+from backend.data_management.api_validators import AnnotatedValidator
+from backend.routing_lib.user_session import start_new_session, log_session_activity
 from backend.logic.storage_manager import StorageManager
 
 StorageManager.make_storage(project_root_directory / "backend" / "database")
 
+
 from backend.scheduled_tasks.scheduling import Config
-from flask import (
-    Flask,
-    jsonify,
-    request,
-    render_template,
-    send_from_directory,
-    abort,
-    session,
-)
+from flask import Flask, request, send_from_directory, abort, session
 from flask_apscheduler import APScheduler
 from backend.database_routes import oscars
 from flask_cors import CORS
 from dotenv import load_dotenv
-from pathlib import Path
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 
 
@@ -35,6 +28,9 @@ try:
     RUN_DEBUG = (os.getenv("RUN_DEBUG") or "").lower() == "true"
     DEVSERVER_PORT = int(os.getenv("DEVSERVER_PORT"))  # type: ignore
     OSCARS_ROUTE_BASENAME = os.getenv("OSCARS_ROUTE_BASENAME")
+    SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
+    if not SECRET_KEY:
+        raise ValueError("FLASK_SECRET_KEY must be set in .env file")
     print(f"The port should be {DEVSERVER_PORT}.")
 except Exception as e:
     print(f"The .env file is missing or has an error: {e}")
@@ -47,6 +43,7 @@ if not presumptive_static_folder.exists():
     )
 
 app = Flask(__name__, static_folder=presumptive_static_folder)
+app.secret_key = SECRET_KEY
 
 app.url_map.strict_slashes = False
 
@@ -104,7 +101,7 @@ activeUserId = "activeUserId"
 def before_request():
     login = request.cookies.get(activeUserId)
     try:
-        login == None or AnnotatedValidator(user=login)
+        assert login is None or AnnotatedValidator(user=login)
     except Exception as e:
         print(f"Invalid user id {e} found in cookie.")
         login = None

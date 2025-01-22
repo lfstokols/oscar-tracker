@@ -32,6 +32,12 @@ import {Grouping} from '../../types/Enums';
 import {WatchList} from '../../types/APIDataSchema';
 import {groupCounts, categoryNomCounts} from '../../utils/hardcodedFunctions';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
+import {
+  TABLE_ROW_COLOR,
+  TABLE_ROW_MINOR_COLOR,
+  TODO_COLOR,
+  TODO_CONTRAST_COLOR,
+} from '../../config/StyleChoices';
 const grouping_display_names: {[key in Grouping]: string} = {
   [Grouping.big_three]: 'Big Three',
   [Grouping.acting]: 'Acting',
@@ -90,7 +96,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
       <TableRow
         key={cat.id}
         sx={{
-          backgroundColor: 'secondary.light',
+          backgroundColor: TABLE_ROW_MINOR_COLOR,
           color: 'text.secondary',
           // opacity: isOpen ? 1 : 0,
           maxHeight: isOpen ? '33px' : '0px',
@@ -172,8 +178,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
       <TableRow
         key={grouping}
         sx={{
-          backgroundColor: 'secondary.main',
-          color: 'text.secondary',
+          backgroundColor: TABLE_ROW_COLOR,
         }}
         onClick={handleClick}>
         <TableCell>
@@ -319,13 +324,13 @@ const plannedBanner = (
     <TableCell
       colSpan={100}
       sx={{
-        backgroundColor: 'goldenrod',
+        backgroundColor: TODO_COLOR,
         position: 'sticky',
         top: 56,
         zIndex: 2,
       }}
       align="center">
-      <Typography color="primary.contrastText" variant="h5">
+      <Typography color={TODO_CONTRAST_COLOR} variant="h5">
         Planned
       </Typography>
     </TableCell>

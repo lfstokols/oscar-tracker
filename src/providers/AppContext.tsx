@@ -12,11 +12,12 @@ import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from './NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
 import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
-import {LogToConsole} from '../utils/Logger';
+import {LogToConsole, WarnToConsole} from '../utils/Logger';
+import {DEFAULT_PREFERENCES} from '../config/GlobalConstants';
 
 export type OscarAppContextValue = Readonly<{
-  selectedTab: AppTabType;
-  setSelectedTab: (tab: AppTabType) => void;
+  // selectedTab: AppTabType;
+  // setSelectedTab: (tab: AppTabType) => void;
   activeUserId: UserId | null;
   activeUsername: string | null;
   setActiveUserId: (id: UserId | null) => void;
@@ -36,12 +37,10 @@ export default function OscarAppContextProvider(
   props: Props,
 ): React.ReactElement {
   const [year, setYear] = useState<number>(DEFAULT_YEAR);
-  const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
-  const [preferences, setPreferences] = useState<Preferences>({
-    shortsAreOneFilm: false,
-    highlightAnimated: false,
-    lockSeenToggle: false,
-  });
+  // const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
+  const [preferences, setPreferences] = useState<Preferences>(
+    getPreferenceStateAtStartup(DEFAULT_PREFERENCES),
+  );
 
   //* The username and userId need special handling, since they're set from cookies
   //* Eventually the preferences will also be defaulted from pulled data
@@ -86,23 +85,25 @@ export default function OscarAppContextProvider(
   );
   //* Done!
 
+  //* Set a new version of setPreferences that also updates the localStorage
+  const newSetPreferences = upgradeSetPreferences(setPreferences);
+
   const contextValue = useMemo(() => {
     return {
-      selectedTab,
-      setSelectedTab,
+      // selectedTab,
+      // setSelectedTab,
       activeUserId,
       activeUsername,
       setActiveUserId: newSetActiveUserId, //* This one sets the username and cookies too
       preferences,
-      setPreferences,
+      setPreferences: newSetPreferences, //* This one updates the localStorage too
       year,
       setYear,
     };
-  }, [selectedTab, activeUserId, activeUsername, preferences, year]);
+  }, [activeUsername, preferences, year]); //! selectedTab, activeUserId,]);
 
   return (
     <OscarAppContext.Provider value={contextValue}>
-      {/* <CookieHandler usernameSetter={setActiveUsername} /> */}
       {props.children}
     </OscarAppContext.Provider>
   );
@@ -284,4 +285,45 @@ function getCallbackForArrivedUserList(
       expires: EXPIRATION_DAYS,
     });
   };
+}
+
+//* Returns a new version of setPreferences that also updates the localStorage
+//* Similar in spirit to useUpgradeSetActiveUserId, but it should be simpler
+//* because it doesn't need to coordinate with any backend data
+function upgradeSetPreferences(
+  setPreferences: (pref: Preferences) => void,
+): (pref: Preferences) => void {
+  return (pref: Preferences) => {
+    setPreferences(pref);
+    localStorage.setItem('preferences', JSON.stringify(pref));
+  };
+}
+
+function getPreferenceStateAtStartup(
+  defaultPreferences: Preferences,
+): Preferences {
+  const preferences = localStorage.getItem('preferences');
+  if (!preferences) {
+    return defaultPreferences;
+  }
+  const storedVals = JSON.parse(preferences);
+  if (!Object.keys(storedVals).every(key => key in defaultPreferences)) {
+    WarnToConsole(
+      `The preferences in localStorage are invalid. \nThey are labeled {${Object.keys(
+        storedVals,
+      ).join(', ')}} \nbut I was expecting {${Object.keys(
+        defaultPreferences,
+      ).join(', ')}}.`,
+    );
+    return defaultPreferences;
+  }
+  const bestGuess = Object.fromEntries(
+    Object.keys(defaultPreferences).map(key => {
+      if (!(key in storedVals)) {
+        return [key, defaultPreferences[key as keyof Preferences]];
+      }
+      return [key, storedVals[key]];
+    }),
+  ) as Preferences;
+  return bestGuess;
 }
