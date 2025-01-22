@@ -77,7 +77,9 @@ def serve_files(relpath):
         return abort(403)
     if filepath.exists():
         return send_from_directory(filepath.parent, filepath.name)
-    return abort(404)
+    if (filepath / "index.html").exists():
+        return send_from_directory(filepath, "index.html")
+    return send_from_directory(Path(app.static_folder), "index.html")
 
 
 @app.route("/jokes")

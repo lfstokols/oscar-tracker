@@ -23,7 +23,7 @@ def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> 
     )
 
     def operation(data: pd.DataFrame):
-        return pd.concat([data, newEntry], axis="index", ignore_index=True), user_id
+        return pd.concat([data, newEntry], axis="index"), user_id
 
     return storage.edit(operation, "users")
 
