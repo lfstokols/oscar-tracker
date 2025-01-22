@@ -34,10 +34,9 @@ export function ClickableTooltip({
         }}
         title={popup}
         followCursor={followCursor}>
-        {/* <span> */}
-        {/* <Box onClick={handleTooltipOpen}>{children}</Box> */}
-        {children}
-        {/* </span> */}
+        <span>
+          <Box onClick={handleTooltipOpen}>{children}</Box>
+        </span>
       </Tooltip>
     </ClickAwayListener>
   );
