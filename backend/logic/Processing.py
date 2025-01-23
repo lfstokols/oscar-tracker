@@ -64,16 +64,19 @@ def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> in
 
 
 def break_into_subtitles(fullTitle: str, subtitlePosition: int) -> tuple[str, str]:
-    if subtitlePosition == -1:
+    try:
+        if subtitlePosition == -1:
+            return fullTitle, ""
+        mainTitle = fullTitle[:subtitlePosition].strip()
+        subtitle = fullTitle[subtitlePosition:]
+        subtitle = re.search(r"(\w.*)$", subtitle)
+        if subtitle:
+            subtitle = subtitle.group(0).strip()
+        else:
+            subtitle = ""
+        return mainTitle, subtitle
+    except Exception as e:
         return fullTitle, ""
-    mainTitle = fullTitle[:subtitlePosition].strip()
-    subtitle = fullTitle[subtitlePosition:]
-    subtitle = re.search(r"(\w.*)$", subtitle)
-    if subtitle:
-        subtitle = subtitle.group(0).strip()
-    else:
-        subtitle = ""
-    return mainTitle, subtitle
 
 
 def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = None):
@@ -274,14 +277,27 @@ def compute_user_to_category_edgeframe(watchlist, nominations):
         .unstack(fill_value=0)
         .reset_index()
     )
-    return result[
-        [
-            WatchlistColumns.USER.value,
-            NomColumns.CATEGORY.value,
-            WatchStatus.SEEN.value,
-            WatchStatus.TODO.value,
+    try:
+        return result[
+            [
+                WatchlistColumns.USER.value,
+                NomColumns.CATEGORY.value,
+                WatchStatus.SEEN.value,
+                WatchStatus.TODO.value,
+            ]
         ]
-    ]
+    except Exception as e:
+        print(e)
+        result[WatchStatus.SEEN.value] = 0
+        result[WatchStatus.TODO.value] = 0
+        return result[
+            [
+                WatchlistColumns.USER.value,
+                NomColumns.CATEGORY.value,
+                WatchStatus.SEEN.value,
+                WatchStatus.TODO.value,
+            ]
+        ]
 
 
 def enrich_watchlist_with_movie_data(
