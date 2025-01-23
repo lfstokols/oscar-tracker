@@ -1,4 +1,4 @@
-export enum WatchStatus {
+export enum WatchStatuses {
     seen = 'seen',
     todo = 'todo',
     blank = 'blank',

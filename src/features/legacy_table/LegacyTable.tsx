@@ -10,6 +10,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Stack,
   Paper,
   Typography,
 } from '@mui/material';
@@ -26,8 +27,15 @@ import {
 } from '../../hooks/dataOptions';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
 import {LogToConsole} from '../../utils/Logger';
+import {TableControls} from './table_controls/tableControls';
 
-function LegacyTable(): React.ReactElement {
+export const columnList = ['title', 'nominations', 'runtime'];
+
+function LegacyTable({
+  filterState,
+}: {
+  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
+}): React.ReactElement {
   const {year, preferences} = useOscarAppContext();
   const [runtimeFormatted, setRuntimeFormatted] = useState(true);
 
@@ -69,6 +77,9 @@ function LegacyTable(): React.ReactElement {
   const sortedShortsDoc = shortsDoc.sort((a, b) =>
     a.mainTitle.localeCompare(b.mainTitle),
   );
+
+  const hiddenColumns = preferences.hiddenColumns.legacy;
+  const hiddenUsers = preferences.hiddenUsers;
 
   //* If merge is false, the "isSelected" parameters should be null
   function makeSubTable(
@@ -180,55 +191,65 @@ function LegacyTable(): React.ReactElement {
     );
   }
   return (
-    <Paper
-      sx={{
-        marginTop: '16px',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'auto',
-        scrollbarHeight: '8px',
-        // backgroundColor: 'secondary.light',
-      }}>
-      <TableContainer sx={{scrollBehavior: 'smooth'}}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <ColumnLabel
-                text="Film"
-                sx={{maxWidth: '10ch', overflow: 'wrap'}}
-              />
-              <ColumnLabel text="Nominated For" />
-              <ColumnLabel
-                text="Runtime"
-                onClick={() => setRuntimeFormatted(!runtimeFormatted)}
-                style={{cursor: 'pointer'}}
-                title="Click to toggle runtime format"
-                icon={<SwapHoriz />}
-              />
-              {sortedUsers.map(user => (
-                <ColumnLabel key={user.id} text={user.username} />
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody sx={{borderRadius: 5}}>
-            {makeSubTable(sortedData, false)}
-            {makeSubTable(sortedShortsLive, preferences.shortsAreOneFilm)}
-            {makeSubTable(sortedShortsAnimated, preferences.shortsAreOneFilm)}
-            {makeSubTable(sortedShortsDoc, preferences.shortsAreOneFilm)}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+    <TableContainer sx={{scrollBehavior: 'smooth'}}>
+      <Table stickyHeader>
+        <TableHead>
+          <TableRow>
+            <ColumnLabel
+              text="Film"
+              sx={{maxWidth: '10ch', overflow: 'wrap'}}
+            />
+            <ColumnLabel text="Nominated For" />
+            <ColumnLabel
+              text="Runtime"
+              onClick={() => setRuntimeFormatted(!runtimeFormatted)}
+              style={{cursor: 'pointer'}}
+              title="Click to toggle runtime format"
+              icon={<SwapHoriz />}
+            />
+            {sortedUsers.map(user => (
+              <ColumnLabel key={user.id} text={user.username} />
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody sx={{borderRadius: 5}}>
+          {makeSubTable(sortedData, false)}
+          {makeSubTable(sortedShortsLive, preferences.shortsAreOneFilm)}
+          {makeSubTable(sortedShortsAnimated, preferences.shortsAreOneFilm)}
+          {makeSubTable(sortedShortsDoc, preferences.shortsAreOneFilm)}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 
 // Wrap the export with Suspense, ErrorBoundary
 export default function LegacyTableWrapper() {
+  const [filterState, setFilterState] = useState({
+    watchstatus: [] as WatchStatus[],
+    categories: [] as CategoryId[],
+  });
   return (
     <DefaultCatcher>
-      <LegacyTable />
+      <Stack direction="column" spacing={2}>
+        <TableControls
+          filterState={filterState}
+          setFilterState={setFilterState}
+        />
+        <Paper
+          sx={{
+            marginTop: '16px',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'auto',
+            scrollbarHeight: '8px',
+            position: 'sticky',
+          }}>
+          <LegacyTable filterState={filterState} />
+        </Paper>
+      </Stack>
     </DefaultCatcher>
   );
 }

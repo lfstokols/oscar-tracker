@@ -6,7 +6,7 @@ import {
 } from '@tanstack/react-query';
 import {LinearProgress, Tooltip, TableCell} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
-import {WatchStatus} from '../../types/Enums';
+import {WatchStatuses} from '../../types/Enums';
 import {watchlistOptions} from '../../hooks/dataOptions';
 import {
   onMutateError,
@@ -57,13 +57,16 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
 
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
-  const isEditingDisabled = useOscarAppContext().activeUserId !== userId;
-  const remoteWatchState: WatchStatus =
+  const context = useOscarAppContext();
+  const isEditingDisabled = context.activeUserId !== userId;
+  const seenIsLocked = context.preferences.lockSeenToggle;
+  const remoteWatchState: WatchStatuses =
     watchlist.find(item => item.movieId === movieId && item.userId === userId)
-      ?.status ?? WatchStatus.blank;
+      ?.status ?? WatchStatuses.blank;
   const localWatchState = mutation.isPending
     ? mutation.variables
     : remoteWatchState;
+  const nextStatus = createStatusSwitcher(seenIsLocked);
 
   return (
     <ClickableTooltip
@@ -89,25 +92,37 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   );
 }
 
-function nextStatus(prevStatus: WatchStatus): WatchStatus {
-  const statuses: WatchStatus[] = [
-    WatchStatus.blank,
-    WatchStatus.seen,
-    WatchStatus.todo,
-  ];
-  return statuses[(statuses.indexOf(prevStatus) + 1) % 3];
+function createStatusSwitcher(
+  seenIsLocked: boolean,
+): (prevStatus: WatchStatuses) => WatchStatuses {
+  const nextStatus = (prevStatus: WatchStatuses): WatchStatuses => {
+    if (seenIsLocked && prevStatus === WatchStatuses.seen) {
+      return WatchStatuses.seen;
+    }
+    const statuses: WatchStatuses[] = [
+      WatchStatuses.todo,
+      WatchStatuses.blank,
+      WatchStatuses.seen,
+    ];
+    if (seenIsLocked) {
+      statuses.splice(statuses.indexOf(WatchStatuses.seen), 1);
+    }
+    const range = seenIsLocked ? 2 : 3;
+    return statuses[(statuses.indexOf(prevStatus) + 1) % range];
+  };
+  return nextStatus;
 }
 
-function display(watchstate: WatchStatus): string {
-  return watchstate === WatchStatus.seen
+function display(watchstate: WatchStatuses): string {
+  return watchstate === WatchStatuses.seen
     ? 'Seen'
-    : watchstate === WatchStatus.todo
+    : watchstate === WatchStatuses.todo
     ? 'To-Do'
     : ' ';
 }
 
 type FillProps = {
-  watchstate: WatchStatus;
+  watchstate: WatchStatuses;
   handleInteract: () => void;
   disabled?: boolean;
 };
@@ -123,9 +138,9 @@ export function MyFill({
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
         backgroundColor:
-          watchstate === WatchStatus.blank
+          watchstate === WatchStatuses.blank
             ? NO_STATUS_COLOR
-            : watchstate === WatchStatus.seen
+            : watchstate === WatchStatuses.seen
             ? SEEN_COLOR
             : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,

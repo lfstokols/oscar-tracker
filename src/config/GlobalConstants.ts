@@ -24,6 +24,10 @@ export const DEFAULT_PREFERENCES = {
   shortsAreOneFilm: false,
   highlightAnimated: false,
   lockSeenToggle: false,
+  hiddenColumns: {
+    legacy: [],
+  },
+  hiddenUsers: [],
 };
 
 //* Minimum length of search input

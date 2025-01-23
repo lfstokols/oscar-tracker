@@ -1,13 +1,13 @@
 import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
-import {Grouping, WatchStatus} from '../types/Enums';
+import {Grouping, WatchStatuses} from '../types/Enums';
 import {LogToConsole} from './Logger';
 
 export function getMovieWatchStatusForUser(
   userId: UserId,
   movieId: MovieId,
   watchlist: WatchNotice[],
-): WatchStatus {
+): WatchStatuses {
   const watchNotice = watchlist
     .slice()
     .reverse()
@@ -16,7 +16,7 @@ export function getMovieWatchStatusForUser(
         watchNotice.movieId === movieId && watchNotice.userId === userId,
     );
 
-  return watchNotice?.status ?? WatchStatus.blank;
+  return watchNotice?.status ?? WatchStatuses.blank;
 }
 
 export function getNominationCategoriesForMovie(
