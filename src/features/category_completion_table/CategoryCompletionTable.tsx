@@ -373,6 +373,14 @@ const plannedBanner = (
         position: 'sticky',
         top: 56,
         zIndex: 2,
+        '& > .MuiTypography-root': {
+          position: 'sticky',
+          left: '50%',
+          right: '50%',
+          transform: 'translateX(-50%)',
+          width: 'fit-content',
+          display: 'inline-block',
+        },
       }}
       align="center">
       <Typography color={TODO_COLOR} variant="h5">

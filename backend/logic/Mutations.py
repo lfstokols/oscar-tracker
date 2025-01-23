@@ -15,9 +15,9 @@ def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> 
     user_id = storage.create_unique_user_id()
     newEntry = pd.DataFrame(
         {
-            UserColumns.NAME: username,
-            UserColumns.LETTERBOXD: letterboxd,
-            UserColumns.EMAIL: email,
+            UserColumns.NAME.value: username,
+            UserColumns.LETTERBOXD.value: letterboxd,
+            UserColumns.EMAIL.value: email,
         },
         index=[user_id],
     )
@@ -58,10 +58,10 @@ def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
 
     def operation(data: pd.DataFrame):
         last_val = pd.Timestamp(
-            data[UserColumns.LAST_CHECKED].fillna(pd.Timestamp.min).at[userId],
+            data[UserColumns.LAST_CHECKED.value].fillna(pd.Timestamp.min).at[userId],
             tz="UTC",
         )
-        data.at[userId, UserColumns.LAST_CHECKED] = pd.Timestamp.now(tz="UTC")
+        data.at[userId, UserColumns.LAST_CHECKED.value] = pd.Timestamp.now(tz="UTC")
         print(
             f"last_val: {last_val}, {type(last_val)}",
             "======     +++++     =====     ======",
@@ -82,17 +82,17 @@ def add_watchlist_entry(
 
     def operation(data: pd.DataFrame):
         existing_entry = data[
-            (data[WatchlistColumns.USER] == userId)
-            & (data[WatchlistColumns.MOVIE] == movieId)
+            (data[WatchlistColumns.USER.value] == userId)
+            & (data[WatchlistColumns.MOVIE.value] == movieId)
         ]
         data = data.drop(existing_entry.index)
 
         if status != WatchStatus.BLANK:
             new_entry = pd.DataFrame(
                 {
-                    WatchlistColumns.USER: [userId],
-                    WatchlistColumns.MOVIE: [movieId],
-                    WatchlistColumns.STATUS: [status],
+                    WatchlistColumns.USER.value: [userId],
+                    WatchlistColumns.MOVIE.value: [movieId],
+                    WatchlistColumns.STATUS.value: [status],
                 }
             )
             data = pd.concat([data, new_entry], ignore_index=True)
@@ -123,10 +123,12 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
     Returns:
         None: The function does not return anything.
     """
-    movie = nomination[str(NomColumns.MOVIE)]
-    category = nomination[str(NomColumns.CATEGORY)]
+    movie = nomination[NomColumns.MOVIE.value]
+    category = nomination[NomColumns.CATEGORY.value]
     note = (
-        nomination[str(NomColumns.NOTE)] if str(NomColumns.NOTE) in nomination else None
+        nomination[NomColumns.NOTE.value]
+        if NomColumns.NOTE.value in nomination
+        else None
     )
     storage.validate_id(movie, "movies")
     storage.validate_id(category, "categories")
@@ -134,9 +136,9 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
     def operation(data: pd.DataFrame):
         # * Check if an identical nomination already exists
         existing_entry = data[
-            (data[NomColumns.MOVIE] == movie)
-            & (data[NomColumns.CATEGORY] == category)
-            & (data[NomColumns.NOTE] == note)
+            (data[NomColumns.MOVIE.value] == movie)
+            & (data[NomColumns.CATEGORY.value] == category)
+            & (data[NomColumns.NOTE.value] == note)
         ]
         if not existing_entry.empty:
             return data, 1
@@ -144,9 +146,9 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
         newEntry = pd.DataFrame(
             [
                 {
-                    NomColumns.MOVIE: movie,
-                    NomColumns.CATEGORY: category,
-                    NomColumns.NOTE: note,
+                    NomColumns.MOVIE.value: movie,
+                    NomColumns.CATEGORY.value: category,
+                    NomColumns.NOTE.value: note,
                 }
             ]
         )
@@ -202,13 +204,13 @@ def update_movie(
     else:
 
         def update_or_create_movie(data):
-            if movie in data[MovieColumns.TITLE].tolist():
-                movieId = data.loc[data[MovieColumns.TITLE] == movie].index[0]
+            if movie in data[MovieColumns.TITLE.value].tolist():
+                movieId = data.loc[data[MovieColumns.TITLE.value] == movie].index[0]
                 for key, value in new_data.items():
                     data.at[movieId, key] = value
             else:
                 movieId = storage.create_unique_movie_id(year=year)
-                data.at[movieId] = {MovieColumns.TITLE: movie, **new_data}
+                data.at[movieId] = {MovieColumns.TITLE.value: movie, **new_data}
             return data, movieId
 
         return storage.edit(update_or_create_movie, "movies", year)
@@ -216,7 +218,7 @@ def update_movie(
 
 def add_movie(storage: StorageManager, year: int | str, title: str) -> MovID:
     id = storage.create_unique_movie_id(year=year)
-    newEntry = pd.DataFrame({MovieColumns.TITLE: title}, index=[id])
+    newEntry = pd.DataFrame({MovieColumns.TITLE.value: title}, index=[id])
 
     def operation(data: pd.DataFrame):
         return pd.concat([data, newEntry], axis="index"), id

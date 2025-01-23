@@ -53,12 +53,12 @@ class StorageManager:
         # Default dataframes for file creation
         self.DEFAULT_MOVIES = pd.DataFrame(
             columns=[col for col in list(MovieColumns)]
-        ).set_index(MovieColumns.ID)
+        ).set_index(MovieColumns.ID.value)
         self.DEFAULT_MOVIES.astype(
             {
-                MovieColumns.TITLE: "string",
-                MovieColumns.Imdb_ID: "string",
-                MovieColumns.RUNTIME: "Int64",
+                MovieColumns.TITLE.value: "string",
+                MovieColumns.Imdb_ID.value: "string",
+                MovieColumns.RUNTIME.value: "Int64",
             }
         )
         self.DEFAULT_NOMINATIONS = pd.DataFrame(
@@ -66,32 +66,32 @@ class StorageManager:
         )
         self.DEFAULT_NOMINATIONS.astype(
             {
-                NomColumns.MOVIE: "string",
-                NomColumns.CATEGORY: "string",
-                NomColumns.NOTE: "string",
+                NomColumns.MOVIE.value: "string",
+                NomColumns.CATEGORY.value: "string",
+                NomColumns.NOTE.value: "string",
             }
         )
         self.DEFAULT_USERS = pd.DataFrame(
             columns=[col for col in list(UserColumns)]
-        ).set_index(UserColumns.ID)
+        ).set_index(UserColumns.ID.value)
         self.DEFAULT_USERS.astype(
             {
-                UserColumns.NAME: "string",
-                UserColumns.LETTERBOXD: "string",
-                UserColumns.EMAIL: "string",
+                UserColumns.NAME.value: "string",
+                UserColumns.LETTERBOXD.value: "string",
+                UserColumns.EMAIL.value: "string",
             }
         )
         self.DEFAULT_CATEGORIES = pd.DataFrame(
             columns=[col for col in list(CategoryColumns)]
-        ).set_index(CategoryColumns.ID)
+        ).set_index(CategoryColumns.ID.value)
         self.DEFAULT_CATEGORIES.astype(
             {
-                CategoryColumns.SHORT_NAME: "string",
-                CategoryColumns.FULL_NAME: "string",
-                CategoryColumns.MAX_NOMS: "Int64",
-                CategoryColumns.IS_SHORT: "boolean",
-                CategoryColumns.HAS_NOTE: "boolean",
-                CategoryColumns.GROUPING: "string",
+                CategoryColumns.SHORT_NAME.value: "string",
+                CategoryColumns.FULL_NAME.value: "string",
+                CategoryColumns.MAX_NOMS.value: "Int64",
+                CategoryColumns.IS_SHORT.value: "boolean",
+                CategoryColumns.HAS_NOTE.value: "boolean",
+                CategoryColumns.GROUPING.value: "string",
             }
         )
         self.DEFAULT_WATCHLIST = pd.DataFrame(
@@ -99,9 +99,9 @@ class StorageManager:
         )
         self.DEFAULT_WATCHLIST.astype(
             {
-                WatchlistColumns.USER: "string",
-                WatchlistColumns.MOVIE: "string",
-                WatchlistColumns.STATUS: "string",
+                WatchlistColumns.USER.value: "string",
+                WatchlistColumns.MOVIE.value: "string",
+                WatchlistColumns.STATUS.value: "string",
             }
         )
 

@@ -125,10 +125,10 @@ def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
     data = storage.read("users")
     data = data.loc[[userId]]
     assert data is not None, "User not found <in get_my_user_data>"
-    data[myUserDataColumns.PROFILE_PIC] = get_user_propic(
-        data.at[userId, UserColumns.LETTERBOXD]
+    data[myUserDataColumns.PROFILE_PIC.value] = get_user_propic(
+        data.at[userId, UserColumns.LETTERBOXD.value]
     )
-    data.drop(columns=[UserColumns.LAST_CHECKED], inplace=True)
+    data.drop(columns=[UserColumns.LAST_CHECKED.value], inplace=True)
     return data
 
 
@@ -170,8 +170,8 @@ def get_category_completion_dict(
     nominations = storage.read("nominations", year)
     users = storage.read("users")
     edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
-        categories[[CategoryColumns.GROUPING, CategoryColumns.MAX_NOMS]],
-        left_on=NomColumns.CATEGORY,
+        categories[[CategoryColumns.GROUPING.value, CategoryColumns.MAX_NOMS.value]],
+        left_on=NomColumns.CATEGORY.value,
         right_index=True,
     )
     data: dict[UserID, list[dict[CategoryCompletionKey, int]]] = {}
@@ -180,9 +180,9 @@ def get_category_completion_dict(
         for category in categories.index:
             data[user][0][category] = (
                 edges.loc[
-                    (edges[WatchlistColumns.USER] == user)
-                    & (edges[NomColumns.CATEGORY] == category),
-                    [WatchStatus.SEEN],
+                    (edges[WatchlistColumns.USER.value] == user)
+                    & (edges[NomColumns.CATEGORY.value] == category),
+                    [WatchStatus.SEEN.value],
                 ]
                 .sum()
                 .sum()
@@ -190,9 +190,9 @@ def get_category_completion_dict(
             )
             data[user][1][category] = (
                 edges.loc[
-                    (edges[WatchlistColumns.USER] == user)
-                    & (edges[NomColumns.CATEGORY] == category),
-                    [WatchStatus.TODO, WatchStatus.SEEN],
+                    (edges[WatchlistColumns.USER.value] == user)
+                    & (edges[NomColumns.CATEGORY.value] == category),
+                    [WatchStatus.TODO.value, WatchStatus.SEEN.value],
                 ]
                 .sum()
                 .sum()
@@ -201,18 +201,22 @@ def get_category_completion_dict(
         for group in list(Grouping):
             data[user][0][group] = (
                 edges.loc[
-                    (edges[WatchlistColumns.USER] == user)
-                    & (edges[CategoryColumns.GROUPING].astype(str) == group.value),
-                    [WatchStatus.SEEN],
+                    (edges[WatchlistColumns.USER.value] == user)
+                    & (
+                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
+                    ),
+                    [WatchStatus.SEEN.value],
                 ]
                 .sum()
                 .item()
             )
             data[user][1][group] = (
                 edges.loc[
-                    (edges[WatchlistColumns.USER] == user)
-                    & (edges[CategoryColumns.GROUPING].astype(str) == group.value),
-                    [WatchStatus.TODO, WatchStatus.SEEN],
+                    (edges[WatchlistColumns.USER.value] == user)
+                    & (
+                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
+                    ),
+                    [WatchStatus.TODO.value, WatchStatus.SEEN.value],
                 ]
                 .sum()
                 .sum()
@@ -220,24 +224,29 @@ def get_category_completion_dict(
             )
         data[user][0]["numCats"] = len(
             edges.loc[
-                (edges[WatchlistColumns.USER] == user)
-                & (edges[WatchStatus.SEEN] == edges[CategoryColumns.MAX_NOMS])
+                (edges[WatchlistColumns.USER.value] == user)
+                & (
+                    edges[WatchStatus.SEEN.value]
+                    == edges[CategoryColumns.MAX_NOMS.value]
+                )
             ]
         )
         data[user][1]["numCats"] = len(
             edges.loc[
-                (edges[WatchlistColumns.USER] == user)
+                (edges[WatchlistColumns.USER.value] == user)
                 & (
-                    edges[WatchStatus.TODO] + edges[WatchStatus.SEEN]
-                    == edges[CategoryColumns.MAX_NOMS]
+                    edges[WatchStatus.TODO.value] + edges[WatchStatus.SEEN.value]
+                    == edges[CategoryColumns.MAX_NOMS.value]
                 )
             ]
         )
     return data
 
     users_to_categories = watchlist.merge(
-        nominations, left_on=WatchlistColumns.MOVIE, right_on=NomColumns.MOVIE
-    ).merge(categories, left_on=NomColumns.CATEGORY, right_index=True)
+        nominations,
+        left_on=WatchlistColumns.MOVIE.value,
+        right_on=NomColumns.MOVIE.value,
+    ).merge(categories, left_on=NomColumns.CATEGORY.value, right_index=True)
 
 
 def compute_user_to_category_edgeframe(watchlist, nominations):
@@ -249,11 +258,17 @@ def compute_user_to_category_edgeframe(watchlist, nominations):
         todo: number of movies that user has todo in that category
     """
     users_to_categories = watchlist.merge(
-        nominations, left_on=WatchlistColumns.MOVIE, right_on=NomColumns.MOVIE
+        nominations,
+        left_on=WatchlistColumns.MOVIE.value,
+        right_on=NomColumns.MOVIE.value,
     )
     result = (
         users_to_categories.groupby(
-            [WatchlistColumns.USER, NomColumns.CATEGORY, WatchlistColumns.STATUS]
+            [
+                WatchlistColumns.USER.value,
+                NomColumns.CATEGORY.value,
+                WatchlistColumns.STATUS.value,
+            ]
         )
         .size()
         .unstack(fill_value=0)
@@ -261,10 +276,10 @@ def compute_user_to_category_edgeframe(watchlist, nominations):
     )
     return result[
         [
-            WatchlistColumns.USER,
-            NomColumns.CATEGORY,
-            WatchStatus.SEEN,
-            WatchStatus.TODO,
+            WatchlistColumns.USER.value,
+            NomColumns.CATEGORY.value,
+            WatchStatus.SEEN.value,
+            WatchStatus.TODO.value,
         ]
     ]
 
@@ -278,7 +293,7 @@ def enrich_watchlist_with_movie_data(
     returns: a watchlist-shaped dataframe with the same columns as the input, but with a new column representing the property
     """
     return watchlist.merge(
-        movies_data, left_on=WatchlistColumns.MOVIE, right_index=True
+        movies_data, left_on=WatchlistColumns.MOVIE.value, right_index=True
     )
 
 
@@ -300,12 +315,12 @@ def num_seen_with_property(
         property in enriched_watchlist.columns
     ), f"Property {property} not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
     assert (
-        WatchlistColumns.USER in enriched_watchlist.columns
+        WatchlistColumns.USER.value in enriched_watchlist.columns
     ), f"UserID column not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
     bool_col = enriched_watchlist[property]
     if inverse:
         bool_col = ~bool_col
-    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER).size().fillna(0).rename(new_name)  # type: ignore
+    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER.value).size().fillna(0).rename(new_name)  # type: ignore
 
 
 def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
@@ -335,10 +350,10 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     watchlist = storage.read("watchlist", year)
 
     seen_watchlist = watchlist.loc[
-        watchlist[WatchlistColumns.STATUS] == WatchStatus.SEEN
+        watchlist[WatchlistColumns.STATUS.value] == WatchStatus.SEEN.value
     ]
     todo_watchlist = watchlist.loc[
-        watchlist[WatchlistColumns.STATUS] == WatchStatus.TODO
+        watchlist[WatchlistColumns.STATUS.value] == WatchStatus.TODO.value
     ]
     movie_is_short = are_movies_short(movies, nominations, categories)
     movie_is_multinom = are_movies_multinom(nominations)
@@ -353,51 +368,55 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     )
 
     num_seen_short = num_seen_with_property(
-        enriched_seenlist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_SEEN_SHORT
+        enriched_seenlist,
+        CategoryColumns.IS_SHORT.value,
+        UserStatsColumns.NUM_SEEN_SHORT.value,
     )
     num_seen_feature = num_seen_with_property(
         enriched_seenlist,
-        CategoryColumns.IS_SHORT,
-        UserStatsColumns.NUM_SEEN_FEATURE,
+        CategoryColumns.IS_SHORT.value,
+        UserStatsColumns.NUM_SEEN_FEATURE.value,
         inverse=True,
     )
     num_todo_short = num_seen_with_property(
-        enriched_todolist, CategoryColumns.IS_SHORT, UserStatsColumns.NUM_TODO_SHORT
+        enriched_todolist,
+        CategoryColumns.IS_SHORT.value,
+        UserStatsColumns.NUM_TODO_SHORT.value,
     )
     num_todo_feature = num_seen_with_property(
         enriched_todolist,
-        CategoryColumns.IS_SHORT,
-        UserStatsColumns.NUM_TODO_FEATURE,
+        CategoryColumns.IS_SHORT.value,
+        UserStatsColumns.NUM_TODO_FEATURE.value,
         inverse=True,
     )
 
     num_seen_multinom = num_seen_with_property(
         enriched_seenlist,
-        DerivedMovieColumns.IS_MULTI_NOM,
-        UserStatsColumns.NUM_SEEN_MULTINOM,
+        DerivedMovieColumns.IS_MULTI_NOM.value,
+        UserStatsColumns.NUM_SEEN_MULTINOM.value,
     )
     num_todo_multinom = num_seen_with_property(
         enriched_todolist,
-        DerivedMovieColumns.IS_MULTI_NOM,
-        UserStatsColumns.NUM_TODO_MULTINOM,
+        DerivedMovieColumns.IS_MULTI_NOM.value,
+        UserStatsColumns.NUM_TODO_MULTINOM.value,
     )
 
     seen_with_runtime = enrich_watchlist_with_movie_data(
-        seen_watchlist, movies[MovieColumns.RUNTIME]
+        seen_watchlist, movies[MovieColumns.RUNTIME.value]
     )
     todo_with_runtime = enrich_watchlist_with_movie_data(
-        todo_watchlist, movies[MovieColumns.RUNTIME]
+        todo_watchlist, movies[MovieColumns.RUNTIME.value]
     )
 
     total_seen_runtime = (
-        seen_with_runtime.groupby(WatchlistColumns.USER)
-        .sum()[MovieColumns.RUNTIME]
-        .rename(UserStatsColumns.SEEN_WATCHTIME)
+        seen_with_runtime.groupby(WatchlistColumns.USER.value)
+        .sum()[MovieColumns.RUNTIME.value]
+        .rename(UserStatsColumns.SEEN_WATCHTIME.value)
     )
     total_todo_runtime = (
-        todo_with_runtime.groupby(WatchlistColumns.USER)
-        .sum()[MovieColumns.RUNTIME]
-        .rename(UserStatsColumns.TODO_WATCHTIME)
+        todo_with_runtime.groupby(WatchlistColumns.USER.value)
+        .sum()[MovieColumns.RUNTIME.value]
+        .rename(UserStatsColumns.TODO_WATCHTIME.value)
     )
 
     result = pd.concat(
