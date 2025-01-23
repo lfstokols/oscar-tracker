@@ -1,8 +1,8 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import WatchlistCell from './WatchlistCell';
 import TitleCell from './TitleCell';
 import NominationsCell from './NominationsCell';
-import {groupByShort, sortUsers} from '../../utils/dataSelectors';
+import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
 import {
   Table,
   TableBody,
@@ -25,6 +25,7 @@ import {
   movieOptions,
   nomOptions,
   userOptions,
+  watchlistOptions,
 } from '../../hooks/dataOptions';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
 import {LogToConsole} from '../../utils/Logger';
@@ -37,26 +38,40 @@ function LegacyTable({
 }: {
   filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
 }): React.ReactElement {
-  const {year, preferences} = useOscarAppContext();
+  const {year, preferences, activeUserId} = useOscarAppContext();
   const [runtimeFormatted, setRuntimeFormatted] = useState(true);
 
-  const [usersQ, nominationsQ, categoriesQ, moviesQ] = useSuspenseQueries({
-    queries: [
-      userOptions(),
-      nomOptions(year),
-      categoryOptions(),
-      movieOptions(year),
-    ],
-  });
+  const [usersQ, nominationsQ, categoriesQ, moviesQ, watchlistQ] =
+    useSuspenseQueries({
+      queries: [
+        userOptions(),
+        nomOptions(year),
+        categoryOptions(),
+        movieOptions(year),
+        watchlistOptions(year),
+      ],
+    });
   const users = usersQ.data;
   const nominations = nominationsQ.data;
   const categories = categoriesQ.data;
+  const myWatchlist = watchlistQ.data.filter(
+    watch => watch.userId === activeUserId,
+  );
   const movies = moviesQ.data;
 
-  const {features, shortsAnimated, shortsLive, shortsDoc} = groupByShort(
+  const filteredMovies = filterMovies(
     movies,
     nominations,
+    myWatchlist,
+    filterState,
   );
+  LogToConsole(movies.length);
+  LogToConsole(filteredMovies.length);
+  const {features, shortsAnimated, shortsLive, shortsDoc} = groupByShort(
+    filteredMovies,
+    nominations,
+  );
+  LogToConsole(features.length);
 
   const bestPicCategoryId = CategoryIdSchema.parse('cat_pict');
   const bestPicNominees = nominations
@@ -67,7 +82,8 @@ function LegacyTable({
     .filter(nom => nom.categoryId === bestAnimatedCategoryId)
     .map(nom => nom.movieId);
 
-  const sortedUsers = sortUsers(users);
+  const sortedUsers = useSortUsers(users);
+
   const sortedData = features.sort((a, b) => (a.numNoms > b.numNoms ? -1 : 1));
   const sortedShortsAnimated = shortsAnimated.sort((a, b) =>
     a.mainTitle.localeCompare(b.mainTitle),
@@ -87,8 +103,11 @@ function LegacyTable({
     localMovies: Movie[],
     merge: boolean,
   ): React.ReactElement {
-    if (merge && localMovies.length !== 5) {
-      throw new Error('Tried to merge too many rows');
+    if (localMovies.length === 0) {
+      return <></>;
+    }
+    if (merge && localMovies.length > 5) {
+      throw new Error(`Tried to merge too many rows: ${localMovies.length}`);
     }
     if (merge) {
       const total_runtime_minutes = localMovies.every(
@@ -236,6 +255,17 @@ export default function LegacyTableWrapper() {
     watchstatus: [] as WatchStatus[],
     categories: [] as CategoryId[],
   });
+
+  const {activeUserId} = useOscarAppContext();
+
+  // Reset filterState when activeUserId changes
+  useEffect(() => {
+    setFilterState({
+      watchstatus: [],
+      categories: [],
+    });
+  }, [activeUserId]);
+
   return (
     <DefaultCatcher>
       <Box sx={{width: '100%', height: 'calc(100vh - 64px)'}}>
@@ -288,4 +318,33 @@ function RuntimeCell({
       </Typography>
     </TableCell>
   );
+}
+
+function filterMovies(
+  movies: Movie[],
+  nominations: Nom[],
+  myWatchlist: WatchNotice[],
+  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]},
+): Movie[] {
+  let currentMovies = movies;
+  if (filterState.watchstatus.length !== 0) {
+    currentMovies = movies.filter(movie => {
+      const status = myWatchlist.find(
+        watch => watch.movieId === movie.id,
+      )?.status;
+      return (
+        (status === null && filterState.watchstatus) ||
+        (status !== null && filterState.watchstatus.includes(status))
+      );
+    });
+  }
+  if (filterState.categories.length !== 0) {
+    currentMovies = currentMovies.filter(movie => {
+      const myNoms = nominations.filter(nom => nom.movieId === movie.id);
+      return myNoms.some(nom =>
+        filterState.categories.includes(nom.categoryId),
+      );
+    });
+  }
+  return currentMovies;
 }

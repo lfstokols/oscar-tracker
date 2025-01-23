@@ -10,6 +10,20 @@ package.json export-ignore
 package-lock.json export-ignore
 tsconfig.json export-ignore
 env.json export-ignore
+mypy.ini export-ignore
+eslint.config.mjs export-ignore
+config.local.example.ps1 export-ignore
+.prettierrc export-ignore
+.env.example export-ignore
+.gitattributes export-ignore
+
+
+# Things only needed here
+requirements-dev.txt export-ignore
+README.md export-ignore
+index.html export-ignore
+upload.to.server.ps1 export-ignore
+
 
 # Dev Folders
 src/ export-ignore

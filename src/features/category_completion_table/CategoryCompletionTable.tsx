@@ -23,7 +23,7 @@ import {
   watchlistOptions,
 } from '../../hooks/dataOptions';
 import {
-  sortUsers,
+  useSortUsers,
   getNominees,
   catssByGrouping,
 } from '../../utils/dataSelectors';
@@ -53,7 +53,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
         watchlistOptions(year),
       ],
     });
-  const userList = sortUsers(usersQ.data);
+  const userList = useSortUsers(usersQ.data);
   const data = mainDataQ.data;
   const watchlist = watchlistQ.data;
   const movies = moviesQ.data;

@@ -21,7 +21,7 @@ import {
   NUM_SHORT_CATEGORIES,
   NUM_SHORT_FILMS_PER_CATEGORY,
 } from '../../config/GlobalConstants';
-import {getUsernameFromId, sortUsers} from '../../utils/dataSelectors';
+import {getUsernameFromId, useSortUsers} from '../../utils/dataSelectors';
 import {ColumnLabel} from '../../components/TableHeader';
 import Countdown from '../../components/Countdown';
 import {TABLE_ROW_COLOR} from '../../config/StyleChoices';
@@ -32,7 +32,7 @@ export default function UserStatsTable(): React.ReactElement {
     queries: [userStatsOptions(year), userOptions(), movieOptions(year)],
   });
   const userStats = userStatsQ.data;
-  const users = sortUsers(usersQ.data);
+  const users = useSortUsers(usersQ.data);
   const movieList = movieListQ.data;
   const {shortsAreOneFilm} = useOscarAppContext().preferences;
   const numMoviesTotal = movieList.length;

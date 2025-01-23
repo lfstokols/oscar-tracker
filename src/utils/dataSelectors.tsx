@@ -87,7 +87,7 @@ export function groupByShort(movies: Movie[], nominations: Nom[]) {
   };
 }
 
-export function sortUsers(users: User[]): User[] {
+export function useSortUsers(users: User[]): User[] {
   const {activeUserId} = useOscarAppContext();
   if (activeUserId == null) {
     return users;

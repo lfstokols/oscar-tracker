@@ -1,3 +1,5 @@
+import {useOscarAppContext} from '../../../providers/AppContext';
+
 import {
   Menu,
   MenuItem,
@@ -21,6 +23,7 @@ import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {grouping_display_names} from '../../../types/Enums';
 import {LogToConsole} from '../../../utils/Logger';
+import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 
 export default function FilterRowsWidget({
   isMobile,
@@ -109,6 +112,7 @@ function SelectionMenu({
   toggleGroupingFilter: (idList: CategoryId[], add: boolean) => void;
 }): React.ReactElement {
   const {data: categories} = useSuspenseQuery(categoryOptions());
+  const isLoggedIn = useOscarAppContext().activeUserId !== null;
   let watchStatusMessage = 'Showing all statuses';
   if (filterState.watchstatus.length !== 0) {
     watchStatusMessage = 'Filtered: only show selected statuses';
@@ -122,41 +126,43 @@ function SelectionMenu({
       <Typography sx={{px: 2, py: 1}} color="text.information">
         {watchStatusMessage}
       </Typography>
-      <FormGroup sx={{px: 2, py: 1}}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filterState.watchstatus.includes(WatchStatuses.seen)}
-              onChange={() => {
-                toggleWatchStatusFilter(WatchStatuses.seen);
-              }}
-            />
-          }
-          label="Seen"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filterState.watchstatus.includes(WatchStatuses.todo)}
-              onChange={() => {
-                toggleWatchStatusFilter(WatchStatuses.todo);
-              }}
-            />
-          }
-          label="To-Do"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filterState.watchstatus.includes(WatchStatuses.blank)}
-              onChange={() => {
-                toggleWatchStatusFilter(WatchStatuses.blank);
-              }}
-            />
-          }
-          label="Un-marked"
-        />
-      </FormGroup>
+      <NoAccountBlocker hasAccess={isLoggedIn}>
+        <FormGroup sx={{px: 2, py: 1}}>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filterState.watchstatus.includes(WatchStatuses.seen)}
+                onChange={() => {
+                  toggleWatchStatusFilter(WatchStatuses.seen);
+                }}
+              />
+            }
+            label="Seen"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filterState.watchstatus.includes(WatchStatuses.todo)}
+                onChange={() => {
+                  toggleWatchStatusFilter(WatchStatuses.todo);
+                }}
+              />
+            }
+            label="To-Do"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={filterState.watchstatus.includes(WatchStatuses.blank)}
+                onChange={() => {
+                  toggleWatchStatusFilter(WatchStatuses.blank);
+                }}
+              />
+            }
+            label="Un-marked"
+          />
+        </FormGroup>
+      </NoAccountBlocker>
       <Divider />
       <Typography sx={{px: 2, py: 1}}>{categoryMessage}</Typography>
       {Object.values(Grouping).map(grouping => (
