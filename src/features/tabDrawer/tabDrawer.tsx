@@ -11,8 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import {useNavigate, useLocation} from 'react-router-dom';
-import ChecklistIcon from '@mui/icons-material/Checklist';
-import ViewListIcon from '@mui/icons-material/ViewList';
+import {Leaderboard, Home, Hub, BugReport, Comment} from '@mui/icons-material';
 import React from 'react';
 import {AppTabType} from '../../types/Enums';
 import {useOscarAppContext} from '../../providers/AppContext';
@@ -20,11 +19,21 @@ import {useOscarAppContext} from '../../providers/AppContext';
 function tabDisplayName(tab: AppTabType) {
   switch (tab) {
     case AppTabType.byCategory:
-      return 'Category Stats';
+      return 'Breakdown by Category';
     case AppTabType.byUser:
-      return 'Stats by User';
+      return 'Leaderboard';
     case AppTabType.legacy:
-      return 'Main Page';
+      return 'Homepage';
+  }
+}
+function tabIcon(tab: AppTabType) {
+  switch (tab) {
+    case AppTabType.legacy:
+      return <Home />;
+    case AppTabType.byUser:
+      return <Leaderboard />;
+    case AppTabType.byCategory:
+      return <Hub />;
   }
 }
 
@@ -35,11 +44,6 @@ export default function TabDrawer({
   open: boolean;
   onClose: () => void;
 }) {
-  // const {selectedTab, setSelectedTab} = useOscarAppContext();
-  // const onTabChange = (tab: AppTabType) => {
-  //   setSelectedTab(tab);
-  //   onClose();
-  // };
   const navigate = useNavigate();
   const location = useLocation();
   const getCurrentTab = () => {
@@ -70,8 +74,12 @@ export default function TabDrawer({
   };
 
   const DrawerList = (
-    <Box sx={{width: 250}} role="presentation" onClick={onClose}>
-      <Typography variant="h4" sx={{ml: 8}}>
+    <Box
+      sx={{width: 250}}
+      role="presentation"
+      onClick={onClose}
+      alignItems="center">
+      <Typography variant="h4" sx={{px: 8, py: 2}}>
         Tabs
       </Typography>
       <Divider />
@@ -81,17 +89,42 @@ export default function TabDrawer({
             <ListItemButton
               onClick={() => handleTabClick(tab)}
               selected={getCurrentTab() === tab}>
-              <ListItemIcon>
-                {tab === AppTabType.legacy ? (
-                  <ChecklistIcon />
-                ) : (
-                  <ViewListIcon />
-                )}
-              </ListItemIcon>
+              <ListItemIcon>{tabIcon(tab)}</ListItemIcon>
               <ListItemText primary={tabDisplayName(tab)} />
             </ListItemButton>
           </ListItem>
         ))}
+      </List>
+      <Divider />
+      <List>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() =>
+              window.open(
+                'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog',
+                '_blank',
+              )
+            }>
+            <ListItemIcon>
+              <Comment />
+            </ListItemIcon>
+            <ListItemText primary="Request a Feature" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() =>
+              window.open(
+                'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog',
+                '_blank',
+              )
+            }>
+            <ListItemIcon>
+              <BugReport />
+            </ListItemIcon>
+            <ListItemText primary="Report a Bug" />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   );

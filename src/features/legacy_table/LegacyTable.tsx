@@ -29,7 +29,7 @@ import {
 } from '../../hooks/dataOptions';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
 import {LogToConsole} from '../../utils/Logger';
-import TableControls from './table_controls/tableControls';
+import TableControls from './table_controls/TableControls';
 
 export const columnList = ['title', 'nominations', 'runtime'];
 

@@ -7,6 +7,7 @@ import {useOscarAppContext} from '../../../providers/AppContext';
 import {useIsMobile} from '../../../hooks/useIsMobile';
 import HideColumnsWidget from './HideColumns';
 import FilterRowsWidget from './FilterRows';
+import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 
 export default function TableControls({
   filterState,
@@ -26,13 +27,19 @@ export default function TableControls({
       queryKey: watchlistOptions(year).queryKey,
     });
   };
+  const canRefresh = useOscarAppContext().activeUserId !== null;
+  const handleForceRefresh = () => {
+    fetch(`/force-refresh`);
+  };
 
   return (
     <Paper sx={{width: '50vw', position: 'sticky', top: '-40px'}}>
       <Stack direction="row" width="100%" justifyContent="space-between">
-        <IconButton onClick={handleRefresh}>
-          <RefreshIcon />
-        </IconButton>
+        <NoAccountBlocker hasAccess={canRefresh}>
+          <IconButton onClick={handleRefresh}>
+            <RefreshIcon />
+          </IconButton>
+        </NoAccountBlocker>
         <HideColumnsWidget isMobile={isMobile} />
         <FilterRowsWidget
           isMobile={isMobile}

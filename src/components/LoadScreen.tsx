@@ -1,20 +1,17 @@
 import React, {Suspense} from 'react';
-import {Container, CircularProgress} from '@mui/material';
+import {Box, CircularProgress} from '@mui/material';
 import {QueryErrorResetBoundary} from '@tanstack/react-query';
 
 export function LoadScreen(): React.ReactElement {
   return (
-    <Container
-      sx={theme => ({
-        color: '#fff',
-        // zIndex: theme.zIndex.drawer + 1,
-        flexGrow: 1,
-      })}
-      // open={true}
-      // onClick={() => {}}>
-    >
+    <Box
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      width="100%"
+      height="100%">
       <CircularProgress color="inherit" />
-    </Container>
+    </Box>
   );
 }
 

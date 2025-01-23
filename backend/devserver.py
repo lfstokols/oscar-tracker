@@ -2,10 +2,15 @@ import os
 import sys
 from pathlib import Path
 
+# * Add the project root to the system path
 project_root_directory = Path(__file__).parent.parent
 sys.path.append(str(project_root_directory))
+# * Setup logging
+from backend.utils.logging_config import setup_logging
 
-
+log_dir = project_root_directory / "logs"
+setup_logging(log_dir)
+# * Set up StorageManager
 from datetime import datetime, timedelta
 from backend.data_management.api_validators import AnnotatedValidator
 from backend.routing_lib.user_session import (
@@ -16,8 +21,7 @@ from backend.routing_lib.user_session import (
 from backend.logic.storage_manager import StorageManager
 
 StorageManager.make_storage(project_root_directory / "backend" / "database")
-
-
+# * The rest of the imports
 from backend.scheduled_tasks.scheduling import Config
 from flask import Flask, request, send_from_directory, abort, session
 from flask_apscheduler import APScheduler
@@ -89,6 +93,17 @@ def serve_files(relpath):
 @app.route("/jokes")
 def serve_joke():
     return "<h1>It's a joke!</h1>"
+
+
+@app.route("/force-refresh")
+def force_refresh():
+    try:
+        user_id = AnnotatedValidator(user=session.get(activeUserId)).user
+        assert user_id is not None
+        update_user_watchlist(user_id)
+        return "", 200
+    except Exception as e:
+        return abort(400)
 
 
 @app.route("/favicon.ico")
