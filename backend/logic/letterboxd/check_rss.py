@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import pandas as pd
 from backend.logic.storage_manager import StorageManager
 from backend.types.my_types import *
@@ -17,12 +18,13 @@ def update_user_watchlist(user_id: UserID) -> bool:
 
     Returns: True if new movies were found, False otherwise.
     """
+    logging.info(f"Checking letterboxd rss feed for user {user_id}")
     storage = StorageManager.get_storage()
     # * compute parameters
     account = storage.read("users").at[user_id, UserColumns.LETTERBOXD]
     cutoff = mu.get_and_set_rss_timestamp(user_id)
     if cutoff is None:
-        print("cutoff was None in check_rss.update_user_watchlist")
+        logging.debug("cutoff was None in check_rss.update_user_watchlist")
         cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(weeks=52)
     # * fetch the data
     soup = fetch_rss(account)
@@ -32,6 +34,7 @@ def update_user_watchlist(user_id: UserID) -> bool:
     t_to_me = pd.Series(movies.index, index=movies["alternate_id_column"])
     idlist = t_to_me[t_to_me.index.isin(idlist)]
     # * add to watchlist
+    logging.info(f"Adding {len(idlist)} movies to watchlist for user {user_id}")
     current_year = (
         datetime.now().year - 1
     )  # * while the system is live, the movies are from last year

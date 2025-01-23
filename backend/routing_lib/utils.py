@@ -1,4 +1,5 @@
 from collections.abc import Callable
+import logging
 import re
 import time
 from typing import Any
@@ -53,7 +54,7 @@ def catch_file_locked_error(
         return jsonify(func(*args, **kwargs)), 200
     except OSError as e:
         if e.errno == 13:
-            print(
+            logging.error(
                 f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
             )
             return {
@@ -82,7 +83,6 @@ def has_flag(request: Request, arg: str) -> bool:
     """
     value = request.args.get(arg, "false").lower()
     output = value == "true"
-    # print(f"has_flag will return {output}")
     return output
 
 

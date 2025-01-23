@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import pandas as pd
 from backend.logic.storage_manager import StorageManager
 from backend.types.my_types import *
@@ -23,7 +24,7 @@ def update_user_watchlist(user_id: UserID) -> bool:
     idlist = get_movie_list_from_rss(user_id, current_year)
     # * add to watchlist
     for id in idlist:
-        print(f"Adding {id} to watchlist for {user_id}")
+        logging.debug(f"Adding {id} to watchlist for {user_id}")
         mu.add_watchlist_entry(
             storage, current_year, user_id, id, WatchStatus(WatchStatus.SEEN)
         )
@@ -77,7 +78,6 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
 
     Returns: A list of movies ids (e.g. mov_123aef).
     """
-    # print(f"Checking letterboxd for user {user_id}")
     storage = StorageManager.get_storage()
     # * compute parameters
     account = storage.read("users").at[user_id, UserColumns.LETTERBOXD.value]
@@ -94,6 +94,6 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
         try:
             validated_idlist.append(AnnotatedValidator(movie=id).movie)
         except:
-            print(f"Invalid movie id: {id}")
+            logging.warning(f"Invalid movie id: {id}")
 
     return validated_idlist

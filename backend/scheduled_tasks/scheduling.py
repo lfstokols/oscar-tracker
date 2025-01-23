@@ -1,3 +1,4 @@
+import logging
 from flask import Flask
 from flask_apscheduler import APScheduler
 import shutil
@@ -39,9 +40,9 @@ def check_letterboxd():
     for user_id in users.index:
         had_update = update_user_watchlist(user_id)
         if had_update:
-            print(f"Updated watchlist for user {user_id}")
+            logging.info(f"Updated watchlist for user {user_id}")
         else:
-            print(f"No new movies found for user {user_id}")
+            logging.info(f"No new movies found for user {user_id}")
 
 
 def backup_database():
@@ -66,4 +67,4 @@ def backup_database():
             backup_path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(file, backup_path)
 
-    print(f"Database backed up to {backup_dir}")
+    logging.info(f"Database backed up to {backup_dir}")

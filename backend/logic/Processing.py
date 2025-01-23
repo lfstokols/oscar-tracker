@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import Hashable, overload, Any
 from backend.types.api_schemas import (
@@ -155,7 +156,7 @@ def get_user_propic(letterboxd_username: str) -> str | None:
             return avatar.attrs["src"]
         return None
     except (requests.RequestException, AttributeError) as e:
-        print(f"Error getting user propic for {letterboxd_username}", e)
+        logging.error(f"Error getting user propic for {letterboxd_username}", e)
         return None
 
 
@@ -287,7 +288,7 @@ def compute_user_to_category_edgeframe(watchlist, nominations):
             ]
         ]
     except Exception as e:
-        print(e)
+        logging.error(e)
         result[WatchStatus.SEEN.value] = 0
         result[WatchStatus.TODO.value] = 0
         return result[

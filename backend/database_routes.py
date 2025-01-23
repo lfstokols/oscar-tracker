@@ -1,4 +1,5 @@
 from datetime import datetime
+import logging
 import time
 from dotenv import load_dotenv
 from functools import wraps
@@ -11,7 +12,10 @@ from flask import session
 from pydantic import ValidationError
 import requests
 from backend.routing_lib.user_session import SessionArgs, session_added_user
-from backend.scheduled_tasks.check_rss import update_user_watchlist, get_movie_list_from_rss
+from backend.scheduled_tasks.check_rss import (
+    update_user_watchlist,
+    get_movie_list_from_rss,
+)
 from backend.types.api_schemas import UserID
 from backend.data_management.api_validators import (
     validate_nom_list,
@@ -40,7 +44,7 @@ load_dotenv(project_root_directory / ".env")
 try:
     PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE") or "500")
 except Exception as e:
-    print(f"The .env file is missing or has an error: {e}")
+    logging.error(f"The .env file is missing or has an error: {e}")
     raise
 
 storage = StorageManager.get_storage()
@@ -62,7 +66,7 @@ def handle_errors(func):
             return func(*args, **kwargs)
         except OSError as e:
             if e.errno == 13:
-                print(
+                logging.warning(
                     f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
                 )
                 return {
@@ -71,20 +75,22 @@ def handle_errors(func):
                 }, 423
             raise
         except ValidationError as e:
-            print(f"Pydantic validation failed: {e.errors()}")
+            logging.warning(f"Pydantic validation failed: {e.errors()}")
             return (
                 jsonify({"error": "Pydantic validation failed", "message": str(e)}),
                 PYDANTIC_ERROR_STATUS_CODE,
             )
         except MissingAPIArgumentError as e:
-            print(
+            logging.warning(
                 f"MissingAPIArgumentError: {e.message}",
                 f"Missing data: {e.missing_data}",
             )
             return jsonify({"error": e.message, "missing_data": e.missing_data}), 422
         except Exception as e:
-            print(f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})")
-            print(f"Error of type {type(e)} with message {e}")
+            logging.error(
+                f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})"
+            )
+            logging.error(f"Error of type {type(e)} with message {e}")
             raise
 
     return wrapper
@@ -266,6 +272,7 @@ def force_refresh():
     assert user_id is not None
     movie_list = get_movie_list_from_rss(user_id, year=datetime.now().year - 1)
     for movie_id in movie_list:
+        logging.debug(f"Got {movie_id} from {user_id}'s letterboxd.")
         mu.add_watchlist_entry(
             storage,
             year=datetime.now().year - 1,

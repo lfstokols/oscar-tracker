@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 from backend.types.api_schemas import (
     UserID,
@@ -62,10 +63,6 @@ def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
             tz="UTC",
         )
         data.at[userId, UserColumns.LAST_CHECKED.value] = pd.Timestamp.now(tz="UTC")
-        print(
-            f"last_val: {last_val}, {type(last_val)}",
-            "======     +++++     =====     ======",
-        )
         return data, last_val
 
     return storage.edit(operation, "users")
@@ -177,7 +174,7 @@ def update_movie(
 ) -> MovID | bool:
     for val in new_data.values():
         if "," in str(val):
-            print(
+            logging.warning(
                 f"There's a comma in the data. That could mess up the CSV file, "
                 "but I think pandas deals with it automatically.\n"
                 "Continuing for now, but check if you corrupted the data and figure out a fix if so.\n"

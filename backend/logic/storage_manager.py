@@ -1,3 +1,4 @@
+import logging
 from time import sleep
 import random
 from pathlib import Path
@@ -300,14 +301,8 @@ class StorageManager:
                     finally:
                         unlock_file(file)
         except (BlockingIOError, OSError) as e:
-            print(f"Error opening file {filepath[0].name}.")
+            logging.error(f"Error opening file {filepath[0].name}.")
             raise
-            # finally:
-            # 	if sys.platform.startswith('win'):
-            # 		msvcrt.locking(file.fileno(), msvcrt.LK_UNLCK, 1)
-            # 		print("unlocked")
-            # 	else:
-            # 		fcntl.flock(file.fileno(), fcntl.LOCK_UN)
 
     def retry_file_access(
         self,
@@ -333,11 +328,11 @@ class StorageManager:
                 return output
             except OSError as e:
                 if e.errno == 13 and should_retry:
-                    print(f"File {filepath[0].name} is locked. Retrying...")
+                    logging.info(f"File {filepath[0].name} is locked. Retrying...")
                     sleep(retry_interval / 1000)
                 else:
                     raise
-        print(
+        logging.error(
             f"Unable to open file {filepath[0].name} after {self.max_retries} retries."
         )
         raise OSError(13, "File is locked, please try again later")
@@ -367,15 +362,6 @@ class StorageManager:
             return feedback
 
         return self.retry_file_access(filename, "r+", full_operation, **kwargs)
-        # try:
-        #     with self.file_access(filename, "r+") as files:
-        #         old_data = self.files_to_df(files, flavor)
-        #         new_data, feedback = operation(old_data)
-        #         self.df_to_files(new_data, files)
-        #     return feedback
-        # except Exception as e:
-        #     print(f"Unable to write data to {filename}.")
-        #     raise
 
     def delete_file(self, flavor, year="test"):
         filename = self.get_filename(flavor, year)
@@ -423,8 +409,3 @@ class StorageManager:
             ):
                 bad_cats.append(category)
         return bad_cats
-
-
-if __name__ == "__main__":
-    storage = StorageManager("C:/Users/lfsto/OscarFiles/backend/database")
-    print(storage.read("users"))
