@@ -189,7 +189,7 @@ def fetch_movie_db(year, error_cutoff):
                     f"Release date: <{details['release_date']}>",
                     f"Language: <{details['original_language']}>",
                     f"Country: <{details['origin_country']}>",
-                    f"Genres: <{', '.join(details['genres'].map(lambda g: g['name']))}>",
+                    f"Genres: <{', '.join([g['name'] for g in details['genres']])}>",
                 )
 
                 keep = input(f"Assume it's still right movie? (y/N): ").lower() == "y"
@@ -261,8 +261,10 @@ def fetch_wrapper(endpoint, params=None, headers=None):
     Returns the JSON response from the movieDB API (a dict).
     endpoint: everything after /3/, no leading/trailing slashes.
     """
-    #* Use the session but customize for this specific request
-    response = BASE_SESSION.get(f"{URL_BASE}/{endpoint}", params=params, headers=headers)
+    # * Use the session but customize for this specific request
+    response = BASE_SESSION.get(
+        f"{URL_BASE}/{endpoint}", params=params, headers=headers
+    )
     return response.json()
 
 

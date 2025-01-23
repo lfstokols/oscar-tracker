@@ -81,7 +81,7 @@ catch {
 Write-Host "Would you like to clean up? (Y/n) " -NoNewline
 $resp = [System.Console]::ReadKey()
 Write-Host ""
-if ($resp -ne "n") {
+if ($resp.KeyChar -ne 'n') {
     Write-Host "Cleaning up local archive..."
     Remove-Item "${ArchiveName}.gz"
     Write-Host "Cleaned up!"
@@ -91,7 +91,7 @@ Write-Host "Done!"
 Write-Host "Would you like to continue to the server? (Y/n) " -NoNewline
 $resp = [System.Console]::ReadKey()
 Write-Host ""
-if ($resp -ne "n") {
+if ($resp.KeyChar -ne 'n') {
     Write-Host "Transferring control to server..."
     ssh $env:MY_SSH -tt "cd $env:REMOTE_PATH && bash instantiate.sh"
 }

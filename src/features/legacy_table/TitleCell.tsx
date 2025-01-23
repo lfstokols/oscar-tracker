@@ -4,6 +4,7 @@ import {
   HIGHLIGHT_ANIMATED_COLOR,
   BEST_PICTURE_COLOR,
 } from '../../config/StyleChoices';
+import {MovieDb_POSTER_URL} from '../../config/GlobalConstants';
 
 export default function TitleCell({
   movie,
@@ -21,60 +22,69 @@ export default function TitleCell({
   props?: Record<string, unknown>;
 }): React.ReactElement {
   return (
-    <TableCell
-      title={movie.id}
-      sx={{
-        textAlign: 'center',
-        className: 'title-column',
-        maxWidth: '30ch',
-        overflow: 'visible',
-        scrollbarWidth: 'none',
-        position: 'relative',
-        ...sxProps,
-      }}
-      {...props}>
-      {bestPicNominees?.includes(movie.id) && makeBestPicHighlight(movie)}
-      <div
-        style={
-          preferences?.highlightAnimated &&
-          bestAnimatedNominees?.includes(movie.id)
-            ? {
-                border: `1px dashed ${HIGHLIGHT_ANIMATED_COLOR}`,
-                padding: '8px',
-                borderRadius: '30px',
-              }
-            : {}
-        }>
-        <b
-          style={{
-            fontSize: '1.2em',
-            whiteSpace: 'nowrap',
-            position: 'relative',
-            zIndex: 1,
-            color: bestPicNominees?.includes(movie.id)
-              ? BEST_PICTURE_COLOR
-              : preferences?.highlightAnimated &&
-                bestAnimatedNominees?.includes(movie.id)
-              ? HIGHLIGHT_ANIMATED_COLOR
-              : 'inherit',
-          }}>
-          {movie.mainTitle}
-        </b>
-        <br />
-        {movie.subtitle ? (
-          <i
+    <>
+      <TableCell>
+        <img
+          src={MovieDb_POSTER_URL + movie.posterPath}
+          alt={movie.mainTitle}
+          style={{maxHeight: '100px'}}
+        />
+      </TableCell>
+      <TableCell
+        title={movie.id}
+        sx={{
+          textAlign: 'center',
+          className: 'title-column',
+          maxWidth: '30ch',
+          overflow: 'visible',
+          scrollbarWidth: 'none',
+          position: 'relative',
+          ...sxProps,
+        }}
+        {...props}>
+        {bestPicNominees?.includes(movie.id) && makeBestPicHighlight(movie)}
+        <div
+          style={
+            preferences?.highlightAnimated &&
+            bestAnimatedNominees?.includes(movie.id)
+              ? {
+                  border: `1px dashed ${HIGHLIGHT_ANIMATED_COLOR}`,
+                  padding: '8px',
+                  borderRadius: '30px',
+                }
+              : {}
+          }>
+          <b
             style={{
-              fontSize: '0.8em',
+              fontSize: '1.2em',
               whiteSpace: 'nowrap',
-              overflow: 'auto',
               position: 'relative',
               zIndex: 1,
+              color: bestPicNominees?.includes(movie.id)
+                ? BEST_PICTURE_COLOR
+                : preferences?.highlightAnimated &&
+                  bestAnimatedNominees?.includes(movie.id)
+                ? HIGHLIGHT_ANIMATED_COLOR
+                : 'inherit',
             }}>
-            {movie.subtitle}
-          </i>
-        ) : null}
-      </div>
-    </TableCell>
+            {movie.mainTitle}
+          </b>
+          <br />
+          {movie.subtitle ? (
+            <i
+              style={{
+                fontSize: '0.8em',
+                whiteSpace: 'nowrap',
+                overflow: 'auto',
+                position: 'relative',
+                zIndex: 1,
+              }}>
+              {movie.subtitle}
+            </i>
+          ) : null}
+        </div>
+      </TableCell>
+    </>
   );
 }
 

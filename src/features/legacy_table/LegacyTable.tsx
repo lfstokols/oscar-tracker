@@ -131,7 +131,7 @@ function LegacyTable({
               // backgroundColor: TABLE_ROW_COLOR,
             }
           }>
-          <TableCell sx={{padding: 0}}>
+          <TableCell sx={{padding: 0}} colSpan={2}>
             <Table>
               <TableBody>
                 {localMovies.map((movie, index) => (
@@ -221,6 +221,7 @@ function LegacyTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
+            <ColumnLabel text="" />
             <ColumnLabel
               text="Film"
               sx={{maxWidth: '10ch', overflow: 'wrap'}}
