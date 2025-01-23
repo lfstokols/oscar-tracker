@@ -30,6 +30,13 @@ export function ClickableTooltip({
         slotProps={{
           popper: {
             disablePortal: true,
+            sx: {
+              maxWidth: '800px !important',
+              '& .MuiTooltip-tooltip': {
+                maxWidth: '800px',
+                padding: '16px',
+              },
+            },
           },
         }}
         title={popup}

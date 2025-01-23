@@ -7,4 +7,5 @@ dist/
 config.local.ps1
 .env
 venv/
+logs/
 backend/backups/

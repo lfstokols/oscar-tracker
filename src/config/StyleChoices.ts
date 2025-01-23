@@ -8,6 +8,6 @@ export const TABLE_ROW_MINOR_COLOR = 'grey.800';
 export const BACKGROUND_COLOR = 'background';
 
 export const SEEN_COLOR = 'green';
-export const TODO_COLOR = 'goldenrod';
+export const TODO_COLOR = 'orange';
 export const NO_STATUS_COLOR = 'lightgrey';
 export const TODO_CONTRAST_COLOR = 'white';

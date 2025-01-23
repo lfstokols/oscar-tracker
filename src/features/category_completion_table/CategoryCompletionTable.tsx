@@ -63,18 +63,23 @@ export default function CategoryCompletionTable(): React.ReactElement {
   const groupNomCounts = groupCounts(preferences.shortsAreOneFilm);
   const groupingList = Object.values(Grouping);
 
-  const [areOpen, setAreOpen] = React.useState<Record<Grouping, boolean>>(
+  const [areOpenRegular, setAreOpenRegular] = React.useState<
+    Record<Grouping, boolean>
+  >(
     Object.values(Grouping).reduce((acc, grouping) => {
       acc[grouping] = false;
       return acc;
     }, {} as Record<Grouping, boolean>),
   );
-  React.useState(false);
 
-  // function getGroupingTooltip(grouping: Grouping): string {
-  //   const catList = categoryList.filter(cat => cat.grouping === grouping);
-  //   return catList.map(cat => cat.fullName).join(', ');
-  // }
+  const [areOpenPlanned, setAreOpenPlanned] = React.useState<
+    Record<Grouping, boolean>
+  >(
+    Object.values(Grouping).reduce((acc, grouping) => {
+      acc[grouping] = false;
+      return acc;
+    }, {} as Record<Grouping, boolean>),
+  );
 
   function makeCategoryRow(
     cat: Category,
@@ -86,7 +91,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
     const denominator = categoryNomCounts(cat.id, preferences.shortsAreOneFilm);
     return (
       <TableRow
-        key={cat.id}
+        key={planned ? `planned-${cat.id}` : cat.id}
         // color="secondary"
         sx={{
           backgroundColor: TABLE_ROW_MINOR_COLOR,
@@ -116,7 +121,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
         <TableCell />
         <TableCell sx={{paddingLeft: '50px'}}>
           <Typography variant="h6">
-            <i>{cat.shortName}</i>
+            <i>{cat.fullName}</i>
           </Typography>
         </TableCell>
         {userList.map(user => (
@@ -170,12 +175,13 @@ export default function CategoryCompletionTable(): React.ReactElement {
     };
     return (
       <TableRow
-        key={grouping}
-        sx={
-          {
-            // backgroundColor: TABLE_ROW_COLOR,
-          }
-        }
+        key={planned ? `planned-${grouping}` : grouping}
+        sx={{
+          cursor: 'pointer',
+          '&:hover': {
+            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+          },
+        }}
         onClick={handleClick}>
         <TableCell>
           {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
@@ -225,17 +231,25 @@ export default function CategoryCompletionTable(): React.ReactElement {
               <React.Fragment key={i}>
                 {i === 1 && plannedBanner}
                 {groupingList.map(grouping => {
-                  const isExpanded = areOpen[grouping];
+                  const isExpanded =
+                    i === 1
+                      ? areOpenPlanned[grouping]
+                      : areOpenRegular[grouping];
                   return (
-                    <React.Fragment key={grouping}>
+                    <React.Fragment key={`${i}-${grouping}`}>
                       {makeGroupingRow({
                         grouping,
                         isExpanded,
                         handleToggle: () =>
-                          setAreOpen(prev => ({
-                            ...prev,
-                            [grouping]: !prev[grouping],
-                          })),
+                          i === 1
+                            ? setAreOpenPlanned(prev => ({
+                                ...prev,
+                                [grouping]: !prev[grouping],
+                              }))
+                            : setAreOpenRegular(prev => ({
+                                ...prev,
+                                [grouping]: !prev[grouping],
+                              })),
                         planned: i === 1,
                       })}
                       {groupingDict[grouping].map(cat =>
@@ -279,10 +293,20 @@ function makeCategoryTooltip(
       !myMovieIds.includes(movieId) && !myPlannedMovieIds.includes(movieId),
   );
   return (
-    <Stack spacing={3} direction="row" justifyContent="space-between">
+    <Stack
+      spacing={2}
+      direction="row"
+      justifyContent="space-between"
+      sx={{
+        maxWidth: '7500px',
+        '& > div': {
+          flex: 1,
+          minWidth: '75px', // This prevents flex items from overflowing
+        },
+      }}>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6">
+          <Typography variant="h6" noWrap>
             <u>Seen</u>
           </Typography>
         </div>
@@ -291,7 +315,7 @@ function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
                   {movie ? movie.mainTitle : '??? '}
                 </Typography>
               </div>
@@ -301,7 +325,7 @@ function makeCategoryTooltip(
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6">
+          <Typography variant="h6" noWrap>
             <u>Planned</u>
           </Typography>
         </div>
@@ -310,7 +334,7 @@ function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
                   {movie ? movie.mainTitle : '??? '}
                 </Typography>
               </div>
@@ -320,7 +344,7 @@ function makeCategoryTooltip(
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6">
+          <Typography variant="h6" noWrap>
             <u>Missing</u>
           </Typography>
         </div>
@@ -329,7 +353,7 @@ function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}}>
+                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
                   {movie ? movie.mainTitle : '???'}
                 </Typography>
               </div>
@@ -345,13 +369,13 @@ const plannedBanner = (
     <TableCell
       colSpan={100}
       sx={{
-        // backgroundColor: TODO_COLOR,
+        backgroundColor: 'background.paper',
         position: 'sticky',
         top: 56,
         zIndex: 2,
       }}
       align="center">
-      <Typography color={TODO_CONTRAST_COLOR} variant="h5">
+      <Typography color={TODO_COLOR} variant="h5">
         Planned
       </Typography>
     </TableCell>
