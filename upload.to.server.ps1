@@ -88,5 +88,13 @@ if ($resp -ne "n") {
 }
 Write-Host "Done!"
 
-Write-Host "Transferring control to server..."
-ssh $env:MY_SSH -tt "cd $env:REMOTE_PATH && bash instantiate.sh"
+Write-Host "Would you like to continue to the server? (Y/n) " -NoNewline
+$resp = [System.Console]::ReadKey()
+Write-Host ""
+if ($resp -ne "n") {
+    Write-Host "Transferring control to server..."
+    ssh $env:MY_SSH -tt "cd $env:REMOTE_PATH && bash instantiate.sh"
+}
+else {
+    Write-Host "Done!"
+}

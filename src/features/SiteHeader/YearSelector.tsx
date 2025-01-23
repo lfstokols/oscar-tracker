@@ -22,7 +22,7 @@ export default function YearSelector() {
         color="primary"
         onChange={handleYearSelect}>
         {availableYears.map(year => (
-          <MenuItem key={year} value={year} disabled={year === 2024}>
+          <MenuItem key={year} value={year}>
             {year}
           </MenuItem>
         ))}
