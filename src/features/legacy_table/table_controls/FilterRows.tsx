@@ -6,9 +6,12 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Stack,
   List,
   Divider,
   ListItem,
+  FormGroup,
+  FormControlLabel,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {FilterAlt} from '@mui/icons-material';
@@ -16,6 +19,8 @@ import {Grouping, WatchStatuses} from '../../../types/Enums';
 import {DisplayedSettingsButton, CenteredMenu, useMenuState} from './Common';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
+import {grouping_display_names} from '../../../types/Enums';
+import {LogToConsole} from '../../../utils/Logger';
 
 export default function FilterRowsWidget({
   isMobile,
@@ -30,19 +35,37 @@ export default function FilterRowsWidget({
   }) => void;
 }): React.ReactElement {
   const [isOpen, menuPosition, handleClick, handleClose] = useMenuState();
-  const toggleCategoryFilter = (category: CategoryId) => {
-    const newState = {...filterState};
-    newState.categories = filterState.categories.includes(category)
-      ? filterState.categories.filter((c: CategoryId) => c !== category)
-      : [...filterState.categories, category];
-    setFilterState(newState);
-  };
+
   const toggleWatchStatusFilter = (watchStatus: WatchStatus) => {
-    const newState = {...filterState};
-    newState.watchstatus = filterState.watchstatus.includes(watchStatus)
-      ? filterState.watchstatus.filter(w => w !== watchStatus)
-      : [...filterState.watchstatus, watchStatus];
-    setFilterState(newState);
+    const newState = [...filterState.watchstatus];
+    if (newState.includes(watchStatus)) {
+      newState.splice(newState.indexOf(watchStatus), 1);
+    } else {
+      newState.push(watchStatus);
+    }
+    setFilterState({...filterState, watchstatus: newState});
+  };
+
+  const toggleCategoryFilter = (category: CategoryId) => {
+    const newState = [...filterState.categories];
+    if (newState.includes(category)) {
+      newState.splice(newState.indexOf(category), 1);
+    } else {
+      newState.push(category);
+    }
+    setFilterState({...filterState, categories: newState});
+  };
+
+  const toggleGroupingFilter = (idList: CategoryId[], add: boolean) => {
+    const newState = [...filterState.categories];
+    for (const id of idList) {
+      if (add && !newState.includes(id)) {
+        newState.push(id);
+      } else if (!add && newState.includes(id)) {
+        newState.splice(newState.indexOf(id), 1);
+      }
+    }
+    setFilterState({...filterState, categories: newState});
   };
 
   return (
@@ -59,8 +82,9 @@ export default function FilterRowsWidget({
           isOpen={isOpen}
           onClose={handleClose}
           filterState={filterState}
-          toggleCategoryFilter={toggleCategoryFilter}
           toggleWatchStatusFilter={toggleWatchStatusFilter}
+          toggleCategoryFilter={toggleCategoryFilter}
+          toggleGroupingFilter={toggleGroupingFilter}
         />
       )}
     </>
@@ -74,6 +98,7 @@ function SelectionMenu({
   filterState,
   toggleCategoryFilter,
   toggleWatchStatusFilter,
+  toggleGroupingFilter,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -81,6 +106,7 @@ function SelectionMenu({
   filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
   toggleCategoryFilter: (category: CategoryId) => void;
   toggleWatchStatusFilter: (watchStatus: WatchStatus) => void;
+  toggleGroupingFilter: (idList: CategoryId[], add: boolean) => void;
 }): React.ReactElement {
   const {data: categories} = useSuspenseQuery(categoryOptions());
   let watchStatusMessage = 'Showing all statuses';
@@ -93,49 +119,55 @@ function SelectionMenu({
   }
   return (
     <CenteredMenu isOpen={isOpen} onClose={onClose} menuPosition={menuPosition}>
-      <MenuItem key="watchstatusMessage">
-        <Typography>{watchStatusMessage}</Typography>
-      </MenuItem>
-      <MenuItem key="status:seen">
-        <Checkbox
-          checked={filterState.watchstatus.includes(WatchStatuses.seen)}
-          onChange={() => {
-            toggleWatchStatusFilter(WatchStatuses.seen);
-          }}
+      <Typography sx={{px: 2, py: 1}} color="text.information">
+        {watchStatusMessage}
+      </Typography>
+      <FormGroup sx={{px: 2, py: 1}}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filterState.watchstatus.includes(WatchStatuses.seen)}
+              onChange={() => {
+                toggleWatchStatusFilter(WatchStatuses.seen);
+              }}
+            />
+          }
+          label="Seen"
         />
-        <Typography>Seen</Typography>
-      </MenuItem>
-      <MenuItem key="status:todo">
-        <Checkbox
-          checked={filterState.watchstatus.includes(WatchStatuses.todo)}
-          onChange={() => {
-            toggleWatchStatusFilter(WatchStatuses.todo);
-          }}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filterState.watchstatus.includes(WatchStatuses.todo)}
+              onChange={() => {
+                toggleWatchStatusFilter(WatchStatuses.todo);
+              }}
+            />
+          }
+          label="To-Do"
         />
-        <Typography>To-Do</Typography>
-      </MenuItem>
-      <MenuItem key="status:blank">
-        <Checkbox
-          checked={filterState.watchstatus.includes(WatchStatuses.blank)}
-          onChange={() => {
-            toggleWatchStatusFilter(WatchStatuses.blank);
-          }}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={filterState.watchstatus.includes(WatchStatuses.blank)}
+              onChange={() => {
+                toggleWatchStatusFilter(WatchStatuses.blank);
+              }}
+            />
+          }
+          label="Un-marked"
         />
-        <Typography>Un-marked</Typography>
-      </MenuItem>
+      </FormGroup>
       <Divider />
-      <MenuItem key="categoryMessage">
-        <Typography>{categoryMessage}</Typography>
-      </MenuItem>
+      <Typography sx={{px: 2, py: 1}}>{categoryMessage}</Typography>
       {Object.values(Grouping).map(grouping => (
-        <MenuItem key={`grouping:${grouping}`}>
-          <GroupingAccordion
-            grouping={grouping}
-            categories={categories}
-            filterState={filterState.categories}
-            toggleCategoryFilter={toggleCategoryFilter}
-          />
-        </MenuItem>
+        <GroupingAccordion
+          key={grouping}
+          grouping={grouping}
+          categories={categories}
+          filterState={filterState.categories}
+          toggleCategoryFilter={toggleCategoryFilter}
+          toggleGroupingFilter={toggleGroupingFilter}
+        />
       ))}
     </CenteredMenu>
   );
@@ -146,11 +178,13 @@ function GroupingAccordion({
   categories,
   filterState,
   toggleCategoryFilter,
+  toggleGroupingFilter,
 }: {
   grouping: Grouping;
   categories: Category[];
   filterState: CategoryId[];
   toggleCategoryFilter: (category: CategoryId) => void;
+  toggleGroupingFilter: (idList: CategoryId[], add: boolean) => void;
 }): React.ReactElement {
   const myCategories = categories.filter(
     category => category.grouping === grouping,
@@ -162,41 +196,41 @@ function GroupingAccordion({
   ).length;
   const isSelected = numSelected === totalNumCategories;
   const toggleAll = () => {
-    //* selects everything, unless that's already true, then deselects everything
-    if (isSelected) {
-      for (const category of myCategories) {
-        toggleCategoryFilter(category.id);
-      }
-    } else {
-      for (const category of myCategories) {
-        if (!filterState.includes(category.id)) {
-          toggleCategoryFilter(category.id);
-        }
-      }
-    }
+    toggleGroupingFilter(myCategoryIds, !isSelected);
   };
   return (
-    <Accordion key={grouping}>
+    <Accordion key={grouping} sx={{width: '100%'}}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Checkbox checked={isSelected} onChange={toggleAll} />
-        <Typography>{grouping}</Typography>
-        <Typography
-          color="disabled"
-          sx={{
-            marginLeft: '8px',
-          }}>{`${numSelected} / ${totalNumCategories}`}</Typography>
+        <Stack
+          direction="row"
+          alignItems="center"
+          width="100%"
+          justifyContent="space-between">
+          <FormControlLabel
+            onClick={e => e.stopPropagation()}
+            control={<Checkbox checked={isSelected} onChange={toggleAll} />}
+            label={<Typography>{grouping_display_names[grouping]}</Typography>}
+          />
+          <Typography color="text.disabled" sx={{paddingRight: '16px'}}>
+            {`${numSelected} / ${totalNumCategories}`}
+          </Typography>
+        </Stack>
       </AccordionSummary>
       <AccordionDetails>
         <List>
           {myCategories.map(category => (
             <ListItem key={`category:${category.id}`}>
-              <Checkbox
-                checked={filterState.includes(category.id)}
-                onChange={() => {
-                  toggleCategoryFilter(category.id);
-                }}
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filterState.includes(category.id)}
+                    onChange={() => {
+                      toggleCategoryFilter(category.id);
+                    }}
+                  />
+                }
+                label={category.fullName}
               />
-              <Typography>{category.fullName}</Typography>
             </ListItem>
           ))}
         </List>

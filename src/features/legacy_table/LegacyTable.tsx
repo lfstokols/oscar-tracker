@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Stack,
+  Box,
   Paper,
   Typography,
 } from '@mui/material';
@@ -27,7 +28,7 @@ import {
 } from '../../hooks/dataOptions';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
 import {LogToConsole} from '../../utils/Logger';
-import {TableControls} from './table_controls/tableControls';
+import TableControls from './table_controls/tableControls';
 
 export const columnList = ['title', 'nominations', 'runtime'];
 
@@ -191,7 +192,13 @@ function LegacyTable({
     );
   }
   return (
-    <TableContainer sx={{scrollBehavior: 'smooth'}}>
+    <TableContainer
+      sx={{
+        scrollBehavior: 'smooth',
+        overflowY: 'auto',
+        height: 'calc(100vh - 64px)',
+        width: '100%',
+      }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
@@ -231,25 +238,36 @@ export default function LegacyTableWrapper() {
   });
   return (
     <DefaultCatcher>
-      <Stack direction="column" spacing={2}>
-        <TableControls
-          filterState={filterState}
-          setFilterState={setFilterState}
-        />
-        <Paper
-          sx={{
-            marginTop: '16px',
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'auto',
-            scrollbarHeight: '8px',
-            position: 'sticky',
-          }}>
-          <LegacyTable filterState={filterState} />
-        </Paper>
-      </Stack>
+      <Box sx={{width: '100%', height: 'calc(100vh - 64px)'}}>
+        <Stack
+          direction="column"
+          spacing={2}
+          alignItems="center"
+          // position="sticky"
+          // top="-40px"
+          // overflow="scroll"
+        >
+          <TableControls
+            filterState={filterState}
+            setFilterState={setFilterState}
+          />
+          <Paper
+            sx={{
+              width: '100%',
+              flexGrow: 1,
+              flexShrink: 1,
+              height: 'calc(100vh - 64px)',
+              minHeight: '200px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              position: 'sticky',
+              top: 0,
+            }}>
+            <LegacyTable filterState={filterState} />
+          </Paper>
+        </Stack>
+      </Box>
     </DefaultCatcher>
   );
 }

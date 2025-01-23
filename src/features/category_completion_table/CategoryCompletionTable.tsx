@@ -38,15 +38,7 @@ import {
   TODO_COLOR,
   TODO_CONTRAST_COLOR,
 } from '../../config/StyleChoices';
-const grouping_display_names: {[key in Grouping]: string} = {
-  [Grouping.big_three]: 'Big Three',
-  [Grouping.acting]: 'Acting',
-  [Grouping.filmkraft]: 'Filmkraft',
-  [Grouping.art]: 'Art',
-  [Grouping.audio]: 'Audio',
-  [Grouping.best_in_class]: 'Best in Class',
-  [Grouping.short]: 'Short',
-};
+import {grouping_display_names} from '../../types/Enums';
 
 export default function CategoryCompletionTable(): React.ReactElement {
   const {year, preferences} = useOscarAppContext();

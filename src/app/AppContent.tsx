@@ -31,19 +31,33 @@ export default function mainPageContainer({
   currentTab: React.ReactElement;
 }): React.ReactElement {
   return (
-    <Container
-      maxWidth={false}
+    <Box
       sx={{
+        width: '100vw',
+        height: 0,
         flexGrow: 1,
-        overflow: 'hidden',
-        // width: '100vw',
-        scrollBehavior: 'smooth',
-        height: 0, // This forces the container to respect the flex layout
         display: 'flex',
-        // backgroundColor: 'secondary.light',
+        flexDirection: 'row',
+        justifyContent: 'center',
+        overflow: 'auto',
       }}>
-      {/* <Box sx={{my: 4, borderRadius: 2, width: '90vw'}}>{currentTab}</Box> */}
-      {currentTab}
-    </Container>
+      <Container
+        maxWidth={false}
+        sx={{
+          overflowY: 'auto',
+          msOverflowStyle: '-ms-autohiding-scrollbar',
+          maxWidth: '100vw',
+          scrollBehavior: 'smooth',
+          height: '100%', // This forces the container to respect the flex layout
+          display: 'flex',
+          flexDirection: 'column',
+          alignContent: 'fill',
+          justifyContent: 'start',
+          // backgroundColor: 'secondary.light',
+        }}>
+        {/* <Box sx={{my: 4, borderRadius: 2, width: '90vw'}}>{currentTab}</Box> */}
+        {currentTab}
+      </Container>
+    </Box>
   );
 }

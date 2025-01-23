@@ -40,3 +40,13 @@ export enum Grouping {
     best_in_class = 'best_in_class',
     short = 'short',
 }
+
+export const grouping_display_names: {[key in Grouping]: string} = {
+  [Grouping.big_three]: 'Big Three',
+  [Grouping.acting]: 'Acting',
+  [Grouping.filmkraft]: 'Filmkraft',
+  [Grouping.art]: 'Art',
+  [Grouping.audio]: 'Audio',
+  [Grouping.best_in_class]: 'Best in Class',
+  [Grouping.short]: 'Short',
+};
