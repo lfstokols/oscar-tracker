@@ -97,11 +97,12 @@ def serve_joke():
 
 @app.route("/force-refresh")
 def force_refresh():
+    print("got a force refresh")
     try:
         user_id = AnnotatedValidator(user=session.get(activeUserId)).user
         assert user_id is not None
         update_user_watchlist(user_id)
-        return "", 200
+        return "bsnsns", 200
     except Exception as e:
         return abort(400)
 
@@ -121,8 +122,10 @@ activeUserId = "activeUserId"
 @app.before_request
 def before_request():
     login = request.cookies.get(activeUserId)
+    if login is None:
+        return
     try:
-        assert login is None or AnnotatedValidator(user=login)
+        assert AnnotatedValidator(user=login)
     except Exception as e:
         print(f"Invalid user id {e} found in cookie.")
         login = None

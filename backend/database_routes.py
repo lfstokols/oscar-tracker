@@ -1,3 +1,4 @@
+from datetime import datetime
 import time
 from dotenv import load_dotenv
 from functools import wraps
@@ -6,10 +7,11 @@ from flask import Blueprint, send_from_directory, request, jsonify, abort
 # from flask_cors import CORS
 import os
 from pathlib import Path
-
+from flask import session
 from pydantic import ValidationError
 import requests
 from backend.routing_lib.user_session import SessionArgs, session_added_user
+from backend.scheduled_tasks.check_rss import update_user_watchlist, get_movie_list_from_rss
 from backend.types.api_schemas import UserID
 from backend.data_management.api_validators import (
     validate_nom_list,
@@ -254,6 +256,26 @@ def serve_letterboxd_search():
     url = f"https://letterboxd.com/s/search/members/{search_term}"
     response = requests.get(url)
     return response.text
+
+
+@oscars.route("/force-refresh", methods=["GET"])
+def force_refresh():
+    print("got a force refresh")
+    # try:
+    user_id = AnnotatedValidator(user=utils.get_active_user_id(storage, request)).user
+    assert user_id is not None
+    movie_list = get_movie_list_from_rss(user_id, year=datetime.now().year - 1)
+    for movie_id in movie_list:
+        mu.add_watchlist_entry(
+            storage,
+            year=datetime.now().year - 1,
+            userId=user_id,
+            movieId=movie_id,
+            status=WatchStatus.SEEN,
+        )
+    return jsonify({"message": "Watchlist updated"}), 200
+    # except Exception as e:
+    #     return abort(400)
 
 
 # Serve React App

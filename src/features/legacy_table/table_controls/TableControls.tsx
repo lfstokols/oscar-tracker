@@ -22,15 +22,13 @@ export default function TableControls({
   const queryClient = useQueryClient();
   const {year} = useOscarAppContext();
   const isMobile = useIsMobile();
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    await fetch(`/api/force-refresh`);
     queryClient.invalidateQueries({
       queryKey: watchlistOptions(year).queryKey,
     });
   };
   const canRefresh = useOscarAppContext().activeUserId !== null;
-  const handleForceRefresh = () => {
-    fetch(`/force-refresh`);
-  };
 
   return (
     <Paper sx={{width: '50vw', position: 'sticky', top: '-40px'}}>
