@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
 import WatchlistCell from './WatchlistCell';
+import TitleCell from './TitleCell';
+import NominationsCell from './NominationsCell';
 import {groupByShort, sortUsers} from '../../utils/dataSelectors';
 import {
   Table,
@@ -9,11 +11,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Divider,
   Typography,
-  SxProps,
-  Theme,
 } from '@mui/material';
+import {SwapHoriz} from '@mui/icons-material';
 import DefaultCatcher from '../../components/LoadScreen';
 import {ColumnLabel} from '../../components/TableHeader';
 import {useSuspenseQueries} from '@tanstack/react-query';
@@ -24,13 +24,7 @@ import {
   nomOptions,
   userOptions,
 } from '../../hooks/dataOptions';
-import NominationsCell from './NominationsCell';
 import {CategoryIdSchema} from '../../types/APIDataSchema';
-import {
-  BEST_PICTURE_COLOR,
-  HIGHLIGHT_ANIMATED_COLOR,
-  TABLE_ROW_COLOR,
-} from '../../config/StyleChoices';
 import {LogToConsole} from '../../utils/Logger';
 
 function LegacyTable(): React.ReactElement {
@@ -211,6 +205,7 @@ function LegacyTable(): React.ReactElement {
                 onClick={() => setRuntimeFormatted(!runtimeFormatted)}
                 style={{cursor: 'pointer'}}
                 title="Click to toggle runtime format"
+                icon={<SwapHoriz />}
               />
               {sortedUsers.map(user => (
                 <ColumnLabel key={user.id} text={user.username} />
@@ -238,131 +233,6 @@ export default function LegacyTableWrapper() {
   );
 }
 
-function TitleCell({
-  movie,
-  bestPicNominees,
-  bestAnimatedNominees,
-  preferences,
-  sx: sxProps,
-  ...props
-}: {
-  movie: Movie;
-  bestPicNominees?: string[];
-  bestAnimatedNominees?: string[];
-  preferences?: Preferences;
-  sx?: SxProps<Theme>;
-  props?: Record<string, unknown>;
-}): React.ReactElement {
-  //*----------------------
-  const y_radius = 15;
-  const x_radius = getTextWidth(movie.mainTitle) * 0.7;
-  const ratio = 1.5;
-  const diff = 10;
-  const upper_angles = Array(6)
-    .fill(0)
-    .map((_, i) => (5 * Math.PI) / 4 + (i / 5) * (Math.PI / 2));
-  const angles = [
-    ...Array(6)
-      .fill(0)
-      .map((_, i) => Math.PI / 4 + (i / 5) * (Math.PI / 2)),
-    ...upper_angles,
-  ];
-  //*----------------------
-
-  return (
-    <TableCell
-      title={movie.id}
-      sx={{
-        textAlign: 'center',
-        className: 'title-column',
-        maxWidth: '30ch',
-        overflow: 'visible',
-        scrollbarWidth: 'none',
-        position: 'relative',
-        ...sxProps,
-      }}
-      {...props}>
-      {bestPicNominees?.includes(movie.id) && (
-        <svg
-          style={{
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            top: '0%',
-            left: '0%',
-            zIndex: 0,
-            pointerEvents: 'none',
-          }}
-          viewBox="0 0 150 100">
-          {angles.map((angle, i) => {
-            const innerX = 75 + x_radius * Math.cos(angle); // Wider x radius
-            const innerY = 50 + y_radius * Math.sin(angle); // Shorter y radius
-            const outerX = 75 + (x_radius + diff) * Math.cos(angle); // Wider x radius
-            const outerY = 50 + (y_radius + diff) * Math.sin(angle); // Shorter y radius
-            return (
-              <line
-                key={i}
-                x1={innerX}
-                y1={innerY}
-                x2={outerX}
-                y2={outerY}
-                stroke="rgba(255,215,0,0.6)"
-                strokeWidth="1.5"
-              />
-            );
-          })}
-        </svg>
-      )}
-      <div
-        style={
-          preferences?.highlightAnimated &&
-          bestAnimatedNominees?.includes(movie.id)
-            ? {
-                border: `1px dashed ${HIGHLIGHT_ANIMATED_COLOR}`,
-                padding: '8px',
-                borderRadius: '30px',
-              }
-            : {}
-        }>
-        <b
-          style={{
-            fontSize: '1.2em',
-            whiteSpace: 'nowrap',
-            position: 'relative',
-            zIndex: 1,
-            color: bestPicNominees?.includes(movie.id)
-              ? BEST_PICTURE_COLOR
-              : preferences?.highlightAnimated &&
-                bestAnimatedNominees?.includes(movie.id)
-              ? HIGHLIGHT_ANIMATED_COLOR
-              : 'inherit',
-            // backgroundColor: bestPicNominees?.includes(movie.id)
-            //   ? BEST_PICTURE_COLOR
-            //   : preferences?.highlightAnimated &&
-            //     bestAnimatedNominees?.includes(movie.id)
-            //   ? HIGHLIGHT_ANIMATED_COLOR
-            //   : 'inherit',
-          }}>
-          {movie.mainTitle}
-        </b>
-        <br />
-        {movie.subtitle ? (
-          <i
-            style={{
-              fontSize: '0.8em',
-              whiteSpace: 'nowrap',
-              overflow: 'auto',
-              position: 'relative',
-              zIndex: 1,
-            }}>
-            {movie.subtitle}
-          </i>
-        ) : null}
-      </div>
-    </TableCell>
-  );
-}
-
 function RuntimeCell({
   runtime_minutes,
   runtime_hours,
@@ -379,14 +249,4 @@ function RuntimeCell({
       </Typography>
     </TableCell>
   );
-}
-
-function getTextWidth(text: string) {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-  if (!context) {
-    return 0;
-  }
-  context.font = 'Roboto, sans-serif';
-  return context.measureText(text).width;
 }

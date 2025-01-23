@@ -8,10 +8,11 @@ import Typography from '@mui/material/Typography';
 import {debounce} from '@mui/material/utils';
 import {LProfile} from './SearchProfileDatabase';
 import SearchProfileDatabase from './SearchProfileDatabase';
+import {MIN_SEARCH_LENGTH} from '../../../config/GlobalConstants';
 
 type Props = {
   setter: (newValue: string | null) => void;
-}
+};
 
 export default function LetterboxdSearchBar(props: Props): React.ReactNode {
   const [value, setValue] = React.useState<LProfile | null>(null);
@@ -28,7 +29,7 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
   );
 
   React.useEffect(() => {
-    if (inputValue === '' || inputValue.length <= 2) {
+    if (inputValue === '' || inputValue.length < MIN_SEARCH_LENGTH) {
       setOptions(value ? [value] : []);
       return;
     }

@@ -106,8 +106,8 @@ export default function ProfileScreen({open, closeModal}: Props) {
         <Stack>
           <Stack direction="row" justifyContent="space-between">
             <OurWordmark folded />
-            <IconButton>
-              <CloseIcon onClick={closeModal} />
+            <IconButton onClick={closeModal}>
+              <CloseIcon />
             </IconButton>
           </Stack>
           <ProfileScreenContents closeModal={closeModal} />

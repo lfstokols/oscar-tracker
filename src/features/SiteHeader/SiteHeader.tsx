@@ -7,14 +7,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import UserButton from './UserButton';
 import OurWordmark from '../../components/OurWordmark';
 import Avatar from '@mui/material/Avatar';
-import Countdown from '../../components/Countdown';
-import {WatchStatus} from '../../types/Enums';
-import {MyFill} from '../legacyTable/WatchlistCell';
 import YearSelector from './YearSelector';
 import TabDrawer from '../tabDrawer/tabDrawer';
-import {useNavigate, useLocation} from 'react-router-dom';
 import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
-import Skeleton from '@mui/material/Skeleton';
 import Cookies from 'js-cookie';
 import {useIsMobile} from '../../hooks/useIsMobile';
 
@@ -37,7 +32,7 @@ export default function SiteHeader(props: Props): React.ReactElement {
       <Toolbar
         sx={{
           display: 'flex',
-          // flexDirection: 'row',
+          flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>

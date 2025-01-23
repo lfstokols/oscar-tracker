@@ -65,10 +65,6 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
     ? mutation.variables
     : remoteWatchState;
 
-  //if (mutation.isPending)
-  //	const handleInteract = () => {
-  //		const newState = nextStatus(prevState);
-  //	};
   return (
     <ClickableTooltip
       popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}

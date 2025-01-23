@@ -25,3 +25,6 @@ export const DEFAULT_PREFERENCES = {
   highlightAnimated: false,
   lockSeenToggle: false,
 };
+
+//* Minimum length of search input
+export const MIN_SEARCH_LENGTH = 1;

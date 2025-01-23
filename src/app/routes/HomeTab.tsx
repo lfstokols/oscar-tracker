@@ -1,5 +1,5 @@
 import DefaultCatcher from '../../components/LoadScreen';
-import LegacyTable from '../../features/legacyTable/LegacyTable';
+import LegacyTable from '../../features/legacy_table/LegacyTable';
 
 export default function HomeTab(): React.ReactElement {
   return (
