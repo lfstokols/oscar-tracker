@@ -23,7 +23,7 @@ export default function TitleCell({
 }): React.ReactElement {
   return (
     <>
-      <TableCell>
+      <TableCell style={{maxWidth: '70px', overflow: 'hidden'}}>
         <img
           src={MovieDb_POSTER_URL + movie.posterPath}
           alt={movie.mainTitle}

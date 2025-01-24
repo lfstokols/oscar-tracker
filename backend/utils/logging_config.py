@@ -6,11 +6,45 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 
-project_root_directory = Path(__file__).parent.parent
+project_root_directory = Path(__file__).parent.parent.parent
 load_dotenv(project_root_directory / ".env")
 max_log_file_size = int(os.getenv("MAX_LOG_FILE_SIZE") or "10_000_000")
 max_backup_files = int(os.getenv("MAX_BACKUP_FILES") or "5")
 print_debug = (os.getenv("PRINT_DEBUG") or "").lower() == "true"
+
+
+# ANSI escape codes for colors
+class ColorFormatter(logging.Formatter):
+    """Custom formatter that adds colors to levelname in terminal output"""
+
+    COLORS = {
+        "DEBUG": "\033[36m",  # Cyan
+        "INFO": "\033[32m",  # Green
+        "WARNING": "\033[33m",  # Yellow
+        "ERROR": "\033[31m",  # Red
+        "CRITICAL": "\033[41m",  # Red background
+        "RESET": "\033[0m",  # Reset color
+    }
+
+    def __init__(self, fmt=None, datefmt=None):
+        super().__init__(fmt=fmt, datefmt=datefmt)
+
+    def format(self, record):
+        # Only add colors if the output is going to a terminal
+        if sys.stdout.isatty():
+            # Add colors to levelname
+            record.levelname = (
+                f"{self.COLORS.get(record.levelname, '')}"
+                f"{record.levelname}"
+                f"{self.COLORS['RESET']}"
+            )
+
+        return super().format(record)
+
+
+class DebugLevelFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno == logging.DEBUG
 
 
 def setup_file_handler(log_dir: Path, filename: str):
@@ -35,7 +69,7 @@ def setup_logging(log_dir: Path):
 
     # Convert to EST timezone
     def est_time(*args):
-        utc_dt = datetime.fromtimestamp(args[0], timezone.utc)
+        utc_dt = datetime.fromtimestamp(args[1], timezone.utc)
         est_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
         return est_dt.timetuple()
 
@@ -43,7 +77,7 @@ def setup_logging(log_dir: Path):
 
     file_formatter = logging.Formatter(
         "(%(asctime)s) [%(name)s] |%(levelname)s|>> %(message)s",
-        datefmt="%m/%d/%Y @ %H:%M (%Z), %S sec",
+        datefmt="%m/%d/%Y @ %H:%M (%z), %S sec",
     )
     console_formatter = ColorFormatter(
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -77,34 +111,3 @@ def setup_logging(log_dir: Path):
             console_handler,
         ],
     )
-
-
-# ANSI escape codes for colors
-class ColorFormatter(logging.Formatter):
-    """Custom formatter that adds colors to levelname in terminal output"""
-
-    COLORS = {
-        "DEBUG": "\033[36m",  # Cyan
-        "INFO": "\033[32m",  # Green
-        "WARNING": "\033[33m",  # Yellow
-        "ERROR": "\033[31m",  # Red
-        "CRITICAL": "\033[41m",  # Red background
-        "RESET": "\033[0m",  # Reset color
-    }
-
-    def format(self, record):
-        # Only add colors if the output is going to a terminal
-        if sys.stdout.isatty():
-            # Add colors to levelname
-            record.levelname = (
-                f"{self.COLORS.get(record.levelname, '')}"
-                f"{record.levelname}"
-                f"{self.COLORS['RESET']}"
-            )
-
-        return super().format(record)
-
-
-class DebugLevelFilter(logging.Filter):
-    def filter(self, record):
-        return record.levelno == logging.DEBUG

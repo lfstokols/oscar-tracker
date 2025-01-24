@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from typing import Optional
@@ -9,15 +10,9 @@ from typing import Optional
 BACKEND_DIR = Path(__file__).parent.parent
 PROJECT_ROOT = BACKEND_DIR.parent
 # LOGIC_DIR = BACKEND_DIR / "logic"
-sys.path.append(
-    str(PROJECT_ROOT)
-)  # Adds the parent directory to the path for module imports
-# Should be backend/
-# N.B. first .parent goes from file to directory, second goes to parent directory
-# sys.path.append(
-#     str(LOGIC_DIR)
-# )  # Adds the logic directory to the path for module imports
-# Fuck it, hope this works
+sys.path.append(str(PROJECT_ROOT))
+assert (x := os.getenv("DATABASE_PATH")) is not None
+Database_Path = Path(x)
 
 import argparse, requests, re
 from bs4 import BeautifulSoup, Tag
@@ -80,9 +75,9 @@ def main():
 
     global storage
     if args.test:
-        storage = StorageManager(BACKEND_DIR / "test_database")
+        storage = StorageManager(Database_Path.parent / "test_database")
     else:
-        storage = StorageManager(BACKEND_DIR / "database")
+        storage = StorageManager(Database_Path)
 
     debug_print(f"Storage directory: {storage.dir}")
 

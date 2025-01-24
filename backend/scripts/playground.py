@@ -7,12 +7,12 @@ from pathlib import Path
 import pandas as pd
 from IPython.core.interactiveshell import InteractiveShell
 import argparse
+import os
 
-# Add the project root to Python path to enable imports
+# * Add the project root to Python path to enable imports
 project_root = Path(__file__).parent.parent.parent
 sys.path.append(str(project_root))
-
-# Import backend modules
+# * Import backend modules
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
@@ -41,9 +41,10 @@ def parse_args():
 
 def init_environment(test_mode=False, copy_mode=False):
     """Initialize the storage object with standard paths"""
-    database_dir = project_root / "backend" / "database"
+    assert (x := os.getenv("DATABASE_PATH")) is not None
+    database_dir = Path(x)
     if test_mode:
-        test_database_dir = project_root / "backend" / "test_database"
+        test_database_dir = database_dir.parent / "test_database"
         test_database_dir.mkdir(exist_ok=True)
         if copy_mode:
             shutil.copytree(database_dir, test_database_dir)

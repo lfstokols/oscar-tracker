@@ -28,9 +28,13 @@ from dotenv import load_dotenv
 load_dotenv(BACKEND_DIR.parent / ".env")
 try:
     TMDB_API_KEY = os.getenv("TMDB_API_KEY")
+    DATABASE_PATH = os.getenv("DATABASE_PATH")
+    assert DATABASE_PATH is not None
 except Exception as e:
     print(f"The .env file is missing or has an error: {e}")
     raise
+
+Database_Path = Path(DATABASE_PATH)
 
 URL_BASE = "https://api.themoviedb.org/3/"
 
@@ -92,9 +96,9 @@ def main():
 
     global storage
     if args.test:
-        storage = StorageManager(BACKEND_DIR / "test_database")
+        storage = StorageManager(Database_Path.parent / "test_database")
     else:
-        storage = StorageManager(BACKEND_DIR / "database")
+        storage = StorageManager(Database_Path)
 
     if not dry_run:
         storage.add_columns(

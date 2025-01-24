@@ -6,13 +6,11 @@ import pandas as pd
 import sys
 import re
 from contextlib import contextmanager
-
+from collections.abc import Callable
+from typing import IO, Any, TYPE_CHECKING, cast
 from backend.types.api_schemas import Flavor
 from backend.data_management.api_validators import AnnotatedValidator
-
-from collections.abc import Callable
 from backend.types.my_types import *
-from typing import IO, Any, TYPE_CHECKING, cast
 import backend.types.flavors as flv
 from backend.types.api_schemas import *
 
@@ -21,8 +19,6 @@ if IS_WINDOWS:
     from backend.logic.locking_modules.windows_locking import lock_file, unlock_file
 else:
     from backend.logic.locking_modules.unix_locking import lock_file, unlock_file
-
-# import backend.logic.utils as utils
 
 
 # TODO - Create a DataTable class with attributes like flavor, year, and filename

@@ -12,14 +12,16 @@ from backend.utils.logging_config import setup_logging
 # * Set up StorageManager
 from datetime import datetime, timedelta
 from backend.data_management.api_validators import AnnotatedValidator
+from backend.logic.storage_manager import StorageManager
+
+StorageManager.make_storage(project_root_directory / "backend" / "database")
+
 from backend.routing_lib.user_session import (
     start_new_session,
     log_session_activity,
     SessionArgs,
 )
-from backend.logic.storage_manager import StorageManager
 
-StorageManager.make_storage(project_root_directory / "backend" / "database")
 # * The rest of the imports
 from backend.scheduled_tasks.scheduling import Config
 from flask import Flask, request, send_from_directory, abort, session
