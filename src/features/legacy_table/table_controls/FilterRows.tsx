@@ -22,7 +22,7 @@ import {DisplayedSettingsButton, CenteredMenu, useMenuState} from './Common';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {grouping_display_names} from '../../../types/Enums';
-import {LogToConsole} from '../../../utils/Logger';
+import {logToConsole} from '../../../utils/Logger';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 
 export default function FilterRowsWidget({

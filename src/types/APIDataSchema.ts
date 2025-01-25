@@ -16,6 +16,7 @@ export const CategoryIdSchema = z
   .string()
   .regex(/cat_[a-z]{4}/)
   .brand<'CategoryId'>();
+  
 // * Primitive Types
 export type MovieId = z.infer<typeof MovieIdSchema>;
 export type UserId = z.infer<typeof UserIdSchema>;

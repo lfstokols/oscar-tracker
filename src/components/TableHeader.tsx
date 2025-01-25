@@ -1,4 +1,4 @@
-import {TableCell, Typography} from '@mui/material';
+import {Stack, TableCell, Typography} from '@mui/material';
 import {TABLE_HEADER_COLOR} from '../config/StyleChoices';
 
 export function ColumnLabel({
@@ -20,9 +20,16 @@ export function ColumnLabel({
         backgroundColor: TABLE_HEADER_COLOR,
         alignItems: 'center',
         gap: 1,
+        padding: 1,
       }}>
-      <Typography variant="h5">{text}</Typography>
-      {icon}
+      <Stack
+        direction="row"
+        gap={1}
+        alignItems="center"
+        justifyContent="center">
+        <Typography variant="subtitle1">{text}</Typography>
+        {icon}
+      </Stack>
     </TableCell>
   );
 }

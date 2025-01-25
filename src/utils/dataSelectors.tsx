@@ -1,7 +1,7 @@
 import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
 import {Grouping, WatchStatuses} from '../types/Enums';
-import {LogToConsole} from './Logger';
+import {logToConsole} from './Logger';
 
 export function getMovieWatchStatusForUser(
   userId: UserId,
@@ -37,7 +37,7 @@ export function getCategoryFromID(
   // TODO: Maybe we should throw error here instead
   const theCat = categories.find(cat => cat.id === categoryID);
   if (theCat == null) {
-    LogToConsole(`Unknown category id: ${categoryID}`);
+    logToConsole(`Unknown category id: ${categoryID}`);
   }
   return theCat;
 }
@@ -94,7 +94,7 @@ export function useSortUsers(users: User[]): User[] {
   }
   const activeUser = users.find(user => user.id === activeUserId);
   if (activeUser == null) {
-    LogToConsole(`Unknown active user id: ${activeUserId}`);
+    logToConsole(`Unknown active user id: ${activeUserId}`);
     return users;
   }
   return [activeUser, ...users.filter(user => user.id !== activeUserId)];

@@ -12,7 +12,7 @@ import {
   UserStatsListSchema,
   // CategoryCompletionListSchema,
 } from '../types/APIDataSchema';
-import {LogToConsole} from '../utils/Logger';
+import {logToConsole} from '../utils/Logger';
 
 // * Nominations // *
 export function nomOptions(year: number) {
@@ -100,7 +100,7 @@ export function categoryCompletionOptions(year: number | string) {
   return queryOptions({
     queryKey: ['categoryCompletion', year.toString()],
     queryFn: qFunction(Endpoints.byCategory, {year: year.toString()}, x => {
-      LogToConsole(x);
+      logToConsole(x);
       return x;
     }),
     retry: retryFunction,
