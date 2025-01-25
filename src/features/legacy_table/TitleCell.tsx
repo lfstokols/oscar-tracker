@@ -5,22 +5,35 @@ import {
   BEST_PICTURE_COLOR,
 } from '../../config/StyleChoices';
 import {MovieDb_POSTER_URL} from '../../config/GlobalConstants';
+import {CategoryIdSchema} from '../../types/APIDataSchema';
 
 export default function TitleCell({
   movie,
   bestPicNominees,
-  bestAnimatedNominees,
+  nominations = [],
   preferences,
   sx: sxProps,
   ...props
 }: {
   movie: Movie;
   bestPicNominees?: string[];
-  bestAnimatedNominees?: string[];
   preferences?: Preferences;
   sx?: SxProps<Theme>;
+  nominations?: Nom[];
   props?: Record<string, unknown>;
 }): React.ReactElement {
+  const bestAnimatedCategoryId = CategoryIdSchema.parse('cat_anim');
+  const isBestAnimatedNominee = nominations
+    .filter(nom => nom.categoryId === bestAnimatedCategoryId)
+    .map(nom => nom.movieId)
+    .includes(movie.id);
+
+  const bestPicCategoryId = CategoryIdSchema.parse('cat_pict');
+  const isBestPicNominee = nominations
+    .filter(nom => nom.categoryId === bestPicCategoryId)
+    .map(nom => nom.movieId)
+    .includes(movie.id);
+
   return (
     <>
       <TableCell style={{maxWidth: '70px', overflow: 'hidden'}}>
@@ -45,8 +58,7 @@ export default function TitleCell({
         {bestPicNominees?.includes(movie.id) && makeBestPicHighlight(movie)}
         <div
           style={
-            preferences?.highlightAnimated &&
-            bestAnimatedNominees?.includes(movie.id)
+            preferences?.highlightAnimated && isBestAnimatedNominee
               ? {
                   border: `1px dashed ${HIGHLIGHT_ANIMATED_COLOR}`,
                   padding: '8px',
@@ -60,12 +72,11 @@ export default function TitleCell({
               whiteSpace: 'nowrap',
               position: 'relative',
               zIndex: 1,
-              color: bestPicNominees?.includes(movie.id)
+              color: isBestPicNominee
                 ? BEST_PICTURE_COLOR
-                : preferences?.highlightAnimated &&
-                  bestAnimatedNominees?.includes(movie.id)
-                ? HIGHLIGHT_ANIMATED_COLOR
-                : 'inherit',
+                : preferences?.highlightAnimated && isBestAnimatedNominee
+                  ? HIGHLIGHT_ANIMATED_COLOR
+                  : 'inherit',
             }}>
             {movie.mainTitle}
           </b>

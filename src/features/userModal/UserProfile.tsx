@@ -94,8 +94,12 @@ export default function UserProfile({closer}: Props) {
 
   return (
     <>
-      <TitleLine title={activeUsername ?? 'User Profile'} />
-      <UserAvatar userId={activeUserId} username={activeUsername} />
+      <Stack direction="row" justifyContent="center" gap={1}>
+        <div style={{marginTop: '2px'}}>
+          <UserAvatar userId={activeUserId} username={activeUsername} />
+        </div>
+        <TitleLine title={activeUsername ?? 'User Profile'} />
+      </Stack>
       <Box component="menu" sx={boxStyle}>
         <DefaultCatcher>
           <UserDataField

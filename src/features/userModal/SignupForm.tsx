@@ -9,16 +9,17 @@ import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {addUserMutationFn} from '../../hooks/mutationOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import Tooltip from '@mui/material/Tooltip';
+import {useState} from 'react';
 
 type Props = {
   closer: () => void;
 };
 
 export default function SignUp({closer}: Props) {
-  const [usernameError, setUsernameError] = React.useState(false);
-  const [usernameErrorMessage, setUsernameErrorMessage] = React.useState('');
-  const [emailError, setEmailError] = React.useState(false);
-  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+  const [usernameError, setUsernameError] = useState(false);
+  const [usernameErrorMessage, setUsernameErrorMessage] = useState('');
+  const [emailError, setEmailError] = useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = useState('');
   const notifications = useNotifications();
   const queryClient = useQueryClient(); // TODO - move this to a global provider?
   const setActiveUserId = useOscarAppContext().setActiveUserId;

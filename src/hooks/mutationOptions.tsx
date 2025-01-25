@@ -8,7 +8,7 @@ import {
 } from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
-import {LogToConsole} from '../utils/Logger';
+import {logToConsole} from '../utils/Logger';
 
 // *
 // * Genera Stuff // *
@@ -29,7 +29,7 @@ export function onMutateError(
   notifications: NotificationsDispatch,
 ) {
   return async (response: Response) => {
-    LogToConsole(response);
+    logToConsole(response);
     notifications.show({
       type: 'error',
       message: message,
