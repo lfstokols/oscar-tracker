@@ -28,7 +28,8 @@ export function ColumnLabel({
           direction="row"
           gap={1}
           alignItems="center"
-          justifyContent="center">
+          justifyContent="center"
+          sx={{position: 'relative'}}>
           <Typography variant="subtitle1">{text}</Typography>
           {icon}
         </Stack>

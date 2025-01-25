@@ -33,6 +33,8 @@ function Clock({now}: {now: number}): React.ReactElement {
         color: '#fff',
         boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
         margin: '20px',
+        width: 'fit-content',
+        height: 'fit-content',
       }}>
       <div
         style={{

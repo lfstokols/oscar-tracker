@@ -187,7 +187,14 @@ export default function UserStatsTable(): React.ReactElement {
   }
 
   return (
-    <Stack direction="column" spacing={2}>
+    <Stack
+      direction="column"
+      spacing={3}
+      sx={{
+        height: '100%',
+      }}
+      // justifyContent="space-around"
+      alignItems="center">
       <TableContainer>
         <Table>
           <TableHead>
@@ -206,6 +213,8 @@ export default function UserStatsTable(): React.ReactElement {
                       active={sortByIndex === index}
                       sx={{
                         padding: 0,
+                        position: 'absolute',
+                        left: '100%',
                       }}
                     />
                   }
@@ -233,7 +242,15 @@ export default function UserStatsTable(): React.ReactElement {
           </TableBody>
         </Table>
       </TableContainer>
-      <Countdown />
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 0.3,
+          justifyContent: 'center',
+        }}>
+        <Countdown />
+      </div>
     </Stack>
   );
 }
@@ -272,7 +289,7 @@ function ColoredColumnHeader({
   return (
     <ColumnLabel
       text={title}
-      subtext={subtext}
+      // subtext={subtext}
       sx={{
         color: planned ? TODO_COLOR : 'inherit',
       }}
