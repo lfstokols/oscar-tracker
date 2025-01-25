@@ -6,7 +6,7 @@ export default function TitleLine({title}: {title: string}) {
     <Typography
       component="h1"
       variant="h4"
-      sx={{width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)'}}
+      sx={{fontSize: 'clamp(2rem, 10vw, 2.15rem)'}}
       color="primary"
       fontWeight="bold"
       textAlign="center">
@@ -23,7 +23,5 @@ export const boxStyle = {
 };
 
 export const Divider = () => {
-  return (
-    <MuiDivider />
-  )
-}
+  return <MuiDivider />;
+};

@@ -1,16 +1,16 @@
-import React, {Suspense} from 'react';
-import {LoadScreen} from '../components/LoadScreen';
-import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
 import {Container} from '@mui/material';
-import SiteHeader from '../features/siteHeader/SiteHeader';
+import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
+import React, {Suspense} from 'react';
+import {ErrorBoundary} from 'react-error-boundary';
 import {Routes, Route, Navigate} from 'react-router-dom';
+import ErrorPage from '../assets/ErrorPage.png';
+import {LoadScreen} from '../components/LoadScreen';
+import SiteHeader from '../features/siteHeader/SiteHeader';
+import PageContainer from './AppContent';
+import AppProvider from './AppProvider';
+import CategoryTab from './routes/CategoryTab';
 import HomeTab from './routes/HomeTab';
 import UserTab from './routes/UserTab';
-import CategoryTab from './routes/CategoryTab';
-import AppProvider from './AppProvider';
-import PageContainer from './AppContent';
-import {ErrorBoundary} from 'react-error-boundary';
-import ErrorPage from '../assets/ErrorPage.png';
 
 export default function App(): React.ReactElement {
   return (

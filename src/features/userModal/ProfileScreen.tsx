@@ -75,8 +75,8 @@ export default function ProfileScreen({open, closeModal}: Props) {
       sx={{
         '& .MuiDialog-paper': {
           backgroundColor: 'background',
+          borderRadius: '2ch',
         },
-        borderRadius: '22px',
       }}
       // slots={{
       //   backdrop: Backdrop,
@@ -102,6 +102,7 @@ export default function ProfileScreen({open, closeModal}: Props) {
           // backgroundColor: 'primary.main',
           // opacity: 1,
           borderRadius: '2ch',
+          padding: '12px',
         }}>
         <Stack>
           <Stack direction="row" justifyContent="space-between">

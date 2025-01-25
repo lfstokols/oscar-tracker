@@ -12,7 +12,7 @@ import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from './NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
 import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
-import {LogToConsole, WarnToConsole} from '../utils/Logger';
+import {logToConsole, warnToConsole} from '../utils/Logger';
 import {DEFAULT_PREFERENCES} from '../config/GlobalConstants';
 
 export type OscarAppContextValue = Readonly<{
@@ -137,7 +137,7 @@ function CookieHandler({
   queryClient.fetchQuery(userOptions()).then(data => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
     if (activeUsername !== suggestedUsername) {
-      LogToConsole(
+      logToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
         The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
         Attempting to fix...`,
@@ -198,7 +198,7 @@ function CookieHandler({
 
   userList.promise.then(data => {
     if (activeUsername !== getUsernameFromId(activeUserId ?? '', data)) {
-      LogToConsole(
+      logToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
       );
       const notifications = useNotifications();
@@ -268,7 +268,7 @@ function getCallbackForArrivedUserList(
       timeLimit &&
       Date.now() - timeStamp > timeLimit
     ) {
-      LogToConsole(
+      logToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
         'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
         'Attempting to fix...`,
@@ -308,7 +308,7 @@ function getPreferenceStateAtStartup(
   }
   const storedVals = JSON.parse(preferences);
   if (!Object.keys(storedVals).every(key => key in defaultPreferences)) {
-    WarnToConsole(
+    warnToConsole(
       `The preferences in localStorage are invalid. \nThey are labeled {${Object.keys(
         storedVals,
       ).join(', ')}} \nbut I was expecting {${Object.keys(

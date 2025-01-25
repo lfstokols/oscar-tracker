@@ -40,7 +40,11 @@ export default function NominationsCell({
         className: 'nominations-column',
       }}
       {...tableCellProps}>
-      <ClickableTooltip popup={popupContent}>{content}</ClickableTooltip>
+      {tooBig ? (
+        <ClickableTooltip popup={popupContent}>{content}</ClickableTooltip>
+      ) : (
+        content
+      )}
     </TableCell>
   );
 }
@@ -92,7 +96,7 @@ function makeEntry(nom: Nom, categories: CategoryList) {
     );
   return (
     <Box key={cat.id + nom.note} sx={{overflow: 'visible'}}>
-      <b>{cat.fullName + (cat.hasNote ? ':' : '')}</b>
+      <b>{cat.fullName + (cat.hasNote ? ': ' : '')}</b>
       {formattedText}
     </Box>
   );

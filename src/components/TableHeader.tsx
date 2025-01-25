@@ -21,6 +21,7 @@ export function ColumnLabel({
         backgroundColor: TABLE_HEADER_COLOR,
         alignItems: 'center',
         gap: 1,
+        padding: 1,
       }}>
       <Stack direction="column" alignItems="center" gap={0}>
         <Stack
@@ -28,11 +29,13 @@ export function ColumnLabel({
           gap={1}
           alignItems="center"
           justifyContent="center">
-          <Typography variant="h6">{text}</Typography>
+          <Typography variant="subtitle1">{text}</Typography>
           {icon}
         </Stack>
         {subtext && (
-          <Typography variant="body2" sx={{height: '4px', overflow: 'visible'}}>
+          <Typography
+            variant="subtitle2"
+            sx={{height: '4px', overflow: 'visible'}}>
             {<i> {`(${subtext})`} </i>}
           </Typography>
         )}
