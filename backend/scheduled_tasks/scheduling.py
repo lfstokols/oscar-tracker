@@ -1,10 +1,10 @@
 import logging, os
-from dotenv import load_dotenv
 from flask import Flask
 from flask_apscheduler import APScheduler
 import shutil
 from datetime import datetime
 from pathlib import Path
+import backend.utils.env_reader as env
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.logic.storage_manager import StorageManager
 
@@ -15,10 +15,8 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 """
-if (x := os.getenv("DATABASE_PATH")) is None:
-    raise ValueError("DATABASE_PATH is not set in .env file")
-Database_Path = Path(x)
-
+Database_Path = env.DATABASE_PATH
+Backup_Path = env.BACKUPS_PATH
 
 class Config:
     JOBS = [
@@ -52,17 +50,15 @@ def backup_database():
     """
     Creates a backup of the database files by copying them to a backup directory.
     """
-    backup_dir = (
-        Database_Path.parent / "backups" / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    )
+    backup_dir = Backup_Path / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-    # Create backup directory if it doesn't exist
+    # * Create backup directory if it doesn't exist
     backup_dir.mkdir(parents=True, exist_ok=True)
 
-    # Copy all files from database directory to backup directory
+    # * Copy all files from database directory to backup directory
     for file in Database_Path.glob("**/*"):
         if file.is_file():
-            # Preserve directory structure in backup
+            # * Preserve directory structure in backup
             relative_path = file.relative_to(Database_Path)
             backup_path = backup_dir / relative_path
             backup_path.parent.mkdir(parents=True, exist_ok=True)

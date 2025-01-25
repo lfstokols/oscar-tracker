@@ -4,19 +4,19 @@ import os, sys
 from pathlib import Path
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
-from dotenv import load_dotenv
+import backend.utils.env_reader as env
 
-project_root_directory = Path(__file__).parent.parent.parent
-load_dotenv(project_root_directory / ".env")
-max_log_file_size = int(os.getenv("MAX_LOG_FILE_SIZE") or "10_000_000")
-max_backup_files = int(os.getenv("MAX_BACKUP_FILES") or "5")
-print_debug = (os.getenv("PRINT_DEBUG") or "").lower() == "true"
+max_log_file_size = env.MAX_LOG_FILE_SIZE
+if max_log_file_size == 0:
+    max_log_file_size = 10_000_000
+max_backup_files = env.MAX_BACKUP_FILES
+print_debug = env.PRINT_DEBUG
 
 
-# ANSI escape codes for colors
 class ColorFormatter(logging.Formatter):
     """Custom formatter that adds colors to levelname in terminal output"""
 
+    # * ANSI escape codes for colors
     COLORS = {
         "DEBUG": "\033[36m",  # Cyan
         "INFO": "\033[32m",  # Green
@@ -30,9 +30,9 @@ class ColorFormatter(logging.Formatter):
         super().__init__(fmt=fmt, datefmt=datefmt)
 
     def format(self, record):
-        # Only add colors if the output is going to a terminal
+        # * Only add colors if the output is going to a terminal
         if sys.stdout.isatty():
-            # Add colors to levelname
+            # * Add colors to levelname
             record.levelname = (
                 f"{self.COLORS.get(record.levelname, '')}"
                 f"{record.levelname}"
@@ -64,10 +64,10 @@ def setup_logging(log_dir: Path):
     timestamp = datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
 
     # * Clear existing handlers
-    root = logging.getLogger()
-    root.handlers = []
+    # root = logging.getLogger()
+    # root.handlers = []
 
-    # Convert to EST timezone
+    # * Convert to EST timezone
     def est_time(*args):
         utc_dt = datetime.fromtimestamp(args[1], timezone.utc)
         est_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
@@ -83,7 +83,7 @@ def setup_logging(log_dir: Path):
         "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    # Create handlers
+    # * Create handlers
     file_handler_main = setup_file_handler(log_dir, "app.log")
     file_handler_main.setFormatter(file_formatter)
     file_handler_main.setLevel(logging.INFO)
@@ -101,7 +101,7 @@ def setup_logging(log_dir: Path):
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.DEBUG if print_debug else logging.INFO)
 
-    # Configure root logger
+    # * Configure root logger
     logging.basicConfig(
         level=logging.DEBUG,
         handlers=[

@@ -1,38 +1,20 @@
 import sys
 from pathlib import Path
-
-BACKEND_DIR = Path(__file__).parent.parent
-PROJECT_ROOT = BACKEND_DIR.parent
-sys.path.append(
-    str(PROJECT_ROOT)
-)  # Adds the parent directory to the path for module imports
-# Should be `backend/
-# N.B. first .parent goes from file to directory, second
-# goes to parent directory
-# sys.path.append(
-#     str(LOGIC_DIR)
-# )  # Adds the logic directory to the path for module imports
-# Fuck it, hope this works
-
 import argparse, requests, re, os
 from datetime import datetime
 import pandas as pd
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.append(
+    str(PROJECT_ROOT)
+)  # Adds the parent directory to the path for module imports
+import backend.utils.env_reader as env
+from backend.types.my_types import *
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-from backend.types.my_types import *
-from dotenv import load_dotenv
 
-load_dotenv(BACKEND_DIR.parent / ".env")
-try:
-    IMDB_API_KEY = os.getenv("IMDB_API_KEY")
-    DATABASE_PATH = os.getenv("DATABASE_PATH")
-    assert DATABASE_PATH is not None
-except Exception as e:
-    print(f"The .env file is missing or has an error: {e}")
-    raise
-
-Database_Path = Path(DATABASE_PATH)
+IMDB_API_KEY = env.IMDB_API_KEY
+Database_Path = env.DATABASE_PATH
 URL_BASE = "http://www.omdbapi.com/"
 
 # Create base session with shared configs

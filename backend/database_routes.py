@@ -1,23 +1,16 @@
+import os, logging
 from datetime import datetime
-import logging
 import time
-from dotenv import load_dotenv
 from functools import wraps
 from flask import Blueprint, send_from_directory, request, jsonify, abort
-
-# from flask_cors import CORS
-import os
 from pathlib import Path
 from flask import session
 from pydantic import ValidationError
 import requests
-from backend.routing_lib.user_session import SessionArgs, session_added_user
-from backend.scheduled_tasks.check_rss import (
-    update_user_watchlist,
-    get_movie_list_from_rss,
-)
+import backend.utils.env_reader as env
+from backend.types.my_types import *
 from backend.types.api_schemas import UserID
-from backend.data_management.api_validators import (
+from backend.types.api_validators import (
     validate_nom_list,
     validate_movie_list,
     validate_user_list,
@@ -28,35 +21,40 @@ from backend.data_management.api_validators import (
     validate_user_stats_list,
     AnnotatedValidator,
 )
+from backend.routing_lib.user_session import session_added_user
+from backend.logic.storage_manager import StorageManager
+import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
+from backend.scheduled_tasks.check_rss import (
+    get_movie_list_from_rss,
+)
+
+#! vvv this is dumb vvv
 from backend.routing_lib import utils
 from backend.routing_lib.utils import (
     has_flag,
     YearError,
     MissingAPIArgumentError,
 )
-from backend.logic.storage_manager import StorageManager
-import backend.logic.Processing as pr
-import backend.logic.Mutations as mu
-from backend.types.my_types import *
 
-project_root_directory = Path(__file__).parent.parent
-load_dotenv(project_root_directory / ".env")
+
 try:
-    PYDANTIC_ERROR_STATUS_CODE = int(os.getenv("PYDANTIC_ERROR_STATUS_CODE") or "500")
+    storage = StorageManager.get_storage()
 except Exception as e:
-    logging.error(f"The .env file is missing or has an error: {e}")
+    logging.error(f"Must create storage before importing database_routes.py")
     raise
 
-storage = StorageManager.get_storage()
-if not Path.exists(project_root_directory / "dist"):
-    raise FileNotFoundError("The dist folder is missing")
+static_folder = env.STATIC_PATH
+if not static_folder.exists():
+    raise FileNotFoundError(
+        f"The static folder {static_folder} does not exist."
+    )
 oscars = Blueprint(
     "oscars",
     __name__,
-    static_folder=project_root_directory / "dist",
+    static_folder=static_folder,
     static_url_path="/api/",
 )
-# CORS(oscars)  # Enable CORS for all routes
 
 
 def handle_errors(func):
@@ -78,7 +76,7 @@ def handle_errors(func):
             logging.warning(f"Pydantic validation failed: {e.errors()}")
             return (
                 jsonify({"error": "Pydantic validation failed", "message": str(e)}),
-                PYDANTIC_ERROR_STATUS_CODE,
+                env.PYDANTIC_ERROR_STATUS_CODE,
             )
         except MissingAPIArgumentError as e:
             logging.warning(

@@ -1,61 +1,45 @@
-import logging
-import os
-import sys
+import sys, os, logging
 from pathlib import Path
+from datetime import datetime, timedelta
+from dotenv import load_dotenv
+from flask import Flask, request, send_from_directory, abort, session
+from flask_apscheduler import APScheduler
 
 # * Add the project root to the system path
 project_root_directory = Path(__file__).parent.parent
 sys.path.append(str(project_root_directory))
+os.environ["ROOT_DIR"] = str(project_root_directory)
+import backend.utils.env_reader as env
+
 # * Setup logging
 from backend.utils.logging_config import setup_logging
 
+setup_logging(env.LOG_PATH)
+from backend.types.api_validators import AnnotatedValidator
+
 # * Set up StorageManager
-from datetime import datetime, timedelta
-from backend.data_management.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
 
-StorageManager.make_storage(project_root_directory / "backend" / "database")
-
+StorageManager.make_storage(env.DATABASE_PATH)
+# * The rest of the imports
 from backend.routing_lib.user_session import (
     start_new_session,
     log_session_activity,
     SessionArgs,
 )
-
-# * The rest of the imports
-from backend.scheduled_tasks.scheduling import Config
-from flask import Flask, request, send_from_directory, abort, session
-from flask_apscheduler import APScheduler
-from backend.database_routes import oscars
-from flask_cors import CORS
-from dotenv import load_dotenv
 from backend.scheduled_tasks.check_rss import update_user_watchlist
+from backend.scheduled_tasks.scheduling import Config
+from backend.database_routes import oscars  #! must instantiate storage first
 
 
-load_dotenv(project_root_directory / ".env")
-try:
-    RUN_DEBUG = (os.getenv("RUN_DEBUG") or "").lower() == "true"
-    DEVSERVER_PORT = int(os.getenv("DEVSERVER_PORT"))  # type: ignore
-    OSCARS_ROUTE_BASENAME = os.getenv("OSCARS_ROUTE_BASENAME")
-    SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
-    if not SECRET_KEY:
-        raise ValueError("FLASK_SECRET_KEY must be set in .env file")
-    logging.info(f"The port should be {DEVSERVER_PORT}.")
-except Exception as e:
-    logging.error(f"The .env file is missing or has an error: {e}")
-    raise
+logging.info(f"The port should be {env.DEVSERVER_PORT}.")
 
-log_dir = project_root_directory / "logs"
-setup_logging(log_dir)
 
-presumptive_static_folder = project_root_directory / "dist"
-if not presumptive_static_folder.exists():
-    raise FileNotFoundError(
-        f"The static folder {presumptive_static_folder} does not exist."
-    )
+if not env.STATIC_PATH.exists():
+    raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
-app = Flask(__name__, static_folder=presumptive_static_folder)
-app.secret_key = SECRET_KEY
+app = Flask(__name__, static_folder=env.STATIC_PATH)
+app.secret_key = env.FLASK_SECRET_KEY
 
 app.url_map.strict_slashes = False
 
@@ -64,13 +48,6 @@ app.config.from_object(Config())
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
-
-# CORS(
-#     app,
-#     origins=[
-#     ],
-#     methods=["GET", "POST", "PUT", "OPTIONS"],
-# )
 
 app.register_blueprint(oscars, url_prefix="/api/")
 
@@ -142,4 +119,4 @@ def before_request():
 
 
 if __name__ == "__main__":
-    app.run(debug=RUN_DEBUG, port=DEVSERVER_PORT)
+    app.run(debug=env.RUN_DEBUG, port=env.DEVSERVER_PORT)

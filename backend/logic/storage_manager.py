@@ -8,8 +8,9 @@ import re
 from contextlib import contextmanager
 from collections.abc import Callable
 from typing import IO, Any, TYPE_CHECKING, cast
-from backend.types.api_schemas import Flavor
-from backend.data_management.api_validators import AnnotatedValidator
+
+# from backend.types.api_schemas import Flavor
+from backend.types.api_validators import AnnotatedValidator
 from backend.types.my_types import *
 import backend.types.flavors as flv
 from backend.types.api_schemas import *

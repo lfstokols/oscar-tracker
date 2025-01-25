@@ -6,7 +6,7 @@ from backend.types.api_schemas import (
     CategoryID,
     WatchStatus,
 )
-from backend.data_management.api_validators import AnnotatedValidator
+from backend.types.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
 from backend.types.my_types import *
 from typing import Any

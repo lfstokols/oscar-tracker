@@ -1,28 +1,23 @@
-import os
 import sys
 from pathlib import Path
-from typing import Optional
-
-
-# from backend.logic.MyTypes import *
-
-
-BACKEND_DIR = Path(__file__).parent.parent
-PROJECT_ROOT = BACKEND_DIR.parent
-# LOGIC_DIR = BACKEND_DIR / "logic"
-sys.path.append(str(PROJECT_ROOT))
-assert (x := os.getenv("DATABASE_PATH")) is not None
-Database_Path = Path(x)
-
-import argparse, requests, re
-from bs4 import BeautifulSoup, Tag
+import argparse, requests, re, os
 from datetime import datetime
+from typing import Optional
+import pandas as pd
+from bs4 import BeautifulSoup, Tag
+import pandas as pd
+
+# * local imports
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.append(str(PROJECT_ROOT))
+import backend.utils.env_reader as env
+from backend.types.my_types import *
+from backend.types.api_schemas import MovieID
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-from backend.types.my_types import *
-from backend.types.api_schemas import MovieID
-import pandas as pd
+
+Database_Path = env.DATABASE_PATH
 
 
 def parse_args():
@@ -134,9 +129,7 @@ def fetch_wikipedia(year):
 
     # Write data to file
     if save_text:
-        with open(
-            BACKEND_DIR.parent / "fyi" / "scrape.txt", "w", encoding="utf-8"
-        ) as file:
+        with open(PROJECT_ROOT / "fyi" / "scrape.txt", "w", encoding="utf-8") as file:
             file.write(str(__file__) + " @ " + str(datetime.now()) + "\n\n")
             for item in data_list:
                 file.write(item)

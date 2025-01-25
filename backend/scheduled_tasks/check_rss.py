@@ -8,7 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 import os, pathlib
 import backend.logic.Mutations as mu
-from backend.data_management.api_validators import AnnotatedValidator
+from backend.types.api_validators import AnnotatedValidator
 
 
 def update_user_watchlist(user_id: UserID) -> bool:
@@ -44,12 +44,12 @@ def get_moviedb_ids_from_rss(
 def fetch_rss(account: str) -> BeautifulSoup:
     response = requests.get(f"https://letterboxd.com/{account}/rss")
     # * Uncomment for debugging
-    with open(
-        pathlib.Path(__file__).parent.parent.parent / "fyi" / "rss_debug.xml",
-        "w",
-        encoding="utf-8",
-    ) as f:
-        f.write(response.text)
+    # with open(
+    #     pathlib.Path(__file__).parent.parent.parent / "fyi" / "rss_debug.xml",
+    #     "w",
+    #     encoding="utf-8",
+    # ) as f:
+    #     f.write(response.text)
     soup = BeautifulSoup(response.text, "lxml-xml")
     return soup
 

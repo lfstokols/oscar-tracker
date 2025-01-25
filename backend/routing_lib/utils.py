@@ -7,10 +7,10 @@ from flask import jsonify, Request
 import numpy as np
 import pandas as pd
 from backend.types.api_schemas import Flavor, UserID
-from backend.data_management.api_validators import AnnotatedValidator
-from backend.logic.storage_manager import StorageManager
+from backend.types.api_validators import AnnotatedValidator
 import backend.types.flavors as flv
 from backend.types.my_types import *
+from backend.logic.storage_manager import StorageManager
 
 
 class MissingAPIArgumentError(Exception):
