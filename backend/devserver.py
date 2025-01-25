@@ -31,8 +31,8 @@ from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
 from backend.database_routes import oscars  #! must instantiate storage first
 
-
-logging.info(f"The port should be {env.DEVSERVER_PORT}.")
+DEVSERVER_PORT = env.DEVSERVER_PORT  #! Gunicorn breaks without this!!!
+logging.info(f"The port should be {DEVSERVER_PORT}.")
 
 
 if not env.STATIC_PATH.exists():
