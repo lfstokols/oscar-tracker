@@ -1,1 +1,1 @@
-{"title":"object","ImdbId":"string","movieDbId":"Int64","runtime":"Int64","posterPath":"string"}
+{"title":"object","ImdbId":"string","movieDbId":"Int64","runtime":"Int64","posterPath":"string", "subtitlePosition": "Float64"}

@@ -66,6 +66,7 @@ def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> in
 
 def break_into_subtitles(fullTitle: str, subtitlePosition: int) -> tuple[str, str]:
     try:
+        subtitlePosition = int(subtitlePosition)
         if subtitlePosition == -1:
             return fullTitle, ""
         mainTitle = fullTitle[:subtitlePosition].strip()

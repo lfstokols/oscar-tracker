@@ -15,6 +15,8 @@ export const groupCounts = (
   [Grouping.short]: shortsAreOne ? 3 : 15,
 });
 
+export const totalNumberOfCategories = 23;
+
 export const categoryNomCounts = (
   catId: CategoryId,
   shortsAreOne: boolean,

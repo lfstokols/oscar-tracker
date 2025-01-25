@@ -58,6 +58,7 @@ export function movieOptions(year: number) {
       MovieListSchema.parse,
     ),
     retry: retryFunction,
+    staleTime: Infinity,
   });
 }
 
@@ -67,6 +68,7 @@ export function categoryOptions() {
     queryKey: ['categories'],
     queryFn: qFunction(Endpoints.categories, {}, CategoryListSchema.parse),
     retry: retryFunction,
+    staleTime: Infinity,
   });
 }
 
