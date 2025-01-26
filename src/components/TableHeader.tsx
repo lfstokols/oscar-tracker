@@ -1,16 +1,18 @@
 import {Stack, TableCell, Typography} from '@mui/material';
 import {TABLE_HEADER_COLOR} from '../config/StyleChoices';
 
-export function ColumnLabel({
+export function TableHeaderCell({
   text,
   subtext,
   sx,
   icon,
   ...props
 }: // ...props
-{text: string; icon?: React.ReactNode; subtext?: string} & React.ComponentProps<
-  typeof TableCell
->): React.ReactElement {
+{
+  text?: string;
+  icon?: React.ReactNode;
+  subtext?: string;
+} & React.ComponentProps<typeof TableCell>): React.ReactElement {
   return (
     <TableCell
       {...props}
@@ -30,7 +32,11 @@ export function ColumnLabel({
           alignItems="center"
           justifyContent="center"
           sx={{position: 'relative'}}>
-          <Typography variant="subtitle1">{text}</Typography>
+          {text === undefined ? (
+            <></>
+          ) : (
+            <Typography variant="subtitle1">{text}</Typography>
+          )}
           {icon}
         </Stack>
         {subtext && (

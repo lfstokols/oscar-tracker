@@ -8,7 +8,7 @@ import {
   TableRow,
 } from '@mui/material';
 import {SwapHoriz} from '@mui/icons-material';
-import {ColumnLabel} from '../../components/TableHeader';
+import {TableHeaderCell} from '../../components/TableHeader';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {
@@ -98,13 +98,13 @@ export default function LegacyTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <ColumnLabel text="" />
-            <ColumnLabel
+            <TableHeaderCell text="" />
+            <TableHeaderCell
               text="Film"
               sx={{maxWidth: '10ch', overflow: 'wrap'}}
             />
-            <ColumnLabel text="Nominated For" />
-            <ColumnLabel
+            <TableHeaderCell text="Nominated For" />
+            <TableHeaderCell
               text="Runtime"
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
               style={{cursor: 'pointer'}}
@@ -112,7 +112,7 @@ export default function LegacyTable({
               icon={<SwapHoriz />}
             />
             {sortedUsers.map(user => (
-              <ColumnLabel key={user.id} text={user.username} />
+              <TableHeaderCell key={user.id} text={user.username} />
             ))}
           </TableRow>
         </TableHead>

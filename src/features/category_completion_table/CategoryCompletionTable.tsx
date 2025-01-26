@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import {ColumnLabel} from '../../components/TableHeader';
+import {TableHeaderCell} from '../../components/TableHeader';
 import {
   categoryCompletionOptions,
   categoryOptions,
@@ -219,10 +219,10 @@ export default function CategoryCompletionTable(): React.ReactElement {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <ColumnLabel width="50px" text="" />
-              <ColumnLabel width="300px" text="Category" />
+              <TableHeaderCell width="50px" text="" />
+              <TableHeaderCell width="300px" text="Category" />
               {userList.map(user => (
-                <ColumnLabel key={user.id} text={user.username} />
+                <TableHeaderCell key={user.id} text={user.username} />
               ))}
             </TableRow>
           </TableHead>

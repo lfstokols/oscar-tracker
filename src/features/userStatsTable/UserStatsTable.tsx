@@ -23,14 +23,27 @@ import {
   NUM_SHORT_FILMS_PER_CATEGORY,
 } from '../../config/GlobalConstants';
 import {getUsernameFromId, useSortUsers} from '../../utils/dataSelectors';
-import {ColumnLabel} from '../../components/TableHeader';
+import {TableHeaderCell} from '../../components/TableHeader';
 import Countdown from '../../components/Countdown';
 import {TABLE_ROW_COLOR, TODO_COLOR} from '../../config/StyleChoices';
 import {totalNumberOfCategories} from '../../utils/hardcodedFunctions';
 import ClickableSortIcon from './ClickableSortIcon';
 import TableSortLabel from '@mui/material/TableSortLabel';
+import TableControls from './TableControls';
+import {Hypotheticality, ColumnLabels} from './Enums';
+import {useIsMobile} from '../../hooks/useIsMobile';
 
 type UserStatsExtended = UserStats & {numCatsDone: number; numCatsTodo: number};
+
+const disabledCombinations: {
+  column_label: ColumnLabels;
+  hypotheticality: Hypotheticality;
+}[] = [
+  {
+    column_label: ColumnLabels.COMPLETE_CATEGORIES,
+    hypotheticality: Hypotheticality.TODO,
+  },
+];
 
 export default function UserStatsTable(): React.ReactElement {
   const year = useOscarAppContext().year;
@@ -53,7 +66,20 @@ export default function UserStatsTable(): React.ReactElement {
   const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
   const numMoviesFeature = numMoviesTotal - numMoviesShort;
   const numMultinomTotal = movieList.filter(movie => movie.numNoms > 1).length;
+  const isMobile = useIsMobile();
   const [sortByIndex, setSortByIndex] = useState(0);
+  const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);
+  if (checkDisabledCombination(sortByIndex, hypotheticality)) {
+    for (let index = 0; index < 100; index++) {
+      if (!checkDisabledCombination(index, hypotheticality)) {
+        setSortByIndex(index);
+        break;
+      }
+      console.error('No valid columns for this hypotheticality');
+      throw new Error('No valid columns for this hypotheticality');
+    }
+  }
+  const {includeSeen, includeTodo} = enumToBool(hypotheticality);
 
   const userStatsExtended = userStats.map(
     (user_data: UserStats): UserStatsExtended => {
@@ -88,86 +114,68 @@ export default function UserStatsTable(): React.ReactElement {
     return {number: numerator, display: `${numerator}/${denominator}`};
   }
 
+  function numFeature(user: UserStatsExtended) {
+    return (
+      (includeSeen ? user.numSeenFeature ?? 0 : 0) +
+      (includeTodo ? user.numTodoFeature ?? 0 : 0)
+    );
+  }
+
+  function numShort(user: UserStatsExtended) {
+    return (
+      (includeSeen ? user.numSeenShort ?? 0 : 0) +
+      (includeTodo ? user.numTodoShort ?? 0 : 0)
+    );
+  }
+
+  function numMultinom(user: UserStatsExtended) {
+    return (
+      (includeSeen ? user.numSeenMultinom ?? 0 : 0) +
+      (includeTodo ? user.numTodoMultinom ?? 0 : 0)
+    );
+  }
+  function numCats(user: UserStatsExtended) {
+    return (
+      (includeSeen ? user.numCatsDone ?? 0 : 0) +
+      (includeTodo ? user.numCatsTodo ?? 0 : 0)
+    );
+  }
+
   // Define the stats columns configuration
   const statsColumns: {
     title: string;
-    planned: boolean;
-    watchtime: boolean;
+    label: ColumnLabels;
     getValue: (user: UserStatsExtended) => {number: number; display: string};
   }[] = [
     {
-      title: 'Movies Seen',
-      planned: false,
-      watchtime: false,
+      title: 'Total Movies',
+      label: ColumnLabels.TOTAL_MOVIES,
       getValue: (user: UserStatsExtended) =>
-        makeFraction(
-          user.numSeenFeature ?? 0,
-          user.numSeenShort ?? 0,
-          shortsAreOneFilm,
-          false,
-        ),
+        makeFraction(numFeature(user), numShort(user), shortsAreOneFilm, false),
     },
     {
-      title: 'Movies Seen',
-      planned: true,
-      watchtime: false,
+      title: 'Multi-Nom Movies',
+      label: ColumnLabels.MULTINOM,
       getValue: (user: UserStatsExtended) =>
-        makeFraction(
-          (user.numTodoFeature ?? 0) + (user.numSeenFeature ?? 0),
-          (user.numTodoShort ?? 0) + (user.numSeenShort ?? 0),
-          shortsAreOneFilm,
-          false,
-        ),
+        makeFraction(numMultinom(user), 0, shortsAreOneFilm, true),
     },
     {
-      title: 'Multiple Noms',
-      planned: false,
-      watchtime: false,
+      title: 'Complete Categories',
+      label: ColumnLabels.COMPLETE_CATEGORIES,
       getValue: (user: UserStatsExtended) =>
-        makeFraction(user.numSeenMultinom ?? 0, 0, shortsAreOneFilm, true),
-    },
-    {
-      title: 'Multiple Noms',
-      planned: true,
-      watchtime: false,
-      getValue: (user: UserStatsExtended) =>
-        makeFraction(
-          (user.numTodoMultinom ?? 0) + (user.numSeenMultinom ?? 0),
-          0,
-          shortsAreOneFilm,
-          true,
-        ),
-    },
-    {
-      title: 'Categories Completed',
-      planned: false,
-      watchtime: false,
-      getValue: (user: UserStatsExtended) =>
-        makeFraction_categories(user.numCatsDone ?? '??'),
-    },
-    {
-      title: 'Categories Completed',
-      planned: true,
-      watchtime: false,
-      getValue: (user: UserStatsExtended) =>
-        makeFraction_categories(user.numCatsTodo ?? '??'),
+        makeFraction_categories(numCats(user)),
     },
     {
       title: 'Total Watchtime',
-      planned: false,
-      watchtime: true,
+      label: ColumnLabels.WATCHTIME,
       getValue: (user: UserStatsExtended) => ({
-        number: user.seenWatchtime ?? 0,
-        display: minutesToHours(user.seenWatchtime ?? 0),
-      }),
-    },
-    {
-      title: 'Total Watchtime',
-      planned: true,
-      watchtime: true,
-      getValue: (user: UserStatsExtended) => ({
-        number: user.todoWatchtime ?? 0,
-        display: minutesToHours(user.todoWatchtime ?? 0),
+        number:
+          (includeSeen ? user.seenWatchtime ?? 0 : 0) +
+          (includeTodo ? user.todoWatchtime ?? 0 : 0),
+        display: minutesToHours(
+          (includeSeen ? user.seenWatchtime ?? 0 : 0) +
+            (includeTodo ? user.todoWatchtime ?? 0 : 0),
+        ),
       }),
     },
   ];
@@ -179,13 +187,6 @@ export default function UserStatsTable(): React.ReactElement {
     );
   });
 
-  function makeButtonProps(index: number) {
-    return {
-      isSelected: sortByIndex === index,
-      onSelect: () => setSortByIndex(index),
-    };
-  }
-
   return (
     <Stack
       direction="column"
@@ -193,50 +194,61 @@ export default function UserStatsTable(): React.ReactElement {
       sx={{
         height: '100%',
       }}
-      // justifyContent="space-around"
       alignItems="center">
+      <TableControls value={hypotheticality} setter={setHypotheticality} />
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
-              <ColumnLabel text="" />
-              {statsColumns.map((column, index) => (
-                <ColoredColumnHeader
-                  key={column.title}
-                  title={column.title}
-                  planned={column.planned}
-                  watchtime={column.watchtime}
-                  icon={
-                    <TableSortLabel
-                      onClick={() => setSortByIndex(index)}
-                      direction="asc"
-                      active={sortByIndex === index}
-                      sx={{
-                        padding: 0,
-                        position: 'absolute',
-                        left: '100%',
-                      }}
-                    />
-                  }
-                />
-              ))}
+              <TableHeaderCell key="rank" />
+              <TableHeaderCell key="username" />
+              {statsColumns.map((column, index) =>
+                checkDisabledCombination(column.label, hypotheticality) ? (
+                  <></>
+                ) : (
+                  <TableHeaderCell
+                    text={column.title}
+                    key={column.label}
+                    icon={
+                      <TableSortLabel
+                        onClick={() => setSortByIndex(index)}
+                        direction="asc"
+                        active={sortByIndex === index}
+                        sx={{
+                          padding: 0,
+                          position: 'absolute',
+                          left: '95%',
+                        }}
+                        // hideSortIcon={true}
+                      />
+                    }
+                  />
+                ),
+              )}
             </TableRow>
           </TableHead>
           <TableBody>
-            {sortedUserList.map(user => (
+            {sortedUserList.map((user, index) => (
               <TableRow key={user.id}>
-                <TableCell>
+                <TableCell key="rank">
+                  <Typography variant="h6">{index + 1}</Typography>
+                </TableCell>
+                <TableCell key="username">
                   <Typography variant="h6">
                     {getUsernameFromId(user.id, users) ?? ''}
                   </Typography>
                 </TableCell>
-                {statsColumns.map(column => (
-                  <TableCell key={column.title + column.planned} align="center">
-                    <Typography variant="h6">
-                      {column.getValue(user).display}
-                    </Typography>
-                  </TableCell>
-                ))}
+                {statsColumns.map(column =>
+                  checkDisabledCombination(column.label, hypotheticality) ? (
+                    <></>
+                  ) : (
+                    <TableCell key={column.label} align="center">
+                      <Typography variant="h6">
+                        {column.getValue(user).display}
+                      </Typography>
+                    </TableCell>
+                  ),
+                )}
               </TableRow>
             ))}
           </TableBody>
@@ -287,7 +299,7 @@ function ColoredColumnHeader({
     ? 'planned'
     : undefined;
   return (
-    <ColumnLabel
+    <TableHeaderCell
       text={title}
       // subtext={subtext}
       sx={{
@@ -304,4 +316,28 @@ function sortUsers(users: User[], userStats: UserStats[]): User[] {
     const bStats = userStats.find(user => user.id === b.id);
     return (bStats?.numSeenFeature ?? 0) - (aStats?.numSeenFeature ?? 0);
   });
+}
+
+function enumToBool(value: Hypotheticality): {
+  includeSeen: boolean;
+  includeTodo: boolean;
+} {
+  if (value === Hypotheticality.SEEN) {
+    return {includeSeen: true, includeTodo: false};
+  }
+  if (value === Hypotheticality.TODO) {
+    return {includeSeen: false, includeTodo: true};
+  }
+  return {includeSeen: true, includeTodo: true};
+}
+
+function checkDisabledCombination(
+  column_label: ColumnLabels,
+  hypotheticality: Hypotheticality,
+): boolean {
+  return disabledCombinations.some(
+    combo =>
+      combo.column_label === column_label &&
+      combo.hypotheticality === hypotheticality,
+  );
 }
