@@ -9,6 +9,7 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(
     str(PROJECT_ROOT)
 )  # Adds the parent directory to the path for module imports
+os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
 import backend.utils.env_reader as env
 from backend.types.my_types import *
 from backend.logic.storage_manager import StorageManager
@@ -210,13 +211,13 @@ def try_to_find_moviedb_id(movie, year) -> Optional[int]:
     title = movie[MovieColumns.TITLE]
     assert title is not None
     debug_print(f"Title: {title}")
-    if not pd.isna(movie[MovieColumns.MovieDB_ID]):
+    if not pd.isna(movie[MovieColumns.MovieDB_ID.value]):
         debug_print(f"Already have a MovieDB ID for {movId} <{title}>")
-        return None
-    if not pd.isna(movie[MovieColumns.Imdb_ID]):
+        return movie[MovieColumns.MovieDB_ID.value]
+    if not pd.isna(movie[MovieColumns.Imdb_ID.value]):
         # use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
         # if use_Imdb:
-        Imdb_id = movie[MovieColumns.Imdb_ID]
+        Imdb_id = movie[MovieColumns.Imdb_ID.value]
         result = fetch_from_Imdb_id(Imdb_id)
         if result is None:
             debug_print(
