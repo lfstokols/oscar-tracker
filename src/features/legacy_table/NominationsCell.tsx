@@ -5,6 +5,7 @@ import countries from '../../assets/countries.json';
 import musicVideos from '../../assets/musicVideos.json';
 import 'flag-icons/css/flag-icons.min.css';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
+import {Grouping} from '../../types/Enums';
 
 const countryCodes: {name: string; flag: string; code: string}[] = countries;
 const songUrls: {title: string; url: string}[] = musicVideos;
@@ -81,6 +82,27 @@ function getSong(song: string): React.ReactNode {
   );
 }
 
+function getGroupingMarker(grouping: Grouping) {
+  switch (grouping) {
+    case Grouping.big_three:
+      return '⭐';
+    case Grouping.acting:
+      return '🎭';
+    case Grouping.art:
+      return '🎨';
+    case Grouping.audio:
+      return '🎧';
+    case Grouping.filmkraft:
+      return '🎞️';
+    case Grouping.best_in_class:
+      return '🥇';
+    case Grouping.short:
+      return '↔️';
+    default:
+      return '';
+  }
+}
+
 function makeEntry(nom: Nom, categories: CategoryList) {
   const cat = categories.find(cat => cat.id === nom.categoryId);
   if (!cat) return <>???</>;
@@ -96,6 +118,7 @@ function makeEntry(nom: Nom, categories: CategoryList) {
     );
   return (
     <Box key={cat.id + nom.note} sx={{overflow: 'visible'}}>
+      {getGroupingMarker(Grouping[cat.grouping as keyof typeof Grouping])}
       <b>{cat.fullName + (cat.hasNote ? ': ' : '')}</b>
       {formattedText}
     </Box>

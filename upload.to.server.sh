@@ -15,7 +15,7 @@ fi
 # MY_USER
 # DAEMON_GROUP
 # SERVICE_NAME
-TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+TIMESTAMP=$(TZ=America/New_York date +%Y-%m-%d_%H-%M-%S)
 REMOTE_VERSION_DIR="$REMOTE_RELEASES/$TIMESTAMP"
 
 #* 1. Build the project, if user request it or times out
@@ -34,20 +34,20 @@ ssh "$MY_SSH" "mkdir -p $REMOTE_VERSION_DIR"
 
 #* 3. Copy dist/, backend/, and requirements.txt to new dir
 SCRIPT_DIR="$PWD"
-scp -r "$SCRIPT_DIR"/dist/ "$SCRIPT_DIR"/backend/ "$SCRIPT_DIR"/requirements.txt "$MY_SSH:$REMOTE_VERSION_DIR"
+scp -q -r "$SCRIPT_DIR"/dist/ "$SCRIPT_DIR"/backend/ "$SCRIPT_DIR"/requirements.txt "$MY_SSH:$REMOTE_VERSION_DIR"
 
 #* 4. If requirements changed, add them to venv
-ssh "$MY_SSH" "test -f $REMOTE_CURRENT/requirements.txt && test -f $REMOTE_VERSION_DIR/requirements.txt \
-&& diff $REMOTE_CURRENT/requirements.txt $REMOTE_VERSION_DIR/requirements.txt \
-|| source $REMOTE_ROOT/venv/bin/activate \
-&& pip install -r $REMOTE_VERSION_DIR/requirements.txt"
+# ssh "$MY_SSH" "test -f $REMOTE_CURRENT/requirements.txt && test -f $REMOTE_VERSION_DIR/requirements.txt \
+# && diff $REMOTE_CURRENT/requirements.txt $REMOTE_VERSION_DIR/requirements.txt \
+# || source $REMOTE_ROOT/venv/bin/activate \
+# && pip install -r $REMOTE_VERSION_DIR/requirements.txt"
 
 #* 5. Set permissions
 ssh "$MY_SSH" "chown -R $MY_USER:$DAEMON_GROUP $REMOTE_VERSION_DIR"
 # Set directory permissions to 750 (rwx|r-x|---)
-ssh "$MY_SSH" "find $REMOTE_VERSION_DIR -type d -exec chmod 750 {} \;"
-# Set file permissions to 640 (rw-|r--|---)
-ssh "$MY_SSH" "find $REMOTE_VERSION_DIR/dist/ -type f -exec chmod 640 {} \;"
+ssh "$MY_SSH" "find $REMOTE_VERSION_DIR -type d -exec chmod 750 {} +"
+# Set file permissions to 640 (rw-|r--|---), but only for regular files
+ssh "$MY_SSH" "find $REMOTE_VERSION_DIR/dist/ -type f -not -type l -exec chmod 640 {} +"
 # Set all files in backend directory to be executable
 ssh "$MY_SSH" "chmod -R 750 $REMOTE_VERSION_DIR/backend/"
 
