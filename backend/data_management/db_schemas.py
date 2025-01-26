@@ -1,75 +1,50 @@
-import pandera as pa
-from pandera.typing import DataFrame, Series
-from typing import Optional
 from enum import Enum
 
 
 # * Enums
-class WatchStatus(str, Enum):
+class WatchStatus(Enum):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"
 
 
-class Grouping(str, Enum):
-    BIG_THREE = "Big Three"
-    ACTING = "Acting"
-    FILMKRAFT = "Technical (Filmkraft)"
-    ART = "Technical (Art)"
-    AUDIO = "Technical (Audio)"
-    BEST_IN_CLASS = "Best in Class"
-    SHORT = "Short"
-
-
 # * Database Schema Models
-class db_User(pa.DataFrameModel):
-    id: Series[str] = pa.Field(check_matches=r"^usr_[0-9a-f]{6}$")
-    username: Series[str]
-    letterboxd: Series[str]
-    email: Series[str]
-
-    class Config:
-        coerce = True
+class db_col_users(Enum):
+    user_id = "user_id"
+    username = "username"
+    letterboxd = "letterboxd"
+    email = "email"
+    last_letterboxd_check = "last_letterboxd_check"
 
 
-class db_Movie(pa.DataFrameModel):
-    id: Series[str] = pa.Field(check_matches=r"^mov_[0-9a-f]{6}$")
-    title: Series[str]
-    ImdbId: Series[str] = pa.Field(nullable=True)
-    movieDbId: Series[int] = pa.Field(nullable=True)
-    runtime: Series[int] = pa.Field(nullable=True)  # Stored in minutes
-    posterPath: Series[str] = pa.Field(nullable=True)
-
-    class Config:
-        coerce = True
-
-
-class db_Category(pa.DataFrameModel):
-    id: Series[str] = pa.Field(check_matches=r"^cat_[a-z]{4}$")
-    shortName: Series[str]
-    fullName: Series[str]
-    hasNote: Series[bool]
-    isShort: Series[bool]
-    grouping: Series[str] = pa.Field(isin=[g.value for g in Grouping])
-    maxNoms: Series[int] = pa.Field(isin=[5, 10])
-
-    class Config:
-        coerce = True
+class db_col_movies(Enum):
+    movie_id = "movie_id"
+    year = "year"
+    title = "title"
+    imdb_id = "imdb_id"
+    movie_db_id = "movie_db_id"
+    runtime = "runtime"
+    poster_path = "poster_path"
+    subtitle_position = "subtitle_position"
 
 
-class db_Nom(pa.DataFrameModel):
-    movieId: Series[str] = pa.Field(check_matches=r"^mov_[0-9a-f]{6}$")
-    categoryId: Series[str] = pa.Field(check_matches=r"^cat_[a-z]{4}$")
-    note: Series[str] = pa.Field(nullable=True)
+class db_col_categories(Enum):
+    category_id = "category_id"
+    short_name = "short_name"
+    full_name = "full_name"
+    has_note = "has_note"
+    is_short = "is_short"
+    grouping = "grouping"
+    max_nominations = "max_nominations"
 
-    class Config:
-        coerce = True
+
+class db_col_nominations(Enum):
+    movie_id = "movie_id"
+    category_id = "category_id"
+    note = "note"
 
 
-class db_Watchlist(pa.DataFrameModel):
-    userId: Series[str] = pa.Field(check_matches=r"^usr_[0-9a-f]{6}$")
-    movieId: Series[str] = pa.Field(check_matches=r"^mov_[0-9a-f]{6}$")
-    status: Series[str] = pa.Field(isin=[s.value for s in WatchStatus])
-
-    class Config:
-        coerce = True
+class db_col_watchlist(Enum):
+    user_id = "user_id"
+    movie_id = "movie_id"
+    status = "status"
