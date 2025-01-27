@@ -1,13 +1,10 @@
-import React, {Suspense, useCallback, useState} from 'react';
-import {Chip, Button, Avatar, IconButton} from '@mui/material';
+import React, {useCallback, useState} from 'react';
+import {Chip, Button, IconButton} from '@mui/material';
 import {useOscarAppContext} from '../../providers/AppContext';
 import LoginMenu from './LoginMenu';
-import DefaultCatcher from '../../components/LoadScreen';
 import ProfileScreen from '../userModal/ProfileScreen';
 import UserAvatar from '../../components/userAvatar';
-import {QueryErrorResetBoundary} from '@tanstack/react-query/build/legacy/QueryErrorResetBoundary';
 import {useIsMobile} from '../../hooks/useIsMobile';
-
 
 export default function UserButton(): React.ReactElement {
   // hooks

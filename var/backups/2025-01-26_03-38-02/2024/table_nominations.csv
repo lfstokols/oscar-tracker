@@ -1,0 +1,121 @@
+movieId,categoryId,note
+mov_61814e,cat_pict,
+mov_61151f,cat_pict,
+mov_61fb21,cat_pict,
+mov_616696,cat_pict,
+mov_61e922,cat_pict,
+mov_61fb44,cat_pict,
+mov_61d081,cat_pict,
+mov_61a426,cat_pict,
+mov_61cb69,cat_pict,
+mov_61ebaf,cat_pict,
+mov_61814e,cat_dirc,
+mov_61151f,cat_dirc,
+mov_61fb21,cat_dirc,
+mov_61fb44,cat_dirc,
+mov_61cb69,cat_dirc,
+mov_61151f,cat_mact,Adrien Brody
+mov_61fb21,cat_mact,Timothée Chalamet
+mov_61cac3,cat_mact,Colman Domingo
+mov_616696,cat_mact,Ralph Fiennes
+mov_61a9ce,cat_mact,Sebastian Stan
+mov_61ebaf,cat_fact,Cynthia Erivo
+mov_61fb44,cat_fact,Karla Sofía Gascón
+mov_61814e,cat_fact,Mikey Madison
+mov_61cb69,cat_fact,Demi Moore
+mov_61d081,cat_fact,Fernanda Torres
+mov_61814e,cat_msac,Yura Borisov
+mov_616116,cat_msac,Kieran Culkin
+mov_61fb21,cat_msac,Edward Norton
+mov_61151f,cat_msac,Guy Pearce
+mov_61a9ce,cat_msac,Jeremy Strong
+mov_61fb21,cat_fsac,Monica Barbaro
+mov_61ebaf,cat_fsac,Ariana Grande
+mov_61151f,cat_fsac,Felicity Jones
+mov_616696,cat_fsac,Isabella Rossellini
+mov_61fb44,cat_fsac,Zoe Saldaña
+mov_61814e,cat_oscp,
+mov_61151f,cat_oscp,
+mov_616116,cat_oscp,
+mov_61f3d9,cat_oscp,
+mov_61cb69,cat_oscp,
+mov_61fb21,cat_ascp,
+mov_616696,cat_ascp,
+mov_61fb44,cat_ascp,
+mov_61a426,cat_ascp,
+mov_61cac3,cat_ascp,
+mov_616395,cat_anim,
+mov_61aae1,cat_anim,
+mov_61b745,cat_anim,
+mov_61a965,cat_anim,
+mov_612092,cat_anim,
+mov_61fb44,cat_frgn,France
+mov_616395,cat_frgn,Latvia
+mov_617ba4,cat_frgn,Denmark
+mov_61d081,cat_frgn,Brazil
+mov_61a50b,cat_frgn,Germany
+mov_610d07,cat_docu,
+mov_6188f6,cat_docu,
+mov_61b63f,cat_docu,
+mov_61ceef,cat_docu,
+mov_61d11d,cat_docu,
+mov_616d5c,cat_sdoc,
+mov_616164,cat_sdoc,
+mov_6183fb,cat_sdoc,
+mov_61468e,cat_sdoc,
+mov_612c93,cat_sdoc,
+mov_6136fe,cat_shla,
+mov_610fb5,cat_shla,
+mov_61195e,cat_shla,
+mov_614eab,cat_shla,
+mov_613739,cat_shla,
+mov_61c5e1,cat_sanm,
+mov_61b7f1,cat_sanm,
+mov_61f28b,cat_sanm,
+mov_61c223,cat_sanm,
+mov_616fd1,cat_sanm,
+mov_61151f,cat_scor,
+mov_616696,cat_scor,
+mov_61fb44,cat_scor,
+mov_61ebaf,cat_scor,
+mov_612092,cat_scor,
+mov_61fb44,cat_song,El Mal
+mov_615724,cat_song,The Journey
+mov_61cac3,cat_song,Like A Bird
+mov_61fb44,cat_song,Mi Camino
+mov_61d1e3,cat_song,Never Too Late
+mov_61fb21,cat_soun,
+mov_61e922,cat_soun,
+mov_61fb44,cat_soun,
+mov_61ebaf,cat_soun,
+mov_612092,cat_soun,
+mov_61151f,cat_prod,
+mov_616696,cat_prod,
+mov_61e922,cat_prod,
+mov_61ac01,cat_prod,
+mov_61ebaf,cat_prod,
+mov_61151f,cat_cine,
+mov_61e922,cat_cine,
+mov_61fb44,cat_cine,
+mov_6197f8,cat_cine,
+mov_61ac01,cat_cine,
+mov_611f55,cat_mkup,
+mov_61fb44,cat_mkup,
+mov_61ac01,cat_mkup,
+mov_61cb69,cat_mkup,
+mov_61ebaf,cat_mkup,
+mov_61fb21,cat_cstu,
+mov_616696,cat_cstu,
+mov_61e6f2,cat_cstu,
+mov_61ac01,cat_cstu,
+mov_61ebaf,cat_cstu,
+mov_61814e,cat_edit,
+mov_61151f,cat_edit,
+mov_616696,cat_edit,
+mov_61fb44,cat_edit,
+mov_61ebaf,cat_edit,
+mov_61851a,cat_vfxx,
+mov_6111b6,cat_vfxx,
+mov_61e922,cat_vfxx,
+mov_61de5a,cat_vfxx,
+mov_61ebaf,cat_vfxx,

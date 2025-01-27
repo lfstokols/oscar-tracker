@@ -1,10 +1,9 @@
-import {QueryClient} from '@tanstack/react-query';
+import {QueryClient, QueryKey} from '@tanstack/react-query';
 import {NotificationsDispatch} from '../providers/NotificationContext';
 import {
   MyUserDataSchema,
   UserIdSchema,
   UserListSchema,
-  UserSchema,
 } from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
@@ -15,8 +14,8 @@ import {logToConsole} from '../utils/Logger';
 // *
 
 export function updateCacheOnSuccess<T>(
-  queryKey: any,
-  parser: (data: any) => T,
+  queryKey: QueryKey,
+  parser: (data: unknown) => T,
   queryClient: QueryClient,
 ) {
   return async (response: Response) => {
@@ -96,7 +95,7 @@ export function updateUserMutationFn() {
   };
 }
 
-export function deleteUserMutationFn(userId: UserId, password: string) {
+export function deleteUserMutationFn(_userId: UserId, password: string) {
   return async (userId: UserId) => {
     const params = new URLSearchParams({userId});
     const body = JSON.stringify({userId, delete: true, [password]: true});

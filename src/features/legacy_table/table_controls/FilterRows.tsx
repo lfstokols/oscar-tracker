@@ -1,8 +1,8 @@
 import {useOscarAppContext} from '../../../providers/AppContext';
 
 import {
-  Menu,
-  MenuItem,
+  // Menu,
+  // MenuItem,
   Checkbox,
   Typography,
   Accordion,
@@ -22,7 +22,6 @@ import {DisplayedSettingsButton, CenteredMenu, useMenuState} from './Common';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {grouping_display_names} from '../../../types/Enums';
-import {logToConsole} from '../../../utils/Logger';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 
 export default function FilterRowsWidget({

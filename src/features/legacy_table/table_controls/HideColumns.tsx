@@ -1,19 +1,19 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {
-  Menu,
-  MenuItem,
-  IconButton,
-  Button,
+  // Menu,
+  // MenuItem,
+  // IconButton,
+  // Button,
   Typography,
   Paper,
-  Checkbox,
+  // Checkbox,
 } from '@mui/material';
 import {
   Category as ColumnsIcon,
-  FilterAlt as RowsIcon,
+  // FilterAlt as RowsIcon,
 } from '@mui/icons-material';
 import {useOscarAppContext} from '../../../providers/AppContext';
-import {columnList} from '../LegacyTable';
+// import {columnList} from '../LegacyTable';
 import {DisplayedSettingsButton, useMenuState, CenteredMenu} from './Common';
 
 export default function HideColumnsWidget({
@@ -44,7 +44,7 @@ function PlaceholderMenu({
   menuPosition,
   isOpen,
   onClose,
-  hiddenColumns,
+  hiddenColumns: _hiddenColumns,
 }: {
   menuPosition: HTMLElement | null;
   isOpen: boolean;
@@ -60,28 +60,28 @@ function PlaceholderMenu({
   );
 }
 
-function SelectionMenu({
-  isOpen,
-  onClose,
-  hiddenColumns,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  hiddenColumns: string[];
-}): React.ReactElement {
-  return (
-    <Menu open={isOpen} onClose={onClose}>
-      {columnList.map(column => (
-        <MenuItem key={column}>
-          <Checkbox
-            checked={hiddenColumns.includes(column)}
-            onChange={() => {}}
-          />
-        </MenuItem>
-      ))}
-    </Menu>
-  );
-}
+// function SelectionMenu({
+//   isOpen,
+//   onClose,
+//   hiddenColumns,
+// }: {
+//   isOpen: boolean;
+//   onClose: () => void;
+//   hiddenColumns: string[];
+// }): React.ReactElement {
+//   return (
+//     <Menu open={isOpen} onClose={onClose}>
+//       {columnList.map(column => (
+//         <MenuItem key={column}>
+//           <Checkbox
+//             checked={hiddenColumns.includes(column)}
+//             onChange={() => {}}
+//           />
+//         </MenuItem>
+//       ))}
+//     </Menu>
+//   );
+// }
 
 function DisplayedButton({
   onClick,

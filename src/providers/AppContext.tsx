@@ -1,12 +1,6 @@
-import React, {useState, useMemo, useEffect, useContext, cache} from 'react';
-import {AppTabType} from '../types/Enums';
+import React, {useState, useMemo, useContext} from 'react';
 import Cookies from 'js-cookie';
-import {
-  QueryCache,
-  QueryClient,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import {QueryClient, useQueryClient} from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from './NotificationContext';
@@ -121,98 +115,96 @@ export function useOscarAppContext(): OscarAppContextValue {
 }
 
 //* Deprecated, but I'm keeping it around for sentimental reasons
-function CookieHandler({
-  usernameSetter,
-}: {
-  usernameSetter: (username: string | null) => void;
-}): React.ReactElement {
-  const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
-  // const EXPIRATION_DAYS = 400;
-  const [isInitialised, setIsInitialised] = useState(false);
-  const userList = useQuery(userOptions());
-  const queryClient = useQueryClient();
+// function CookieHandler({
+//   usernameSetter,
+// }: {
+//   usernameSetter: (username: string | null) => void;
+// }): React.ReactElement {
+//   const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
+//   // const EXPIRATION_DAYS = 400;
+//   const [isInitialised, setIsInitialised] = useState(false);
+//   const userList = useQuery(userOptions());
+//   const queryClient = useQueryClient();
 
-  useEffect;
+//   queryClient.fetchQuery(userOptions()).then(data => {
+//     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
+//     if (activeUsername !== suggestedUsername) {
+//       logToConsole(
+//         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
+//         The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.
+//         Attempting to fix...`,
+//       );
+//       const notifications = useNotifications();
+//       notifications.show({
+//         type: 'error',
+//         message:
+//           'The username was incorrectly set. If it remains incorrect, reload the page.',
+//         //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+//       });
+//       usernameSetter(suggestedUsername);
+//       Cookies.set('activeUsername', suggestedUsername as string, {
+//         expires: EXPIRATION_DAYS,
+//       });
+//     }
+//   });
+//   //   setIsInitialised(true);
+//   //   usernameSetter(getUsernameFromId(activeUserId ?? '', data));
+//   // });
 
-  queryClient.fetchQuery(userOptions()).then(data => {
-    const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
-    if (activeUsername !== suggestedUsername) {
-      logToConsole(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
-        The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
-        Attempting to fix...`,
-      );
-      const notifications = useNotifications();
-      notifications.show({
-        type: 'error',
-        message:
-          'The username was incorrectly set. If it remains incorrect, reload the page.',
-        //* Note to self: It's also possible that the userId is invalid, but that seems less likely
-      });
-      usernameSetter(suggestedUsername);
-      Cookies.set('activeUsername', suggestedUsername as string, {
-        expires: EXPIRATION_DAYS,
-      });
-    }
-  });
-  //   setIsInitialised(true);
-  //   usernameSetter(getUsernameFromId(activeUserId ?? '', data));
-  // });
+//   useEffect(() => {
+//     if (isInitialised) {
+//       Cookies.set('activeUserId', activeUserId as string, {
+//         expires: EXPIRATION_DAYS,
+//       });
+//       if (userList.data) {
+//         const newUsername = getUsernameFromId(
+//           activeUserId ?? '',
+//           userList.data,
+//         );
+//         Cookies.set('activeUsername', newUsername as string, {
+//           expires: EXPIRATION_DAYS,
+//         });
+//         usernameSetter(newUsername);
+//       } else {
+//         usernameSetter(null);
+//       }
+//     } else {
+//       setIsInitialised(true);
+//       const value: UserId | null = UserIdSchema.parse(
+//         Cookies.get('activeUserId'),
+//       );
+//       if (value) {
+//         setActiveUserId(value);
+//       } else {
+//         setActiveUserId(null);
+//       }
+//       const strValue: string | undefined = Cookies.get('activeUsername');
+//       if (userList.isSuccess) {
+//         usernameSetter(getUsernameFromId(activeUserId ?? '', userList.data));
+//       } else if (strValue === undefined) return;
+//       else {
+//         usernameSetter(strValue ?? null);
+//       }
+//     }
+//   }, [activeUserId]);
 
-  useEffect(() => {
-    if (isInitialised) {
-      Cookies.set('activeUserId', activeUserId as string, {
-        expires: EXPIRATION_DAYS,
-      });
-      if (userList.data) {
-        const newUsername = getUsernameFromId(
-          activeUserId ?? '',
-          userList.data,
-        );
-        Cookies.set('activeUsername', newUsername as string, {
-          expires: EXPIRATION_DAYS,
-        });
-        usernameSetter(newUsername);
-      } else {
-        usernameSetter(null);
-      }
-    } else {
-      setIsInitialised(true);
-      const value: UserId | null = UserIdSchema.parse(
-        Cookies.get('activeUserId'),
-      );
-      if (value) {
-        setActiveUserId(value);
-      } else {
-        setActiveUserId(null);
-      }
-      const strValue: string | undefined = Cookies.get('activeUsername');
-      if (userList.isSuccess) {
-        usernameSetter(getUsernameFromId(activeUserId ?? '', userList.data));
-      } else if (strValue === undefined) return;
-      else {
-        usernameSetter(strValue ?? null);
-      }
-    }
-  }, [activeUserId]);
+//   userList.promise.then(data => {
+//     if (activeUsername !== getUsernameFromId(activeUserId ?? '', data)) {
+//       logToConsole(
+//         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
+//       );
+//       const notifications = useNotifications();
+//       notifications.show({
+//         type: 'error',
+//         message:
+//           'The username was incorrectly set. If it remains incorrect, reload the page.',
+//       });
+//       usernameSetter(getUsernameFromId(activeUserId ?? '', data));
+//     }
+//   });
 
-  userList.promise.then(data => {
-    if (activeUsername !== getUsernameFromId(activeUserId ?? '', data)) {
-      logToConsole(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
-      );
-      const notifications = useNotifications();
-      notifications.show({
-        type: 'error',
-        message:
-          'The username was incorrectly set. If it remains incorrect, reload the page.',
-      });
-      usernameSetter(getUsernameFromId(activeUserId ?? '', data));
-    }
-  });
-
-  return <></>;
-}
+//   return <></>;
+// }
 
 //* returns a new version of setActiveUserId that also updates the cookie and activeUsername
 //* In principle, it shouldn't be possible to call the upgraded setActiveUserId

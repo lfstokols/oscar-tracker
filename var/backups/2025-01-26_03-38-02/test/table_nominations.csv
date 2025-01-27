@@ -1,0 +1,121 @@
+movie,category,note
+mov_5d47a0,cat_pict,
+mov_acf87b,cat_pict,
+mov_9f7721,cat_pict,
+mov_e0c47a,cat_pict,
+mov_367965,cat_pict,
+mov_3bc993,cat_pict,
+mov_190b81,cat_pict,
+mov_9ac946,cat_pict,
+mov_e3ffef,cat_pict,
+mov_ff3c7d,cat_pict,
+mov_5d47a0,cat_mact,Cillian Murphy
+mov_190b81,cat_mact,Bradley Cooper
+mov_544820,cat_mact,Colman Domingo
+mov_367965,cat_mact,Paul Giamatti
+mov_acf87b,cat_mact,Jeffrey Wright
+mov_e3ffef,cat_fact,Emma Stone
+mov_7a72a9,cat_fact,Annette Bening
+mov_3bc993,cat_fact,Lily Gladstone
+mov_9f7721,cat_fact,Sandra Hüller
+mov_190b81,cat_fact,Carey Mulligan
+mov_5d47a0,cat_msac,Robert Downey Jr.
+mov_acf87b,cat_msac,Sterling K. Brown
+mov_3bc993,cat_msac,Robert De Niro
+mov_e0c47a,cat_msac,Ryan Gosling
+mov_e3ffef,cat_msac,Mark Ruffalo
+mov_367965,cat_fsac,Da'Vine Joy Randolph
+mov_5d47a0,cat_fsac,Emily Blunt
+mov_4c2023,cat_fsac,Danielle Brooks
+mov_e0c47a,cat_fsac,America Ferrera
+mov_7a72a9,cat_fsac,Jodie Foster
+mov_5d47a0,cat_dirc,
+mov_9f7721,cat_dirc,
+mov_3bc993,cat_dirc,
+mov_e3ffef,cat_dirc,
+mov_ff3c7d,cat_dirc,
+mov_9f7721,cat_oscp,
+mov_367965,cat_oscp,
+mov_190b81,cat_oscp,
+mov_6cc140,cat_oscp,
+mov_9ac946,cat_oscp,
+mov_acf87b,cat_ascp,
+mov_e0c47a,cat_ascp,
+mov_5d47a0,cat_ascp,
+mov_e3ffef,cat_ascp,
+mov_ff3c7d,cat_ascp,
+mov_7182aa,cat_anim,
+mov_760b41,cat_anim,
+mov_8def35,cat_anim,
+mov_48a553,cat_anim,
+mov_39e711,cat_anim,
+mov_5d47a0,cat_cine,
+mov_7de332,cat_cine,
+mov_3bc993,cat_cine,
+mov_190b81,cat_cine,
+mov_e3ffef,cat_cine,
+mov_5d47a0,cat_edit,
+mov_9f7721,cat_edit,
+mov_367965,cat_edit,
+mov_3bc993,cat_edit,
+mov_e3ffef,cat_edit,
+mov_ff3c7d,cat_soun,
+mov_645f96,cat_soun,
+mov_190b81,cat_soun,
+mov_928089,cat_soun,
+mov_5d47a0,cat_soun,
+mov_5d47a0,cat_scor,
+mov_acf87b,cat_scor,
+mov_d747f2,cat_scor,
+mov_3bc993,cat_scor,
+mov_e3ffef,cat_scor,
+mov_e0c47a,cat_song,What Was I Made For?
+mov_1bc27c,cat_song,The Fire Inside
+mov_e0c47a,cat_song,I'm Just Ken
+mov_a37990,cat_song,It Never Went Away
+mov_3bc993,cat_song,Wahzhazhe (A Song for My People)
+mov_e3ffef,cat_prod,
+mov_e0c47a,cat_prod,
+mov_3bc993,cat_prod,
+mov_84c675,cat_prod,
+mov_5d47a0,cat_prod,
+mov_e3ffef,cat_mkup,
+mov_2224be,cat_mkup,
+mov_190b81,cat_mkup,
+mov_5d47a0,cat_mkup,
+mov_199d9c,cat_mkup,
+mov_e3ffef,cat_cstu,
+mov_e0c47a,cat_cstu,
+mov_3bc993,cat_cstu,
+mov_84c675,cat_cstu,
+mov_5d47a0,cat_cstu,
+mov_7bd187,cat_vfxx,
+mov_645f96,cat_vfxx,
+mov_ffb1b0,cat_vfxx,
+mov_928089,cat_vfxx,
+mov_84c675,cat_vfxx,
+mov_ff3c7d,cat_frgn,United Kingdom
+mov_189cc2,cat_frgn,Italy
+mov_22a04c,cat_frgn,Japan
+mov_199d9c,cat_frgn,Spain
+mov_4ebf47,cat_frgn,Germany
+mov_7a3b98,cat_docu,
+mov_fd7016,cat_docu,
+mov_38d2be,cat_docu,
+mov_d2c562,cat_docu,
+mov_87db36,cat_docu,
+mov_a7b0b8,cat_shla,
+mov_09de04,cat_shla,
+mov_6f0b34,cat_shla,
+mov_a19530,cat_shla,
+mov_c074cc,cat_shla,
+mov_59bab0,cat_sanm,
+mov_670fb7,cat_sanm,
+mov_060397,cat_sanm,
+mov_623e25,cat_sanm,
+mov_f89527,cat_sanm,
+mov_c54652,cat_sdoc,
+mov_8a8961,cat_sdoc,
+mov_2c4b2d,cat_sdoc,
+mov_2dd96b,cat_sdoc,
+mov_513c6b,cat_sdoc,

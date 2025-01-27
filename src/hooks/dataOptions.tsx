@@ -1,5 +1,5 @@
 import {queryOptions} from '@tanstack/react-query';
-import {DataFlavor, Endpoints} from '../types/Enums';
+import {Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
 import {z} from 'zod';
 import {
@@ -116,7 +116,7 @@ export function categoryCompletionOptions(year: number | string) {
 function qFunction<T>(
   endpoint: Endpoints,
   qParams: Record<string, string>,
-  parser: (data: any) => T,
+  parser: (data: unknown) => T,
 ): () => Promise<T> {
   return async () => {
     const params = new URLSearchParams(qParams);
@@ -147,7 +147,7 @@ function qFunction<T>(
   };
 }
 
-function retryFunction(failureCount: number, error: any): boolean {
+function retryFunction(failureCount: number, error: Error): boolean {
   if (error instanceof LockError && failureCount < 10) {
     return true;
   } else if (failureCount < 3) {

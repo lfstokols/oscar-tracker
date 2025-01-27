@@ -7,8 +7,7 @@ export function TableHeaderCell({
   sx,
   icon,
   ...props
-}: // ...props
-{
+}: {
   text?: string;
   icon?: React.ReactNode;
   subtext?: string;
@@ -28,7 +27,7 @@ export function TableHeaderCell({
       <Stack direction="column" alignItems="center" gap={0}>
         <Stack
           direction="row"
-          gap={1}
+          gap="4px"
           alignItems="center"
           justifyContent="center"
           sx={{position: 'relative'}}>

@@ -1,4 +1,3 @@
-import { Grouping } from "../types/Enums";
 
 // Default year in year selector
 export const DEFAULT_YEAR = 2024; // ? How ought this be set?
@@ -32,3 +31,9 @@ export const DEFAULT_PREFERENCES = {
 
 //* Minimum length of search input
 export const MIN_SEARCH_LENGTH = 1;
+
+// Urls
+export const FEATURE_REQUEST_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog';
+export const REPORT_BUG_URL =
+  'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog';

@@ -1,5 +1,4 @@
 import Avatar from '@mui/material/Avatar';
-import {useOscarAppContext} from '../providers/AppContext';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {myUserDataOptions} from '../hooks/dataOptions';
 import {Suspense} from 'react';

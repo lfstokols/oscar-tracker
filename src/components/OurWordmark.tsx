@@ -1,5 +1,4 @@
 import {Box, Typography, Stack} from '@mui/material';
-// @ts-ignore next-line
 import oscarIcon from '/src/assets/Trophy_Icon_Outlined_512.png';
 
 export default function OurWordmark({

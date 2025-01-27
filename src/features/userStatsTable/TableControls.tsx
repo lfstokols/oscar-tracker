@@ -4,7 +4,6 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import FollowTheSignsIcon from '@mui/icons-material/FollowTheSigns';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import {Hypotheticality} from './Enums';
-import {ColumnLabels} from './Enums';
 
 export default function TableControls({
   value,
@@ -21,15 +20,15 @@ export default function TableControls({
       color="primary"
       size="small">
       <ToggleButton value={Hypotheticality.SEEN}>
-        <TaskAltIcon />
+        <TaskAltIcon sx={{mr: 1}} />
         Completed
       </ToggleButton>
       <ToggleButton value={Hypotheticality.BOTH}>
-        <FollowTheSignsIcon />
+        <FollowTheSignsIcon sx={{mr: 1}} />
         Planned
       </ToggleButton>
       <ToggleButton value={Hypotheticality.TODO}>
-        <HourglassTopIcon />
+        <HourglassTopIcon sx={{mr: 1}} />
         Remaining
       </ToggleButton>
     </ToggleButtonGroup>
