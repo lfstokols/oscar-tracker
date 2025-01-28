@@ -1,7 +1,7 @@
 import sqlite3
 import sqlalchemy as sa
 from contextlib import contextmanager
-from backend.sqlite.db_schema import DB_PATH
+from backend.data.db_schema import DB_PATH
 
 try:
     assert DB_PATH is not None and DB_PATH.exists(), "Can't find database file"

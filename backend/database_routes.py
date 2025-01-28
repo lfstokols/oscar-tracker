@@ -4,13 +4,11 @@ import time
 from functools import wraps
 from flask import Blueprint, send_from_directory, request, jsonify, abort
 from pathlib import Path
-from flask import session
 from pydantic import ValidationError
 import requests
 import backend.utils.env_reader as env
-import backend.sqlite.queries as qu
-import backend.sqlite.mutations as mu
-from backend.sqlite.queries import Session
+import backend.data.queries as qu
+import backend.data.mutations as mu
 from backend.types.my_types import *
 from backend.types.api_schemas import UserID, WatchStatus_pyd
 from backend.types.api_validators import (

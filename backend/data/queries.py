@@ -3,15 +3,15 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup, Tag
 import sqlalchemy as sa
-from backend.sqlite.db_schema import User, Movie, Category, Nomination, Watchnotice
+from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
 from backend.types.api_schemas import (
     MovieID,
     CategoryCompletionKey,
     UserID,
 )
 from backend.types.my_types import WatchStatus, Grouping
-from backend.sqlite.db_connections import Session
-import backend.sqlite.derived_values as dv
+from backend.data.db_connections import Session
+import backend.data.derived_values as dv
 
 
 def get_number_of_movies(year, shortsIsOne=False) -> int:

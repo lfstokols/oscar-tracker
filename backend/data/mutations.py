@@ -1,0 +1,157 @@
+import sqlite3, logging
+from contextlib import contextmanager
+import sqlalchemy as sa
+import pandas as pd
+from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
+from backend.data.id_creation import create_unique_user_id, create_unique_movie_id
+from backend.types.api_schemas import UserID, MovieID, CategoryID
+from backend.types.api_validators import AnnotatedValidator
+from backend.data.db_connections import Session
+from backend.types.my_types import *
+from typing import Any
+
+
+def add_user(username: str, **kwargs) -> UserID:
+    user_id = create_unique_user_id()
+    try:
+        assert username is not None
+        assert all(
+            key in User.__table__.columns.keys() for key in kwargs
+        ), f"Invalid user column(s): {[k for k in kwargs if k not in User.__table__.columns.keys()]}"
+    except Exception as e:
+        logging.error(f"Tried to add new user with invalid columns: {e}")
+        raise e
+    mutation = sa.insert(User).values(
+        user_id=user_id,
+        username=username,
+        **kwargs,
+    )
+    with Session() as session:
+        session.execute(mutation)
+        session.commit()
+    return user_id
+
+
+def update_user(userId: UserID, new_data: dict[str, str]):
+
+    assert all(
+        key in User.__table__.columns.keys() for key in new_data
+    ), f"Invalid user column(s): {[k for k in new_data if k not in User.__table__.columns.keys()]}"
+    with Session() as session:
+        session.execute(
+            sa.update(User).where(User.user_id == userId).values(**new_data)
+        )
+
+
+def delete_user(userId: UserID):
+    with Session() as session:
+        session.execute(sa.delete(User).where(User.user_id == userId))
+
+
+@contextmanager
+def get_and_set_rss_timestamp(userId: UserID):
+    with Session() as session:
+        last_checked = session.execute(
+            sa.select(User.last_letterboxd_check).where(User.user_id == userId)
+        ).one_scalar()
+        last_checked = pd.Timestamp(last_checked, tz="UTC")
+        new_time = pd.Timestamp.now(tz="UTC")
+        try:
+            yield last_checked
+        except Exception as e:
+            logging.error(
+                f"Error while checking rss, last_checked_time not updated: {e}"
+            )
+            raise e
+        else:
+            session.execute(
+                sa.update(User)
+                .where(User.user_id == userId)
+                .values(last_letterboxd_check=new_time)
+            )
+
+
+# Deletes existing entry if it exists
+# returns True if the entry already existed, False if it didn't
+def add_watchlist_entry(
+    year: int, userId: UserID, movieId: MovieID, status: WatchStatus
+):
+    with Session() as session:
+        if status == WatchStatus.BLANK:
+            session.execute(
+                sa.delete(Watchnotice)
+                .where(Watchnotice.year == year)
+                .where(Watchnotice.user_id == userId)
+                .where(Watchnotice.movie_id == movieId)
+            )
+        else:
+            session.execute(
+                sa.insert(Watchnotice).values(
+                    year=year, user_id=userId, movie_id=movieId, status=status.value
+                )
+            )
+
+
+# Note: This function does not check if the nomination already exists in the database
+# 	If there's a possibliity of duplicates, you've done something wrong
+# Checks if `movie`, `category` are formatted as IDs
+# Does NOT check if they actually exist in the database
+# 	If you didn't already add/confirm them yourstorage, you're doing something wrong
+# If `validate` is True, the function will at least check if there are too many nominations in a category
+def add_nomination(year, nomination: Nom):
+    """Adds a nomination to the database.
+
+    Args:
+        year (str | int): The year of the nomination.
+        nomination ({dict<NomColumns, str>}): The nomination to add.
+        validate (bool, optional): Whether to validate the nomination. Defaults to False.
+
+    Raises:
+        Exception: If the nomination keys are invalid,
+            or if the nomination is too many nominations in a category,
+            or if the file is locked.
+
+    Returns:
+        None: The function does not return anything.
+    """
+    movie = nomination[NomColumns.MOVIE.value]
+    category = nomination[NomColumns.CATEGORY.value]
+    note = (
+        nomination[NomColumns.NOTE.value]
+        if NomColumns.NOTE.value in nomination
+        else None
+    )
+    with Session() as session:
+        session.execute(
+            sa.insert(Nomination).values(
+                year=year, movie_id=movie, category_id=category, note=note
+            )
+        )
+
+
+# `movie` is usually the id of the movie to update
+# If try_title_lookup, then `movie` is interpreted as the title of the movie
+# 		In that case, the id of the movie is returned (whether it was found or created)
+# `new_data` is a dictionary of new data to add or update
+def update_movie(
+    movie: MovieID,
+    year: int,
+    new_data: dict[str, Any] = {},
+):
+    movieId = movie
+    try:
+        AnnotatedValidator(movie=movieId)
+    except:
+        raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?")
+    with Session() as session:
+        for key, value in new_data.items():
+            session.execute(
+                sa.update(Movie).where(Movie.movie_id == movieId).values(**{key: value})
+            )
+
+
+def add_movie(year: int, title: str) -> MovieID:
+    id = create_unique_movie_id(year=year)
+    with Session() as session:
+        session.execute(sa.insert(Movie).values(year=year, movie_id=id, title=title))
+    return id

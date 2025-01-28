@@ -10,7 +10,7 @@ from backend.types.api_schemas import Flavor, UserID
 from backend.types.api_validators import AnnotatedValidator
 import backend.types.flavors as flv
 from backend.types.my_types import *
-import backend.sqlite.queries as qu
+import backend.data.queries as qu
 
 
 class MissingAPIArgumentError(Exception):

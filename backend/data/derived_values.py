@@ -1,20 +1,13 @@
 import logging
 import sqlalchemy as sa
-from backend.sqlite.db_schema import (
+from backend.data.db_schema import (
     Movie,
     Nomination,
     Category,
     User,
     Watchnotice,
 )
-from backend.sqlite.db_connections import Session
-from backend.data_management.db_schemas import (
-    db_col_users,
-    db_col_movies,
-    db_col_categories,
-    db_col_nominations,
-    db_col_watchlist,
-)
+from backend.data.db_connections import Session
 from backend.types.api_schemas import (
     UserID,
     MovieID,
