@@ -34,7 +34,9 @@ def update_user_watchlist(user_id: UserID) -> bool:
 
 
 def get_moviedb_ids_from_rss(
-    storage: StorageManager, account: UserID, cutoff: pd.Timestamp = pd.Timestamp.min
+    storage: StorageManager,
+    account: UserID,
+    cutoff: pd.Timestamp = pd.Timestamp.min,
 ) -> list[MovieDbID]:
     account = storage.read("users").at[account, UserColumns.LETTERBOXD]
     soup = fetch_rss(account)

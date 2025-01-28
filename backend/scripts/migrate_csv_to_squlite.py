@@ -9,7 +9,8 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
 import backend.utils.env_reader as env
-from backend.sqlite.make_db import init_db, get_connection
+from backend.sqlite.db_schema import init_db
+from backend.sqlite.db_connections import get_connection
 from backend.logic.storage_manager import StorageManager
 from backend.data_management.db_schemas import (
     db_col_users,

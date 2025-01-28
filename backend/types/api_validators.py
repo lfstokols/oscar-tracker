@@ -10,39 +10,32 @@ import backend.types.flavors as flv
 #     return UserID(user_id)
 
 
-def validate_user_list(user_list: pd.DataFrame) -> list[api_User]:
-    records = df_to_jsonable(user_list, Flavor.USERS)
-    return [api_User(**record).model_dump() for record in records]  # type: ignore
+def validate_user_list(user_list: list[dict]) -> list[api_User]:
+    return [api_User(**record).model_dump() for record in user_list]  # type: ignore
 
 
-def validate_movie_list(movie_list: pd.DataFrame) -> list[api_Movie]:
-    records = df_to_jsonable(movie_list, Flavor.MOVIES)
-    return [api_Movie(**record).model_dump() for record in records]  # type: ignore
+def validate_movie_list(movie_list: list[dict]) -> list[api_Movie]:
+    return [api_Movie(**record).model_dump() for record in movie_list]  # type: ignore
 
 
-def validate_nom_list(nom_list: pd.DataFrame) -> list[api_Nom]:
-    records = df_to_jsonable(nom_list, Flavor.NOMINATIONS)
-    return [api_Nom(**record).model_dump() for record in records]  # type: ignore
+def validate_nom_list(nom_list: list[dict]) -> list[api_Nom]:
+    return [api_Nom(**record).model_dump() for record in nom_list]  # type: ignore
 
 
-def validate_category_list(category_list: pd.DataFrame) -> list[api_Category]:
-    records = df_to_jsonable(category_list, Flavor.CATEGORIES)
-    return [api_Category(**record).model_dump() for record in records]  # type: ignore
+def validate_category_list(category_list: list[dict]) -> list[api_Category]:
+    return [api_Category(**record).model_dump() for record in category_list]  # type: ignore
 
 
-def validate_watchlist(watchlist: pd.DataFrame) -> list[api_WatchNotice]:
-    records = df_to_jsonable(watchlist, Flavor.WATCHLIST)
-    return [api_WatchNotice(**record).model_dump() for record in records]  # type: ignore
+def validate_watchlist(watchlist: list[dict]) -> list[api_WatchNotice]:
+    return [api_WatchNotice(**record).model_dump() for record in watchlist]  # type: ignore
 
 
-def validate_user_stats_list(user_stats_list: pd.DataFrame) -> list[api_UserStats]:
-    records = df_to_jsonable(user_stats_list, Flavor.USERS)
-    return [api_UserStats(**record).model_dump() for record in records]  # type: ignore
+def validate_user_stats_list(user_stats_list: list[dict]) -> list[api_UserStats]:
+    return [api_UserStats(**record).model_dump() for record in user_stats_list]  # type: ignore
 
 
-def validate_my_user_data(my_user_data: pd.DataFrame):
-    record = df_to_jsonable(my_user_data, Flavor.USERS)[0]
-    return api_MyUserData(**record).model_dump()
+def validate_my_user_data(my_user_data: dict) -> api_MyUserData:
+    return api_MyUserData(**my_user_data).model_dump()  # type: ignore
 
 
 def validate_category_completion_dict(

@@ -4,7 +4,7 @@ from backend.types.api_schemas import (
     UserID,
     MovieID,
     CategoryID,
-    WatchStatus,
+    WatchStatus_pyd,
 )
 from backend.types.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
@@ -71,11 +71,11 @@ def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
 # Deletes existing entry if it exists
 # returns True if the entry already existed, False if it didn't
 def add_watchlist_entry(
-    storage: StorageManager, year, userId, movieId, status: WatchStatus
+    storage: StorageManager, year, userId, movieId, status: WatchStatus_pyd
 ) -> bool:
     storage.validate_id(userId, "users")
     storage.validate_id(movieId, "movies")
-    assert status in list(WatchStatus), f"Invalid status '{status}'."
+    assert status in list(WatchStatus_pyd), f"Invalid status '{status}'."
 
     def operation(data: pd.DataFrame):
         existing_entry = data[
@@ -84,7 +84,7 @@ def add_watchlist_entry(
         ]
         data = data.drop(existing_entry.index)
 
-        if status != WatchStatus.BLANK:
+        if status != WatchStatus_pyd.BLANK:
             new_entry = pd.DataFrame(
                 {
                     WatchlistColumns.USER.value: [userId],

@@ -13,7 +13,7 @@ from backend.data_management.db_schemas import (
 from backend.types.api_schemas import UserID, MovieID, CategoryID
 from backend.types.api_validators import AnnotatedValidator
 from backend.logic.storage_manager import StorageManager
-from backend.sqlite.make_db import get_connection
+from backend.sqlite.db_connections import get_connection
 from backend.types.my_types import *
 from typing import Any
 

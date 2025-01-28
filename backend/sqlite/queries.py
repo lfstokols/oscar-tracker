@@ -1,194 +1,125 @@
 import logging
-import re
-from typing import Hashable, overload, Any
-from backend.types.api_schemas import (
-    api_CategoryCompletionsDict,
-    MovieID,
-    CategoryCompletionKey,
-)
+from typing import Any
 import requests
 from bs4 import BeautifulSoup, Tag
-import pandas as pd
-from backend.types.my_types import Grouping
-from backend.types.my_types import *
-from contextlib import contextmanager
-from backend.sqlite.id_creation import create_unique_user_id, create_unique_movie_id
-from backend.data_management.db_schemas import (
-    db_col_users,
-    db_col_movies,
-    db_col_categories,
-    db_col_watchlist,
-    db_col_nominations,
-    WatchStatus,
+import sqlalchemy as sa
+from backend.sqlite.db_schema import User, Movie, Category, Nomination, Watchnotice
+from backend.types.api_schemas import (
+    MovieID,
+    CategoryCompletionKey,
+    UserID,
 )
-from backend.types.api_schemas import UserID, MovieID, CategoryID
-from backend.types.api_validators import AnnotatedValidator
-from backend.sqlite.make_db import get_connection
-from backend.types.my_types import *
+from backend.types.my_types import WatchStatus, Grouping
+from backend.sqlite.db_connections import Session
+import backend.sqlite.derived_values as dv
 
 
-def are_movies_short(
-    movies: pd.DataFrame, nominations: pd.DataFrame, categories: pd.DataFrame
-) -> pd.Series:
+def get_number_of_movies(year, shortsIsOne=False) -> int:
     """
-    Returns a boolean series indicating if each movie has any short nominations
-    index: MovieID
-    columns name: CategoryColumns.IS_SHORT
+    Assumes the short categories are mutually exclusive with each other,
+    and with all other categories.
+    I.e. nothing can be a documentary short _and_ an animated short, and no
+    short is elligible for e.g. Best Sound
     """
-    enriched_nominations = nominations.merge(
-        categories, left_on=NomColumns.CATEGORY.value, right_index=True
-    )
-    num_short_noms = enriched_nominations.groupby(NomColumns.MOVIE.value)[
-        CategoryColumns.IS_SHORT.value
-    ].sum()
-    return (num_short_noms > 0).rename(DerivedMovieColumns.IS_SHORT.value)
+    with Session() as session:
+        total = session.execute(
+            sa.select(sa.func.count(Movie.movie_id)).where(Movie.year == year)
+        ).scalar_one()
+        if shortsIsOne:
+            num_short_films = session.execute(
+                sa.select(sa.func.sum(Category.max_noms)).where(Category.is_short)
+            ).scalar_one()
+            num_short_categories = session.execute(
+                sa.select(sa.func.count(Category.category_id)).where(Category.is_short)
+            ).scalar_one()
+            return total - num_short_films + num_short_categories
+        return total
 
 
-def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:
-    return (nominations.groupby(NomColumns.MOVIE.value).size() > 1).rename(
-        DerivedMovieColumns.IS_MULTI_NOM.value
-    )
-
-    # Create boolean series indicating if each movie has any short nominations
-    is_short = pd.Series(False, index=movies.index, name="is_short")
-    is_short[num_short_noms.index] = num_short_noms[CategoryColumns.IS_SHORT] > 0
-    return is_short
-
-    shorts: pd.Series = num_short_noms[num_short_noms >= 1]
-    return categories.loc[categories[CategoryColumns.SHORT] == 1]
-    # shortNominees: pd.Series = nominations[NomColumns.MOVIE].loc[
-    #     nominations[NomColumns.CATEGORY].isin(shorts.index)
-    # ]
-    # movies["is_short"] = movies.index.isin(shortNominees.index)
-    # return movies["is_short"]
-
-
-# assumes there are 3 short categories, and that no short can  be nominated in non-short categories
-def get_number_of_movies(storage: StorageManager, year, shortsIsOne=False) -> int:
-    total = storage.read("movies", year).shape[0]
-    categories = storage.read("categories")
-    num_shorts = categories.loc[categories[CategoryColumns.IS_SHORT.value] == 1][
-        CategoryColumns.MAX_NOMS.value
-    ].sum()
-    if shortsIsOne:
-        return total - num_shorts + 3
-    return total
-
-
-def break_into_subtitles(fullTitle: str, subtitlePosition: int) -> tuple[str, str]:
-    try:
-        subtitlePosition = int(subtitlePosition)
-        if subtitlePosition == -1:
-            return fullTitle, ""
-        mainTitle = fullTitle[:subtitlePosition].strip()
-        subtitle = fullTitle[subtitlePosition:]
-        subtitle = re.search(r"(\w.*)$", subtitle)
-        if subtitle:
-            subtitle = subtitle.group(0).strip()
-        else:
-            subtitle = ""
-        return mainTitle, subtitle
-    except Exception as e:
-        return fullTitle, ""
-
-
-def get_movies(year, idList: list[MovieID] | None = None):
+def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]]:
     """
     Returns an array of movies for a given year.
     Each movie is a dictionary with the following keys:
-        - movie_id: MovieID
+        - id: MovieID
         - title: str
-        - runtime_minutes: int
-        - runtime_hours: str
-        - is_short: bool
         - main_title: str
         - subtitle: str
+        - ImdbId: str
+        - movieDbId: int
+        - runtime_hours: str
+        - runtime_minutes: int
+        - numNoms: int
+        - isShort: bool
+        - posterPath: str
     """
-    with get_connection() as (_, cursor):
-        query = """
-            SELECT m.*, COUNT(n.id) as nomination_count
-            FROM movies m
-            WHERE m.year = ?
-            LEFT JOIN nominations n ON m.id = n.movie_id
-            GROUP BY m.id
-        """
-        cursor.execute(query, (year,))
-        data = cursor.fetchall()
-        if idList:
-            data = data.loc[idList]
-        noms = cursor.execute("SELECT * FROM nominations WHERE year = ?", (year,))
-        categories = cursor.execute("SELECT * FROM categories")
-    # Get number of nominations per movie
-    cursor.execute(
-        """
-        SELECT movie_id, COUNT(*) as nom_count 
-        FROM nominations 
-        WHERE year = ?
-        GROUP BY movie_id
-    """,
-        (year,),
+    shortness = dv.movie_is_short().subquery()
+    formatted_runtimes = dv.runtime_formatted().subquery()
+    main_and_subtitles = dv.break_into_subtitles().subquery()
+    num_noms = dv.movie_num_noms().subquery()
+    query = (
+        sa.select(
+            Movie.movie_id.label("id"),
+            Movie.title,
+            main_and_subtitles.c.main_title.label("mainTitle"),
+            main_and_subtitles.c.subtitle,
+            Movie.imdb_id.label("ImdbId"),
+            Movie.movie_db_id.label("movieDbId"),
+            formatted_runtimes.c.runtime_hours,
+            formatted_runtimes.c.runtime_minutes,
+            num_noms.c.num_noms.label("numNoms").cast(sa.Integer),
+            shortness.c.is_short.label("isShort"),
+            Movie.poster_path.label("posterPath"),
+        )
+        .select_from(Movie)
+        .join(shortness, Movie.movie_id == shortness.c.movie_id, isouter=True)
+        .join(
+            formatted_runtimes,
+            Movie.movie_id == formatted_runtimes.c.movie_id,
+            isouter=True,
+        )
+        .join(
+            main_and_subtitles,
+            Movie.movie_id == main_and_subtitles.c.movie_id,
+            isouter=True,
+        )
+        .join(num_noms, Movie.movie_id == num_noms.c.movie_id, isouter=True)
     )
-    nom_counts = pd.DataFrame(
-        cursor.fetchall(), columns=["movie_id", DerivedMovieColumns.NUM_NOMS.value]
-    )
-    data = data.merge(nom_counts, on="movie_id", how="left")
-    data[DerivedMovieColumns.NUM_NOMS.value] = data[
-        DerivedMovieColumns.NUM_NOMS.value
-    ].fillna(0)
-
-    data[DerivedMovieColumns.NUM_NOMS.value] = noms.groupby(
-        NomColumns.MOVIE.value
-    ).size()
-    data = data.rename(
-        columns={MovieColumns.RUNTIME.value: DerivedMovieColumns.RUNTIME_MINUTES.value}
-    )
-    data[DerivedMovieColumns.RUNTIME_HOURS.value] = data[
-        DerivedMovieColumns.RUNTIME_MINUTES.value
-    ].apply(lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None)
-    data = pd.concat([data, are_movies_short(data, noms, categories)], axis="columns")
-    titles_df = pd.DataFrame(
-        data[[MovieColumns.TITLE.value, MovieColumns.SUBTITLE_POSITION.value]].apply(
-            lambda x: break_into_subtitles(
-                x[MovieColumns.TITLE.value], x[MovieColumns.SUBTITLE_POSITION.value]
-            ),
-            axis="columns",
-            result_type="expand",
-        ),
-        dtype=str,
-    ).rename(
-        columns={
-            0: DerivedMovieColumns.MAIN_TITLE.value,
-            1: DerivedMovieColumns.SUBTITLE.value,
-        }
-    )
-    data = pd.concat([data, titles_df], axis="columns")
-    data = data.drop(columns=[MovieColumns.SUBTITLE_POSITION.value])
-    data.index.name = "id"
+    query = query.where(Movie.year == year)
     if idList:
-        data = data.loc[idList]
-    return data
+        query = query.where(Movie.movie_id.in_(idList))
+    with Session() as session:
+        result = session.execute(query)
+        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
 
 
-def get_users(storage: StorageManager, idList: list[UserID] | None = None):
-    data = storage.read("users")
-    data = data.drop(columns=["email", "letterboxd"])
+def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
+    query = sa.select(User.user_id.label("id"), User.username).select_from(User)
     if idList:
-        data = data.loc[idList]
-    return data
+        query = query.where(User.user_id.in_(idList))
+    with Session() as session:
+        result = session.execute(query)
+    return [dict(zip(result.keys(), row)) for row in result.fetchall()]
 
 
-def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
-    data = storage.read("users")
-    data = data.loc[[userId]]
-    assert data is not None, "User not found <in get_my_user_data>"
-    data[myUserDataColumns.PROFILE_PIC.value] = get_user_propic(
-        data.at[userId, UserColumns.LETTERBOXD.value]
-    )
-    data.drop(columns=[UserColumns.LAST_CHECKED.value], inplace=True)
-    return data
+def get_my_user_data(userId: UserID) -> dict[str, Any]:
+    query = sa.select(
+        User.user_id.label("id"),
+        User.username,
+        User.letterboxd,
+        User.email,
+    ).select_from(User)
+    query = query.where(User.user_id == userId)
+    with Session() as session:
+        result = session.execute(query)
+        result = dict(zip(result.keys(), result.fetchone()))
+    assert result is not None, f"User with id {userId} not found <in get_my_user_data>"
+    result["propic"] = get_user_propic(result["letterboxd"])
+    return result
 
 
-def get_user_propic(letterboxd_username: str) -> str | None:
+def get_user_propic(letterboxd_username: str | None) -> str | None:
+    if letterboxd_username is None:
+        return None
     try:
         # Get the user's letterboxd profile page
         url = f"https://letterboxd.com/{letterboxd_username}/"
@@ -213,7 +144,7 @@ def get_user_propic(letterboxd_username: str) -> str | None:
 
 
 def get_category_completion_dict(
-    storage: StorageManager, year
+    year: int,
 ) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
     """
     This is for the 'by category' view.
@@ -221,178 +152,82 @@ def get_category_completion_dict(
             dicts with mapping category names + etc to ints
             representing the number of movies seen in that 'category'
     """
-    watchlist = storage.read("watchlist", year)
-    categories = storage.read("categories", year)
-    nominations = storage.read("nominations", year)
-    users = storage.read("users")
-    edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
-        categories[[CategoryColumns.GROUPING.value, CategoryColumns.MAX_NOMS.value]],
-        left_on=NomColumns.CATEGORY.value,
-        right_index=True,
-    )
-    data: dict[UserID, list[dict[CategoryCompletionKey, int]]] = {}
-    for user in users.index:
-        data[user] = [{}, {}]
-        for category in categories.index:
-            data[user][0][category] = (
-                edges.loc[
-                    (edges[WatchlistColumns.USER.value] == user)
-                    & (edges[NomColumns.CATEGORY.value] == category),
-                    [WatchStatus.SEEN.value],
-                ]
-                .sum()
-                .sum()
-                .item()
-            )
-            data[user][1][category] = (
-                edges.loc[
-                    (edges[WatchlistColumns.USER.value] == user)
-                    & (edges[NomColumns.CATEGORY.value] == category),
-                    [WatchStatus.TODO.value, WatchStatus.SEEN.value],
-                ]
-                .sum()
-                .sum()
-                .item()
-            )
-        for group in list(Grouping):
-            data[user][0][group] = (
-                edges.loc[
-                    (edges[WatchlistColumns.USER.value] == user)
-                    & (
-                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
-                    ),
-                    [WatchStatus.SEEN.value],
-                ]
-                .sum()
-                .item()
-            )
-            data[user][1][group] = (
-                edges.loc[
-                    (edges[WatchlistColumns.USER.value] == user)
-                    & (
-                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
-                    ),
-                    [WatchStatus.TODO.value, WatchStatus.SEEN.value],
-                ]
-                .sum()
-                .sum()
-                .item()
-            )
-        data[user][0]["numCats"] = len(
-            edges.loc[
-                (edges[WatchlistColumns.USER.value] == user)
-                & (
-                    edges[WatchStatus.SEEN.value]
-                    == edges[CategoryColumns.MAX_NOMS.value]
-                )
-            ]
-        )
-        data[user][1]["numCats"] = len(
-            edges.loc[
-                (edges[WatchlistColumns.USER.value] == user)
-                & (
-                    edges[WatchStatus.TODO.value] + edges[WatchStatus.SEEN.value]
-                    == edges[CategoryColumns.MAX_NOMS.value]
-                )
-            ]
-        )
-    return data
+    all_groupings = [g.value for g in Grouping]
 
-    users_to_categories = watchlist.merge(
-        nominations,
-        left_on=WatchlistColumns.MOVIE.value,
-        right_on=NomColumns.MOVIE.value,
-    ).merge(categories, left_on=NomColumns.CATEGORY.value, right_index=True)
+    with Session() as session:
+        result = session.execute(sa.select(Category.category_id)).fetchall()
+    all_categories = [c for c, in result]
 
-
-def compute_user_to_category_edgeframe(watchlist, nominations):
-    """
-    Should return an edge list with columns including:
-        userId: UserID
-        categoryId: CategoryID
-        seen: number of movies that user has seen in that category
-        todo: number of movies that user has todo in that category
-    """
-    users_to_categories = watchlist.merge(
-        nominations,
-        left_on=WatchlistColumns.MOVIE.value,
-        right_on=NomColumns.MOVIE.value,
+    seen_watchlist = (
+        sa.select(User, Watchnotice)
+        .select_from(User)
+        .join(Watchnotice, User.user_id == Watchnotice.user_id, isouter=True)
+        .where(Watchnotice.year == year)
+        .where(Watchnotice.status == WatchStatus.SEEN.value)
+        .subquery()
     )
-    result = (
-        users_to_categories.groupby(
-            [
-                WatchlistColumns.USER.value,
-                NomColumns.CATEGORY.value,
-                WatchlistColumns.STATUS.value,
-            ]
+    todo_watchlist = (
+        sa.select(User, Watchnotice)
+        .select_from(User)
+        .join(Watchnotice, User.user_id == Watchnotice.user_id, isouter=True)
+        .where(Watchnotice.year == year)
+        .subquery()
+    )
+
+    def query(status: WatchStatus):
+        start = seen_watchlist if status == WatchStatus.SEEN else todo_watchlist
+        return (
+            sa.select(
+                start.c.user_id.label("id"),
+                *[
+                    sa.func.count(Movie.movie_id)
+                    .filter(Nomination.category_id == c)
+                    .label(str(c))
+                    for c in all_categories
+                ],
+                *[
+                    sa.func.count(Movie.movie_id)
+                    .filter(Category.grouping == g)
+                    .label(str(g))
+                    for g in all_groupings
+                ],
+            )
+            .select_from(start)
+            .join(Movie, start.c.movie_id == Movie.movie_id, isouter=True)
+            .join(Nomination, Movie.movie_id == Nomination.movie_id, isouter=True)
+            .join(
+                Category, Nomination.category_id == Category.category_id, isouter=True
+            )
+            .group_by(start.c.user_id)
         )
-        .size()
-        .unstack(fill_value=0)
-        .reset_index()
-    )
-    try:
-        return result[
-            [
-                WatchlistColumns.USER.value,
-                NomColumns.CATEGORY.value,
-                WatchStatus.SEEN.value,
-                WatchStatus.TODO.value,
-            ]
+
+    with Session() as session:
+        seen_result = session.execute(query(WatchStatus.SEEN))
+        todo_result = session.execute(query(WatchStatus.TODO))
+        seen_data = [
+            dict(zip(seen_result.keys(), row)) for row in seen_result.fetchall()
         ]
-    except Exception as e:
-        logging.error(e)
-        result[WatchStatus.SEEN.value] = 0
-        result[WatchStatus.TODO.value] = 0
-        return result[
-            [
-                WatchlistColumns.USER.value,
-                NomColumns.CATEGORY.value,
-                WatchStatus.SEEN.value,
-                WatchStatus.TODO.value,
-            ]
+        todo_data = [
+            dict(zip(todo_result.keys(), row)) for row in todo_result.fetchall()
         ]
+    return format_category_completion_dict(seen_data, todo_data)
 
 
-def enrich_watchlist_with_movie_data(
-    watchlist: pd.DataFrame, movies_data: pd.Series
-) -> pd.DataFrame:
-    """
-    watchlist: a watchlist-shaped dataframe, perhaps filtered somehow
-    movies_data: a Series indexed by MovieID, indicating the property of each movie
-    returns: a watchlist-shaped dataframe with the same columns as the input, but with a new column representing the property
-    """
-    return watchlist.merge(
-        movies_data, left_on=WatchlistColumns.MOVIE.value, right_index=True
-    )
+def format_category_completion_dict(
+    seen_data: list[dict[CategoryCompletionKey | UserID, int]],
+    todo_data: list[dict[CategoryCompletionKey | UserID, int]],
+) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
+    result = {}
+    for row in seen_data:
+        user_id = row.pop("id")
+        result[user_id] = [row]
+    for row in todo_data:
+        user_id = row.pop("id")
+        result[user_id].append(row)
+    return result
 
 
-def num_seen_with_property(
-    enriched_watchlist: pd.DataFrame,
-    property: str,
-    new_name: str,
-    inverse: bool = False,
-) -> pd.Series:
-    """
-    enriched_watchlist: a watchlist-shaped dataframe with an extra boolean column named {property}
-    property: the name of the boolean column (must exist!)
-    new_name: the name to be given to the Series (since unnamed Series aren't typesafe)
-    inverse: if True, returns the number of movies that the user has seen *without* the property
-    returns: a series of integers, indexed by UserID, indicating the number of movies that user has seen with the property
-    note: 'seen' is a placeholder, it's really how many movies the user has marked (with either status)
-    """
-    assert (
-        property in enriched_watchlist.columns
-    ), f"Property {property} not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
-    assert (
-        WatchlistColumns.USER.value in enriched_watchlist.columns
-    ), f"UserID column not found in enriched_watchlist {enriched_watchlist.columns}, cannot use num_seen_with_property"
-    bool_col = enriched_watchlist[property]
-    if inverse:
-        bool_col = ~bool_col
-    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER.value).size().fillna(0).rename(new_name)  # type: ignore
-
-
-def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
+def compute_user_stats(year: int) -> list[dict[str, Any]]:
     """
     finds the total number of movies seen and todo by a user
     If the movie list has complete runtime data,
@@ -413,98 +248,116 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
 
     """
 
-    movies = storage.read("movies", year)
-    nominations = storage.read("nominations", year)
-    categories = storage.read("categories", year)
-    watchlist = storage.read("watchlist", year)
+    shortness = dv.movie_is_short().subquery()
+    multinom = dv.movie_is_multinom().subquery()
+    num_cats_seen = dv.num_categories_completed(WatchStatus.SEEN, year).subquery()
+    num_cats_todo = dv.num_categories_completed(WatchStatus.TODO, year).subquery()
 
-    seen_watchlist = watchlist.loc[
-        watchlist[WatchlistColumns.STATUS.value] == WatchStatus.SEEN.value
-    ]
-    todo_watchlist = watchlist.loc[
-        watchlist[WatchlistColumns.STATUS.value] == WatchStatus.TODO.value
-    ]
-    movie_is_short = are_movies_short(movies, nominations, categories)
-    movie_is_multinom = are_movies_multinom(nominations)
-
-    enriched_seenlist = enrich_watchlist_with_movie_data(seen_watchlist, movie_is_short)
-    enriched_seenlist = enrich_watchlist_with_movie_data(
-        enriched_seenlist, movie_is_multinom
+    seen_watchlist = (
+        sa.select(User, Watchnotice)
+        .select_from(User)
+        .join(User.watchnotices)
+        .where(Watchnotice.year == year)
+        .where(Watchnotice.status == WatchStatus.SEEN.value)
+        .subquery()
     )
-    enriched_todolist = enrich_watchlist_with_movie_data(todo_watchlist, movie_is_short)
-    enriched_todolist = enrich_watchlist_with_movie_data(
-        enriched_todolist, movie_is_multinom
-    )
-
-    num_seen_short = num_seen_with_property(
-        enriched_seenlist,
-        CategoryColumns.IS_SHORT.value,
-        UserStatsColumns.NUM_SEEN_SHORT.value,
-    )
-    num_seen_feature = num_seen_with_property(
-        enriched_seenlist,
-        CategoryColumns.IS_SHORT.value,
-        UserStatsColumns.NUM_SEEN_FEATURE.value,
-        inverse=True,
-    )
-    num_todo_short = num_seen_with_property(
-        enriched_todolist,
-        CategoryColumns.IS_SHORT.value,
-        UserStatsColumns.NUM_TODO_SHORT.value,
-    )
-    num_todo_feature = num_seen_with_property(
-        enriched_todolist,
-        CategoryColumns.IS_SHORT.value,
-        UserStatsColumns.NUM_TODO_FEATURE.value,
-        inverse=True,
+    todo_watchlist = (
+        sa.select(User, Watchnotice)
+        .select_from(User)
+        .join(Watchnotice)
+        .where(Watchnotice.year == year)
+        .where(Watchnotice.status == WatchStatus.TODO.value)
+        .subquery()
     )
 
-    num_seen_multinom = num_seen_with_property(
-        enriched_seenlist,
-        DerivedMovieColumns.IS_MULTI_NOM.value,
-        UserStatsColumns.NUM_SEEN_MULTINOM.value,
-    )
-    num_todo_multinom = num_seen_with_property(
-        enriched_todolist,
-        DerivedMovieColumns.IS_MULTI_NOM.value,
-        UserStatsColumns.NUM_TODO_MULTINOM.value,
-    )
+    def query_by_status(status: WatchStatus):
+        start = seen_watchlist if status == WatchStatus.SEEN else todo_watchlist
+        num_cats = dv.num_categories_completed(status, year).subquery()
+        label = "Seen" if status == WatchStatus.SEEN else "Todo"
+        return (
+            sa.select(
+                start.c.user_id.label("id"),
+                sa.func.count(Movie.movie_id)
+                .filter(shortness.c.is_short)
+                .label(f"num{label}Short"),
+                sa.func.count(Movie.movie_id)
+                .filter(~shortness.c.is_short)
+                .label(f"num{label}Feature"),
+                sa.func.count(Movie.movie_id)
+                .filter(multinom.c.is_multinom)
+                .label(f"num{label}Multinom"),
+                num_cats.c.num_categories_completed.label(f"numCats{label}"),
+                sa.func.sum(Movie.runtime).label(f"{label.lower()}Watchtime"),
+            )
+            .select_from(start)
+            .join(Movie, start.c.movie_id == Movie.movie_id)
+            .join(shortness, Movie.movie_id == shortness.c.movie_id)
+            .join(multinom, Movie.movie_id == multinom.c.movie_id)
+            .join(num_cats, start.c.user_id == num_cats.c.user_id)
+            .group_by(start.c.user_id)
+        )
 
-    seen_with_runtime = enrich_watchlist_with_movie_data(
-        seen_watchlist, movies[MovieColumns.RUNTIME.value]
+    seen_query = query_by_status(WatchStatus.SEEN).subquery()
+    todo_query = query_by_status(WatchStatus.TODO).subquery()
+    full_query = (
+        sa.select(
+            seen_query.c.id,
+            seen_query.c.numSeenShort,
+            seen_query.c.numSeenFeature,
+            seen_query.c.numSeenMultinom,
+            seen_query.c.seenWatchtime,
+            todo_query.c.numTodoShort,
+            todo_query.c.numTodoFeature,
+            todo_query.c.numTodoMultinom,
+            todo_query.c.todoWatchtime,
+        )
+        .select_from(seen_query)
+        .join(todo_query, seen_query.c.id == todo_query.c.id)
     )
-    todo_with_runtime = enrich_watchlist_with_movie_data(
-        todo_watchlist, movies[MovieColumns.RUNTIME.value]
-    )
-
-    total_seen_runtime = (
-        seen_with_runtime.groupby(WatchlistColumns.USER.value)
-        .sum()[MovieColumns.RUNTIME.value]
-        .rename(UserStatsColumns.SEEN_WATCHTIME.value)
-    )
-    total_todo_runtime = (
-        todo_with_runtime.groupby(WatchlistColumns.USER.value)
-        .sum()[MovieColumns.RUNTIME.value]
-        .rename(UserStatsColumns.TODO_WATCHTIME.value)
-    )
-
-    result = pd.concat(
-        [
-            num_seen_short,
-            num_seen_feature,
-            num_todo_short,
-            num_todo_feature,
-            num_seen_multinom,
-            num_todo_multinom,
-            total_seen_runtime,
-            total_todo_runtime,
-        ],
-        axis="columns",
-    ).infer_objects()
-    result.index.name = "id"
-    return result
+    with Session() as session:
+        result = session.execute(full_query)
+        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
 
 
-def get_user_stats(storage: StorageManager, year) -> pd.DataFrame:
-    return compute_user_stats(storage, year)
-    return data.to_dict(orient="records")
+def get_user_stats(year: int) -> list[dict[str, Any]]:
+    return compute_user_stats(year)
+
+
+def get_noms(year: int) -> list[dict[str, Any]]:
+    with Session() as session:
+        result = session.execute(
+            sa.select(
+                Nomination.movie_id.label("movieId"),
+                Nomination.category_id.label("categoryId"),
+                Nomination.note.label("note"),
+            ).where(Nomination.year == year)
+        )
+        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+
+
+def get_watchlist(year: int) -> list[dict[str, Any]]:
+    with Session() as session:
+        result = session.execute(
+            sa.select(
+                Watchnotice.user_id.label("userId"),
+                Watchnotice.movie_id.label("movieId"),
+                Watchnotice.status.label("status"),
+            ).where(Watchnotice.year == year)
+        )
+        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+
+
+def get_categories() -> list[dict[str, Any]]:
+    with Session() as session:
+        result = session.execute(
+            sa.select(
+                Category.category_id.label("id"),
+                Category.short_name.label("shortName"),
+                Category.full_name.label("fullName"),
+                Category.max_nominations.label("maxNoms"),
+                Category.is_short.label("isShort"),
+                Category.has_note.label("hasNote"),
+                Category.grouping.label("grouping"),
+            )
+        )
+        return [dict(zip(result.keys(), row)) for row in result.fetchall()]

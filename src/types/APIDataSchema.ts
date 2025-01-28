@@ -27,7 +27,6 @@ export type RawWatchStatus = z.infer<typeof RawWatchStatusSchema>;
 export const UserSchema = z.object({
   id: UserIdSchema,
   username: z.string(),
-  propic: z.string().url().nullable(),
 });
 
 export const MovieSchema = z

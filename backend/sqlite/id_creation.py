@@ -1,7 +1,7 @@
 import random
 from backend.types.api_schemas import MovieID, UserID
 from backend.types.api_validators import AnnotatedValidator
-from backend.sqlite.make_db import get_connection
+from backend.sqlite.db_connections import get_connection
 
 
 def create_unique_movie_id(year: int | str) -> MovieID:
