@@ -28,7 +28,11 @@ export default function NominationsCell({
   const myNoms = nominations.filter(nom => nom.movieId === movieId);
 
   const entries = myNoms.map(nom => (
-    <Entry key={nom.categoryId} nom={nom} categories={categories} />
+    <Entry
+      key={[nom.categoryId, nom.note].join('|')}
+      nom={nom}
+      categories={categories}
+    />
   ));
 
   const tooBig = entries.length > maxNomsToShow;
@@ -67,7 +71,7 @@ export default function NominationsCell({
   );
 }
 
-function getEmoji(country: string): React.ReactNode {
+function getFlag(country: string): React.ReactNode {
   //* Convert country names to 2-letter ISO country codes
   const data = countryCodes.find(c => c.name === country);
   if (!data) return '';
@@ -136,7 +140,7 @@ function Entry({
   const formattedNote =
     cat.id === 'cat_frgn' ? (
       <em>
-        {getEmoji(nom.note ?? '')} {nom.note ?? ''}
+        {getFlag(nom.note ?? '')} {nom.note ?? ''}
       </em>
     ) : cat.id === 'cat_song' ? (
       <>{getSong(nom.note ?? '')}</>
@@ -181,8 +185,8 @@ function LineClampText({
       display="-webkit-box"
       width="fit-content"
       sx={{
-        '-webkit-line-clamp': '3',
-        '-webkit-box-orient': 'vertical',
+        WebkitLineClamp: '3',
+        WebkitBoxOrient: 'vertical',
       }}
       // Prevent strange bug where text is sometimes clipped by a few pixels
       paddingRight="2px">

@@ -217,7 +217,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
         </TableHead>
         <TableBody>
           {[0, 1].map(i => (
-            <React.Fragment key={i}>
+            <React.Fragment key={`plannedness-${i}`}>
               {i === 1 && plannedBanner}
               {groupingList.map(grouping => {
                 const isExpanded =

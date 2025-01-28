@@ -14,7 +14,7 @@ export function warnToConsole(message: unknown) {
   }
 }
 
-export function logToConsoleError(message: unknown) {
+export function errorToConsole(message: unknown) {
   if (RUN_DEBUG) {
     console.error(message);
   }

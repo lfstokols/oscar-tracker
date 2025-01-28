@@ -9,3 +9,4 @@ config.local.ps1
 venv/
 logs/
 backend/backups/
+Playground.ipynb

@@ -18,7 +18,7 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
   const [inputValue, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<LProfile[]>([]);
 
-  const fetch = React.useMemo(
+  const fetchSearch = React.useMemo(
     () =>
       debounce(async (request: {input: string}) => {
         const results = await SearchProfileDatabase(request.input);
@@ -32,8 +32,8 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
       setOptions(value ? [value] : []);
       return;
     }
-    fetch({input: inputValue});
-  }, [value, inputValue, fetch]);
+    fetchSearch({input: inputValue});
+  }, [value, inputValue, fetchSearch]);
 
   return (
     <Autocomplete

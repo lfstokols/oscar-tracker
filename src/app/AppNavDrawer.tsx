@@ -14,16 +14,21 @@ import {AppTabType} from '../types/Enums';
 import {FEATURE_REQUEST_URL, REPORT_BUG_URL} from '../config/GlobalConstants';
 import YearSelector from '../features/app_header/YearSelector';
 import {useIsMobile} from '../hooks/useIsMobile';
-
+import {
+  LEGACY_URL,
+  BY_USER_URL,
+  BY_CATEGORY_URL,
+} from '../config/GlobalConstants';
+import {useOscarAppContext} from '../providers/AppContext';
 export const DRAWER_WIDTH = 256;
 
 function mapLocationToAppTab(location: Location) {
-  switch (location.pathname) {
-    case '/legacy':
+  switch (location.pathname.split('/')[1]) {
+    case LEGACY_URL:
       return AppTabType.legacy;
-    case '/users':
+    case BY_USER_URL:
       return AppTabType.byUser;
-    case '/categories':
+    case BY_CATEGORY_URL:
       return AppTabType.byCategory;
     default:
       return AppTabType.legacy;
@@ -59,22 +64,23 @@ export default function AppNavDrawer({
   open: boolean;
   onClose: () => void;
   isDrawerPersistent: boolean;
-}) {
+}): React.ReactElement {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
+  const {year} = useOscarAppContext();
   const currentTab = mapLocationToAppTab(location);
 
   const handleTabClick = (tab: AppTabType) => {
     switch (tab) {
       case AppTabType.legacy:
-        navigate('/legacy');
+        navigate(`/${LEGACY_URL}/${year}`);
         break;
       case AppTabType.byUser:
-        navigate('/users');
+        navigate(`/${BY_USER_URL}/${year}`);
         break;
       case AppTabType.byCategory:
-        navigate('/categories');
+        navigate(`/${BY_CATEGORY_URL}/${year}`);
         break;
     }
     if (!isDrawerPersistent) {
@@ -136,7 +142,7 @@ export default function AppNavDrawer({
       </List>
       <Divider />
       <List>
-        <ListItem disablePadding>
+        <ListItem key="feature-request" disablePadding>
           <ListItemButton
             onClick={() => window.open(FEATURE_REQUEST_URL, '_blank')}>
             <ListItemIcon>
@@ -145,7 +151,7 @@ export default function AppNavDrawer({
             <ListItemText primary="Request a Feature" />
           </ListItemButton>
         </ListItem>
-        <ListItem disablePadding>
+        <ListItem key="report-bug" disablePadding>
           <ListItemButton onClick={() => window.open(REPORT_BUG_URL, '_blank')}>
             <ListItemIcon>
               <BugReport />

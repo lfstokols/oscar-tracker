@@ -1,9 +1,10 @@
 import {FormControl, InputLabel, Select, MenuItem} from '@mui/material';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {SelectChangeEvent} from '@mui/material';
+import {AVAILABLE_YEARS} from '../../config/GlobalConstants';
+
 export default function YearSelector() {
   const {year, setYear} = useOscarAppContext();
-  const availableYears = [2023, 2024]; // ! Get this from the backend
   const handleYearSelect = (event: SelectChangeEvent) => {
     setYear(parseInt(event.target.value));
   };
@@ -21,7 +22,7 @@ export default function YearSelector() {
         size="small"
         color="primary"
         onChange={handleYearSelect}>
-        {availableYears.map(year => (
+        {AVAILABLE_YEARS.map(year => (
           <MenuItem key={year} value={year}>
             {year}
           </MenuItem>

@@ -245,7 +245,7 @@ export default function UserStatsTable({
                 </TableCell>
                 {statsColumns.map(column =>
                   checkDisabledCombination(column.label, hypotheticality) ? (
-                    <></>
+                    <React.Fragment key={column.label}></React.Fragment>
                   ) : (
                     <TableCell key={column.label} align="center">
                       <Typography variant="h6">
