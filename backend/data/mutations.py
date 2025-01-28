@@ -41,11 +41,13 @@ def update_user(userId: UserID, new_data: dict[str, str]):
         session.execute(
             sa.update(User).where(User.user_id == userId).values(**new_data)
         )
+        session.commit()
 
 
 def delete_user(userId: UserID):
     with Session() as session:
         session.execute(sa.delete(User).where(User.user_id == userId))
+        session.commit()
 
 
 @contextmanager
@@ -69,6 +71,7 @@ def get_and_set_rss_timestamp(userId: UserID):
                 .where(User.user_id == userId)
                 .values(last_letterboxd_check=new_time)
             )
+            session.commit()
 
 
 # Deletes existing entry if it exists
@@ -84,12 +87,32 @@ def add_watchlist_entry(
                 .where(Watchnotice.user_id == userId)
                 .where(Watchnotice.movie_id == movieId)
             )
+            session.commit()
         else:
-            session.execute(
-                sa.insert(Watchnotice).values(
-                    year=year, user_id=userId, movie_id=movieId, status=status.value
+            # # * Delete any existing entry
+            # session.execute(
+            #     sa.delete(Watchnotice)
+            #     .where(Watchnotice.year == year)
+            #     .where(Watchnotice.user_id == userId)
+            #     .where(Watchnotice.movie_id == movieId)
+            # )
+            # * Add new entry
+            logging.debug(
+                f"Adding watchlist entry for {userId} in {year} for {movieId} with status {status}"
+            )
+            mutation = (
+                sa.insert(Watchnotice)
+                .prefix_with("OR REPLACE")
+                .values(
+                    year=year,
+                    user_id=userId,
+                    movie_id=movieId,
+                    status=str(status),
                 )
             )
+            logging.debug(f"Mutation: {mutation}")
+            session.execute(mutation)
+            session.commit()
 
 
 # Note: This function does not check if the nomination already exists in the database
@@ -123,10 +146,11 @@ def add_nomination(year, nomination: Nom):
     )
     with Session() as session:
         session.execute(
-            sa.insert(Nomination).values(
-                year=year, movie_id=movie, category_id=category, note=note
-            )
+            sa.insert(Nomination)
+            .prefix_with("OR REPLACE")
+            .values(year=year, movie_id=movie, category_id=category, note=note)
         )
+        session.commit()
 
 
 # `movie` is usually the id of the movie to update
@@ -143,15 +167,19 @@ def update_movie(
         AnnotatedValidator(movie=movieId)
     except:
         raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?")
+    assert all(
+        key in Movie.__table__.columns.keys() for key in new_data
+    ), f"Invalid movie column(s): {[k for k in new_data if k not in Movie.__table__.columns.keys()]}"
     with Session() as session:
-        for key, value in new_data.items():
-            session.execute(
-                sa.update(Movie).where(Movie.movie_id == movieId).values(**{key: value})
-            )
+        session.execute(
+            sa.update(Movie).where(Movie.movie_id == movieId).values(**new_data)
+        )
+        session.commit()
 
 
 def add_movie(year: int, title: str) -> MovieID:
     id = create_unique_movie_id(year=year)
     with Session() as session:
         session.execute(sa.insert(Movie).values(year=year, movie_id=id, title=title))
+        session.commit()
     return id

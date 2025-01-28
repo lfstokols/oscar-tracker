@@ -18,9 +18,9 @@ setup_logging(env.LOG_PATH)
 from backend.types.api_validators import AnnotatedValidator
 
 # * Set up StorageManager
-from backend.logic.storage_manager import StorageManager
+# from backend.logic.storage_manager import StorageManager
 
-StorageManager.make_storage(env.DATABASE_PATH)
+# StorageManager.make_storage(env.DATABASE_PATH)
 # * The rest of the imports
 from backend.routing_lib.user_session import (
     start_new_session,

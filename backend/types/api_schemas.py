@@ -47,43 +47,43 @@ class Flavor(str, Enum):
     CATEGORIES = "categories"
 
 
-# * Database Models (matching CSV storage)
-class db_User(BaseModel):
-    id: UserID
-    username: str
-    letterboxd: str
-    email: EmailStr
+# # * Database Models (matching CSV storage)
+# class db_User(BaseModel):
+#     id: UserID
+#     username: str
+#     letterboxd: Optional[str] = None
+#     email: Optional[EmailStr] = None
 
 
-class db_Movie(BaseModel):
-    id: MovieID
-    title: str
-    ImdbId: Optional[str] = None
-    movieDbId: Optional[int] = None
-    runtime: Optional[int] = None  # Stored in minutes
-    posterPath: Optional[PosterPath] = None
+# class db_Movie(BaseModel):
+#     id: MovieID
+#     title: str
+#     ImdbId: Optional[str] = None
+#     movieDbId: Optional[int] = None
+#     runtime: Optional[int] = None  # Stored in minutes
+#     posterPath: Optional[PosterPath] = None
 
 
-class db_Category(BaseModel):
-    id: CategoryID
-    shortName: str
-    fullName: str
-    hasNote: bool
-    isShort: bool
-    grouping: Grouping_pyd
-    maxNoms: Literal[5, 10]
+# class db_Category(BaseModel):
+#     id: CategoryID
+#     shortName: str
+#     fullName: str
+#     hasNote: bool
+#     isShort: bool
+#     grouping: Grouping_pyd
+#     maxNoms: Literal[5, 10]
 
 
-class db_Nom(BaseModel):
-    movieId: MovieID
-    categoryId: CategoryID
-    note: Optional[str] = None
+# class db_Nom(BaseModel):
+#     movieId: MovieID
+#     categoryId: CategoryID
+#     note: Optional[str] = None
 
 
-class db_Watchlist(BaseModel):
-    userId: UserID
-    movieId: MovieID
-    status: WatchStatus_pyd
+# class db_Watchlist(BaseModel):
+#     userId: UserID
+#     movieId: MovieID
+#     status: WatchStatus_pyd
 
 
 # * API Response Models

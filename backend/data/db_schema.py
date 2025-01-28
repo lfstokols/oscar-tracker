@@ -1,4 +1,5 @@
 import sqlite3
+from pydantic import EmailStr
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
@@ -137,6 +138,17 @@ class CategoryID_SQL(sa.TypeDecorator):
         return (
             AnnotatedValidator(category=value).category if value is not None else None
         )
+
+
+class Email_SQL(sa.TypeDecorator):
+    impl = sa.String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        return str(value) if value else None
+
+    def process_result_value(self, value, dialect):
+        return value if value else None
 
 
 # * # * # * # * # * #
