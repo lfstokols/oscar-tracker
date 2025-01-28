@@ -1,4 +1,4 @@
-import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQueries} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {
   Table,
@@ -8,7 +8,6 @@ import {
   TableBody,
   Typography,
   TableContainer,
-  Stack,
 } from '@mui/material';
 import {
   categoryCompletionOptions,
@@ -22,16 +21,13 @@ import {
   NUM_SHORT_CATEGORIES,
   NUM_SHORT_FILMS_PER_CATEGORY,
 } from '../../config/GlobalConstants';
-import {getUsernameFromId, useSortUsers} from '../../utils/dataSelectors';
+import {getUsernameFromId} from '../../utils/dataSelectors';
 import {TableHeaderCell} from '../../components/TableHeader';
-import Countdown from '../../components/Countdown';
-import {TABLE_ROW_COLOR, TODO_COLOR} from '../../config/StyleChoices';
+// import {TODO_COLOR} from '../../config/StyleChoices';
 import {totalNumberOfCategories} from '../../utils/hardcodedFunctions';
-import ClickableSortIcon from './ClickableSortIcon';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import TableControls from './TableControls';
 import {Hypotheticality, ColumnLabels} from './Enums';
-import {useIsMobile} from '../../hooks/useIsMobile';
+// import {useIsMobile} from '../../hooks/useIsMobile';
 
 type UserStatsExtended = UserStats & {numCatsDone: number; numCatsTodo: number};
 
@@ -45,7 +41,11 @@ const disabledCombinations: {
   },
 ];
 
-export default function UserStatsTable(): React.ReactElement {
+export default function UserStatsTable({
+  hypotheticality,
+}: {
+  hypotheticality: Hypotheticality;
+}): React.ReactElement {
   const year = useOscarAppContext().year;
   const [userStatsQ, usersQ, movieListQ, categoryCompletionQ] =
     useSuspenseQueries({
@@ -66,9 +66,9 @@ export default function UserStatsTable(): React.ReactElement {
   const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
   const numMoviesFeature = numMoviesTotal - numMoviesShort;
   const numMultinomTotal = movieList.filter(movie => movie.numNoms > 1).length;
-  const isMobile = useIsMobile();
+  // const isMobile = useIsMobile();
   const [sortByIndex, setSortByIndex] = useState(0);
-  const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);
+
   if (checkDisabledCombination(sortByIndex, hypotheticality)) {
     for (let index = 0; index < 100; index++) {
       if (!checkDisabledCombination(index, hypotheticality)) {
@@ -188,15 +188,20 @@ export default function UserStatsTable(): React.ReactElement {
   });
 
   return (
-    <Stack
-      direction="column"
-      spacing={3}
-      sx={{
-        height: '100%',
-      }}
-      alignItems="center">
-      <TableControls value={hypotheticality} setter={setHypotheticality} />
-      <TableContainer>
+    // <Stack
+    //   direction="column"
+    //   spacing={3}
+    //   sx={{
+    //     height: '100%',
+    //   }}
+    //   alignItems="center">
+    <>
+      <TableContainer
+        sx={{
+          backgroundImage: 'var(--mui-overlays-1)',
+          paddingBottom: 2,
+          borderRadius: '5px',
+        }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -240,7 +245,7 @@ export default function UserStatsTable(): React.ReactElement {
                 </TableCell>
                 {statsColumns.map(column =>
                   checkDisabledCombination(column.label, hypotheticality) ? (
-                    <></>
+                    <React.Fragment key={column.label}></React.Fragment>
                   ) : (
                     <TableCell key={column.label} align="center">
                       <Typography variant="h6">
@@ -254,16 +259,7 @@ export default function UserStatsTable(): React.ReactElement {
           </TableBody>
         </Table>
       </TableContainer>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 0.3,
-          justifyContent: 'center',
-        }}>
-        <Countdown />
-      </div>
-    </Stack>
+    </>
   );
 }
 
@@ -280,35 +276,35 @@ function formatNumber(number: number): string {
   return number.toString().padStart(2, '0');
 }
 
-function ColoredColumnHeader({
-  title,
-  planned,
-  watchtime,
-  icon,
-}: {
-  title: string;
-  planned: boolean;
-  watchtime: boolean;
-  icon?: React.ReactElement;
-}): React.ReactElement {
-  const subtext = watchtime
-    ? planned
-      ? 'remaining'
-      : 'completed'
-    : planned
-    ? 'planned'
-    : undefined;
-  return (
-    <TableHeaderCell
-      text={title}
-      // subtext={subtext}
-      sx={{
-        color: planned ? TODO_COLOR : 'inherit',
-      }}
-      icon={icon}
-    />
-  );
-}
+// function ColoredColumnHeader({
+//   title,
+//   planned,
+//   watchtime,
+//   icon,
+// }: {
+//   title: string;
+//   planned: boolean;
+//   watchtime: boolean;
+//   icon?: React.ReactElement;
+// }): React.ReactElement {
+//   const subtext = watchtime
+//     ? planned
+//       ? 'remaining'
+//       : 'completed'
+//     : planned
+//     ? 'planned'
+//     : undefined;
+//   return (
+//     <TableHeaderCell
+//       text={title}
+//       // subtext={subtext}
+//       sx={{
+//         color: planned ? TODO_COLOR : 'inherit',
+//       }}
+//       icon={icon}
+//     />
+//   );
+// }
 
 function sortUsers(users: User[], userStats: UserStats[]): User[] {
   return users.sort((a, b) => {

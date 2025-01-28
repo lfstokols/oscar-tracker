@@ -42,8 +42,7 @@ type Props = {
 };
 
 export default function UserProfile({closer}: Props) {
-  const {setActiveUserId, activeUserId, preferences, activeUsername} =
-    useOscarAppContext();
+  const {setActiveUserId, activeUserId, activeUsername} = useOscarAppContext();
   if (!activeUserId || !activeUsername) {
     throw new Error(
       `Opened full user profile, even though activeUserId or activeUsername is null.
@@ -218,7 +217,7 @@ function Preference({
 
 function placeholderEditableComponent({
   onCancel,
-  activeUserId,
+  activeUserId: _activeUserId,
 }: {
   onCancel: () => void;
   activeUserId: UserId;

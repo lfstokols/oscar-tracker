@@ -3,15 +3,10 @@ import {CircularProgress, Menu, MenuItem} from '@mui/material';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Button} from '@mui/material';
 // import {useMyUsers} from '../hooks/useMyQuery';
-import DefaultCatcher, {LoadScreen} from '../../components/LoadScreen';
 import {Error} from '@mui/icons-material';
 import {userOptions} from '../../hooks/dataOptions';
 import {ErrorBoundary} from 'react-error-boundary';
-import {
-  QueryErrorResetBoundary,
-  useQuery,
-  useSuspenseQuery,
-} from '@tanstack/react-query';
+import {useSuspenseQuery} from '@tanstack/react-query';
 
 type Props = {
   anchorEl: HTMLElement | null;

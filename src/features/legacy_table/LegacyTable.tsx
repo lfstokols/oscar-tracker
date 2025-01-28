@@ -18,7 +18,6 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
-import {logToConsole} from '../../utils/Logger';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
 
@@ -56,13 +55,10 @@ export default function LegacyTable({
     myWatchlist,
     filterState,
   );
-  logToConsole(movies.length);
-  logToConsole(filteredMovies.length);
   const {features, shortsAnimated, shortsLive, shortsDoc} = groupByShort(
     filteredMovies,
     nominations,
   );
-  logToConsole(features.length);
 
   const sortedUsers = useSortUsers(users);
 
@@ -90,21 +86,17 @@ export default function LegacyTable({
   return (
     <TableContainer
       sx={{
-        scrollBehavior: 'smooth',
-        overflowY: 'auto',
-        height: 'calc(100vh - 64px)',
-        width: '100%',
+        backgroundImage: 'var(--mui-overlays-1)',
+        paddingBottom: 2,
+        borderRadius: '5px',
       }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell text="" />
+            <TableHeaderCell key="film" text="Film" colSpan={2} />
+            <TableHeaderCell key="nominations" text="Nominations" />
             <TableHeaderCell
-              text="Film"
-              sx={{maxWidth: '10ch', overflow: 'wrap'}}
-            />
-            <TableHeaderCell text="Nominated For" />
-            <TableHeaderCell
+              key="runtime"
               text="Runtime"
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
               style={{cursor: 'pointer'}}
@@ -116,19 +108,22 @@ export default function LegacyTable({
             ))}
           </TableRow>
         </TableHead>
-        <TableBody sx={{borderRadius: 5}}>
+        <TableBody>
           <MovieRows filteredMovies={sortedData} {...rowProps} />
           <ShortsMovieRows
+            key={'sortedShortsLive'}
             filteredMovies={sortedShortsLive}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
+            key={'sortedShortsAnimated'}
             filteredMovies={sortedShortsAnimated}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
+            key={'sortedShortsDoc'}
             filteredMovies={sortedShortsDoc}
             merge={shortsAreOneFilm}
             {...rowProps}

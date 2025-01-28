@@ -9,7 +9,6 @@ import {
   Typography,
   TableContainer,
   Stack,
-  Paper,
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -32,12 +31,7 @@ import {Grouping} from '../../types/Enums';
 import {WatchList} from '../../types/APIDataSchema';
 import {groupCounts, categoryNomCounts} from '../../utils/hardcodedFunctions';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
-import {
-  TABLE_ROW_COLOR,
-  TABLE_ROW_MINOR_COLOR,
-  TODO_COLOR,
-  TODO_CONTRAST_COLOR,
-} from '../../config/StyleChoices';
+import {TABLE_ROW_MINOR_COLOR, TODO_COLOR} from '../../config/StyleChoices';
 import {grouping_display_names} from '../../types/Enums';
 
 export default function CategoryCompletionTable(): React.ReactElement {
@@ -205,65 +199,57 @@ export default function CategoryCompletionTable(): React.ReactElement {
   }
 
   return (
-    <Paper
+    <TableContainer
       sx={{
-        marginTop: '16px',
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'auto',
-        scrollbarWidth: '0px',
+        backgroundImage: 'var(--mui-overlays-1)',
+        paddingBottom: 2,
+        borderRadius: '5px',
       }}>
-      <TableContainer>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell width="50px" text="" />
-              <TableHeaderCell width="300px" text="Category" />
-              {userList.map(user => (
-                <TableHeaderCell key={user.id} text={user.username} />
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {[0, 1].map(i => (
-              <React.Fragment key={i}>
-                {i === 1 && plannedBanner}
-                {groupingList.map(grouping => {
-                  const isExpanded =
-                    i === 1
-                      ? areOpenPlanned[grouping]
-                      : areOpenRegular[grouping];
-                  return (
-                    <React.Fragment key={`${i}-${grouping}`}>
-                      {makeGroupingRow({
-                        grouping,
-                        isExpanded,
-                        handleToggle: () =>
-                          i === 1
-                            ? setAreOpenPlanned(prev => ({
-                                ...prev,
-                                [grouping]: !prev[grouping],
-                              }))
-                            : setAreOpenRegular(prev => ({
-                                ...prev,
-                                [grouping]: !prev[grouping],
-                              })),
-                        planned: i === 1,
-                      })}
-                      {groupingDict[grouping].map(cat =>
-                        makeCategoryRow(cat, i === 1, isExpanded),
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </React.Fragment>
+      <Table stickyHeader>
+        <TableHead>
+          <TableRow>
+            <TableHeaderCell width="50px" text="" />
+            <TableHeaderCell width="300px" text="Category" />
+            {userList.map(user => (
+              <TableHeaderCell key={user.id} text={user.username} />
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {[0, 1].map(i => (
+            <React.Fragment key={`plannedness-${i}`}>
+              {i === 1 && plannedBanner}
+              {groupingList.map(grouping => {
+                const isExpanded =
+                  i === 1 ? areOpenPlanned[grouping] : areOpenRegular[grouping];
+                return (
+                  <React.Fragment key={`${i}-${grouping}`}>
+                    {makeGroupingRow({
+                      grouping,
+                      isExpanded,
+                      handleToggle: () =>
+                        i === 1
+                          ? setAreOpenPlanned(prev => ({
+                              ...prev,
+                              [grouping]: !prev[grouping],
+                            }))
+                          : setAreOpenRegular(prev => ({
+                              ...prev,
+                              [grouping]: !prev[grouping],
+                            })),
+                      planned: i === 1,
+                    })}
+                    {groupingDict[grouping].map(cat =>
+                      makeCategoryRow(cat, i === 1, isExpanded),
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 

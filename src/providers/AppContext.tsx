@@ -1,19 +1,19 @@
-import React, {useState, useMemo, useEffect, useContext, cache} from 'react';
-import {AppTabType} from '../types/Enums';
+import React, {useState, useMemo, useContext} from 'react';
 import Cookies from 'js-cookie';
-import {
-  QueryCache,
-  QueryClient,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import {QueryClient, useQueryClient} from '@tanstack/react-query';
 import {userOptions} from '../hooks/dataOptions';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {useNotifications, NotificationsDispatch} from './NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
-import {DEFAULT_YEAR, EXPIRATION_DAYS} from '../config/GlobalConstants';
-import {logToConsole, warnToConsole} from '../utils/Logger';
-import {DEFAULT_PREFERENCES} from '../config/GlobalConstants';
+import {UrlParamsContext} from './RouteParser';
+import {
+  DEFAULT_YEAR,
+  EXPIRATION_DAYS,
+  DEFAULT_PREFERENCES,
+  AVAILABLE_YEARS,
+} from '../config/GlobalConstants';
+import {warnToConsole} from '../utils/Logger';
+import {useNavigate} from 'react-router-dom';
 
 export type OscarAppContextValue = Readonly<{
   // selectedTab: AppTabType;
@@ -36,16 +36,29 @@ type Props = {
 export default function OscarAppContextProvider(
   props: Props,
 ): React.ReactElement {
-  const [year, setYear] = useState<number>(DEFAULT_YEAR);
-  // const [selectedTab, setSelectedTab] = useState<AppTabType>(AppTabType.legacy);
+  const navigate = useNavigate();
+  const urlParams = useContext(UrlParamsContext);
+  const [year, setYear] = useState<number>(() => {
+    const urlYear = urlParams?.year ?? null;
+    if (urlYear && AVAILABLE_YEARS.includes(urlYear)) {
+      return urlYear;
+    }
+    return DEFAULT_YEAR;
+  });
   const [preferences, setPreferences] = useState<Preferences>(
     getPreferenceStateAtStartup(DEFAULT_PREFERENCES),
   );
 
   //* The username and userId need special handling, since they're set from cookies
   //* Eventually the preferences will also be defaulted from pulled data
-  //* so they'll need the queryClient too. But at least the preferences don't need
-  //* to be set from two separate sources validated at runtime.
+  //*   so they'll need the queryClient too. But at least the preferences don't need
+  //*   to be set from two separate sources validated at runtime.
+  //* The year is set from the URL, but it's defaulted from a config file so just need
+  //*   to update the URL when it changes.
+  //*   Specifically, the only way the year can change is by using the YearSelector,
+  //*   which is fixed by the usual trick of modifying setYear, or by typing in
+  //*   a specific year in the URL, which is handled by the useParams up above
+  //*   when we set the default in useState.
   // TODO - Wait, can I just use TanStack to set the username and userId? It's fundamentally a cache thing, no? Hmm...
   const queryClient = useQueryClient();
   //* Set the default values from the cookies
@@ -88,6 +101,18 @@ export default function OscarAppContextProvider(
   //* Set a new version of setPreferences that also updates the localStorage
   const newSetPreferences = upgradeSetPreferences(setPreferences);
 
+  //* Set a new version of setYear that also updates the URL
+  const newSetYear = upgradeSetYear(setYear, navigate);
+
+  React.useEffect(() => {
+    if (urlParams?.year) {
+      const parsedYear = urlParams.year;
+      if (AVAILABLE_YEARS.includes(parsedYear)) {
+        setYear(parsedYear);
+      }
+    }
+  }, [urlParams?.year]);
+
   const contextValue = useMemo(() => {
     return {
       // selectedTab,
@@ -98,9 +123,9 @@ export default function OscarAppContextProvider(
       preferences,
       setPreferences: newSetPreferences, //* This one updates the localStorage too
       year,
-      setYear,
+      setYear: newSetYear, //* This one updates the URL too
     };
-  }, [activeUsername, preferences, year]); //! selectedTab, activeUserId,]);
+  }, [activeUsername, preferences, year]);
 
   return (
     <OscarAppContext.Provider value={contextValue}>
@@ -118,100 +143,6 @@ export function useOscarAppContext(): OscarAppContextValue {
   }
 
   return value;
-}
-
-//* Deprecated, but I'm keeping it around for sentimental reasons
-function CookieHandler({
-  usernameSetter,
-}: {
-  usernameSetter: (username: string | null) => void;
-}): React.ReactElement {
-  const {activeUserId, setActiveUserId, activeUsername} = useOscarAppContext();
-  // const EXPIRATION_DAYS = 400;
-  const [isInitialised, setIsInitialised] = useState(false);
-  const userList = useQuery(userOptions());
-  const queryClient = useQueryClient();
-
-  useEffect;
-
-  queryClient.fetchQuery(userOptions()).then(data => {
-    const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
-    if (activeUsername !== suggestedUsername) {
-      logToConsole(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.
-        The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}. 
-        Attempting to fix...`,
-      );
-      const notifications = useNotifications();
-      notifications.show({
-        type: 'error',
-        message:
-          'The username was incorrectly set. If it remains incorrect, reload the page.',
-        //* Note to self: It's also possible that the userId is invalid, but that seems less likely
-      });
-      usernameSetter(suggestedUsername);
-      Cookies.set('activeUsername', suggestedUsername as string, {
-        expires: EXPIRATION_DAYS,
-      });
-    }
-  });
-  //   setIsInitialised(true);
-  //   usernameSetter(getUsernameFromId(activeUserId ?? '', data));
-  // });
-
-  useEffect(() => {
-    if (isInitialised) {
-      Cookies.set('activeUserId', activeUserId as string, {
-        expires: EXPIRATION_DAYS,
-      });
-      if (userList.data) {
-        const newUsername = getUsernameFromId(
-          activeUserId ?? '',
-          userList.data,
-        );
-        Cookies.set('activeUsername', newUsername as string, {
-          expires: EXPIRATION_DAYS,
-        });
-        usernameSetter(newUsername);
-      } else {
-        usernameSetter(null);
-      }
-    } else {
-      setIsInitialised(true);
-      const value: UserId | null = UserIdSchema.parse(
-        Cookies.get('activeUserId'),
-      );
-      if (value) {
-        setActiveUserId(value);
-      } else {
-        setActiveUserId(null);
-      }
-      const strValue: string | undefined = Cookies.get('activeUsername');
-      if (userList.isSuccess) {
-        usernameSetter(getUsernameFromId(activeUserId ?? '', userList.data));
-      } else if (strValue === undefined) return;
-      else {
-        usernameSetter(strValue ?? null);
-      }
-    }
-  }, [activeUserId]);
-
-  userList.promise.then(data => {
-    if (activeUsername !== getUsernameFromId(activeUserId ?? '', data)) {
-      logToConsole(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}. Attempting to fix...`,
-      );
-      const notifications = useNotifications();
-      notifications.show({
-        type: 'error',
-        message:
-          'The username was incorrectly set. If it remains incorrect, reload the page.',
-      });
-      usernameSetter(getUsernameFromId(activeUserId ?? '', data));
-    }
-  });
-
-  return <></>;
 }
 
 //* returns a new version of setActiveUserId that also updates the cookie and activeUsername
@@ -268,7 +199,7 @@ function getCallbackForArrivedUserList(
       timeLimit &&
       Date.now() - timeStamp > timeLimit
     ) {
-      logToConsole(
+      warnToConsole(
         `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
         'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
         'Attempting to fix...`,
@@ -326,4 +257,21 @@ function getPreferenceStateAtStartup(
     }),
   ) as Preferences;
   return bestGuess;
+}
+
+//* Returns a new version of setYear that also updates the URL
+function upgradeSetYear(
+  setYear: (year: number) => void,
+  navigate: ReturnType<typeof useNavigate>,
+): (year: number) => void {
+  return (year: number) => {
+    setYear(year);
+    const currentPath = window.location.pathname;
+    const match = currentPath.match(/(\d{4})/);
+    if (match) {
+      navigate(currentPath.replace(match[0], year.toString()), {replace: true});
+    } else {
+      navigate(`/${year}`, {replace: true});
+    }
+  };
 }

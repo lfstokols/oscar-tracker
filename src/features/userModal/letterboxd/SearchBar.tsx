@@ -1,5 +1,4 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
@@ -19,7 +18,7 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
   const [inputValue, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<LProfile[]>([]);
 
-  const fetch = React.useMemo(
+  const fetchSearch = React.useMemo(
     () =>
       debounce(async (request: {input: string}) => {
         const results = await SearchProfileDatabase(request.input);
@@ -33,8 +32,8 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
       setOptions(value ? [value] : []);
       return;
     }
-    fetch({input: inputValue});
-  }, [value, inputValue, fetch]);
+    fetchSearch({input: inputValue});
+  }, [value, inputValue, fetchSearch]);
 
   return (
     <Autocomplete
@@ -49,15 +48,15 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
       filterSelectedOptions
       value={value}
       noOptionsText="No profiles"
-      onSubmit={(event: any) => {
+      onSubmit={_event => {
         props.setter(value?.username || null);
       }}
-      onChange={(event: any, newValue: LProfile | null) => {
+      onChange={(_event, newValue: LProfile | null) => {
         setOptions(newValue ? [newValue, ...options] : options);
         setValue(newValue);
         props.setter(newValue?.username || null);
       }}
-      onInputChange={(event, newInputValue) => {
+      onInputChange={(_event, newInputValue) => {
         setInputValue(newInputValue);
       }}
       renderInput={params => (
@@ -67,7 +66,10 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
           fullWidth
         />
       )}
-      renderOption={(props, option) => {
+      renderOption={(
+        props: {key: string} & React.ComponentPropsWithoutRef<'li'>,
+        option: LProfile,
+      ) => {
         const {key, ...optionProps} = props;
         return (
           <li key={key} {...optionProps}>

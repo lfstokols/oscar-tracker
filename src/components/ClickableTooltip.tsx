@@ -6,11 +6,13 @@ export function ClickableTooltip({
   popup,
   arrow = false,
   followCursor = false,
+  isOpaque = false,
 }: {
   children: React.ReactNode;
   popup: React.ReactNode;
   arrow?: boolean;
   followCursor?: boolean;
+  isOpaque?: boolean;
 }): React.ReactElement {
   const [open, setOpen] = useState(false);
   const handleTooltipOpen = () => {
@@ -35,14 +37,17 @@ export function ClickableTooltip({
               '& .MuiTooltip-tooltip': {
                 maxWidth: '800px',
                 padding: '16px',
+                ...(isOpaque && {background: '#616161'}),
               },
             },
           },
         }}
         title={popup}
         followCursor={followCursor}>
-        <span>
-          <Box onClick={handleTooltipOpen}>{children}</Box>
+        <span style={{width: 'fit-content', display: 'inline-block'}}>
+          <Box onClick={handleTooltipOpen} sx={{width: 'fit-content'}}>
+            {children}
+          </Box>
         </span>
       </Tooltip>
     </ClickAwayListener>

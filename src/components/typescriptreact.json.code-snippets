@@ -1,0 +1,19 @@
+{
+	"TSX File Template": {
+		"isFileTemplate": true,
+		"prefix": "tsxfile",
+		"body": [
+			"import React from 'react';",
+			"",
+			"type Props = {};",
+			"",
+			"export default function ${TM_FILENAME_BASE}({}: Props): React.ReactElement {",
+			"  return (",
+			"    $1",
+			"  );",
+			"}",
+			"",
+		],
+		"description": "Template for a new TSX file"
+	}
+}

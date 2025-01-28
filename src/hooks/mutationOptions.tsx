@@ -1,22 +1,22 @@
-import {QueryClient} from '@tanstack/react-query';
+import {QueryClient, QueryKey} from '@tanstack/react-query';
 import {NotificationsDispatch} from '../providers/NotificationContext';
 import {
   MyUserDataSchema,
   UserIdSchema,
   UserListSchema,
-  UserSchema,
 } from '../types/APIDataSchema';
 import {z} from 'zod';
 import {userOptions} from './dataOptions';
-import {logToConsole} from '../utils/Logger';
+import {errorToConsole} from '../utils/Logger';
+import {API_BASE_URL} from '../config/GlobalConstants';
 
 // *
 // * Genera Stuff // *
 // *
 
 export function updateCacheOnSuccess<T>(
-  queryKey: any,
-  parser: (data: any) => T,
+  queryKey: QueryKey,
+  parser: (data: unknown) => T,
   queryClient: QueryClient,
 ) {
   return async (response: Response) => {
@@ -29,7 +29,7 @@ export function onMutateError(
   notifications: NotificationsDispatch,
 ) {
   return async (response: Response) => {
-    logToConsole(response);
+    errorToConsole(response);
     notifications.show({
       type: 'error',
       message: message,
@@ -44,7 +44,7 @@ export function onMutateError(
 export function updateWatchlistMutationFn(movieIds: MovieId[], year: number) {
   return async (newState: WatchStatus) => {
     const body = JSON.stringify({movieIds, status: newState, year});
-    return await fetch('api/watchlist', {
+    return await fetch(`${API_BASE_URL}/watchlist`, {
       method: 'PUT',
       body,
       headers: {'Content-Type': 'application/json'},
@@ -62,7 +62,7 @@ export function addUserMutationFn() {
     data: Partial<z.input<typeof MyUserDataSchema>>;
   }) => {
     const body = JSON.stringify({username, ...data});
-    return await fetch('api/users', {
+    return await fetch(`${API_BASE_URL}/users`, {
       method: 'POST',
       body,
       headers: {'Content-Type': 'application/json'},
@@ -88,7 +88,7 @@ export function updateUserMutationFn() {
     data: Partial<z.input<typeof MyUserDataSchema>>,
   ): Promise<Response> => {
     const body = JSON.stringify(data);
-    return await fetch('api/users', {
+    return await fetch(`${API_BASE_URL}/users`, {
       method: 'PUT',
       body,
       headers: {'Content-Type': 'application/json'},
@@ -96,11 +96,11 @@ export function updateUserMutationFn() {
   };
 }
 
-export function deleteUserMutationFn(userId: UserId, password: string) {
+export function deleteUserMutationFn(_userId: UserId, password: string) {
   return async (userId: UserId) => {
     const params = new URLSearchParams({userId});
     const body = JSON.stringify({userId, delete: true, [password]: true});
-    return await fetch(`api/users?${params.toString()}`, {
+    return await fetch(`${API_BASE_URL}/users?${params.toString()}`, {
       method: 'DELETE',
       body,
       headers: {'Content-Type': 'application/json'},

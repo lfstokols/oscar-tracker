@@ -91,9 +91,10 @@ def get_active_user_id(request: Request) -> UserID | None:
     if active_user_id is None:
         return None
     if not re.fullmatch(r"^usr_[0-9a-fA-F]{6}$", active_user_id):
+        logging.warn(f"Invalid active user id in cookie: {active_user_id}")
         return None
     users = qu.get_users()
     if active_user_id not in [user["id"] for user in users]:
+        logging.warn(f"Active user id from cookie not found in users: {active_user_id}")
         return None
-    active_user_id = AnnotatedValidator(user=active_user_id).user
-    return active_user_id
+    return AnnotatedValidator(user=active_user_id).user

@@ -1,0 +1,121 @@
+movieId,categoryId,note
+mov_604c63,cat_pict,
+mov_6012dc,cat_pict,
+mov_60f4be,cat_pict,
+mov_6060ce,cat_pict,
+mov_60576e,cat_pict,
+mov_60c224,cat_pict,
+mov_6069d3,cat_pict,
+mov_60c4f0,cat_pict,
+mov_6075b4,cat_pict,
+mov_601f65,cat_pict,
+mov_604c63,cat_dirc,
+mov_60f4be,cat_dirc,
+mov_60c224,cat_dirc,
+mov_6075b4,cat_dirc,
+mov_601f65,cat_dirc,
+mov_604c63,cat_mact,Cillian Murphy
+mov_6069d3,cat_mact,Bradley Cooper
+mov_608f17,cat_mact,Colman Domingo
+mov_60576e,cat_mact,Paul Giamatti
+mov_6012dc,cat_mact,Jeffrey Wright
+mov_6075b4,cat_fact,Emma Stone
+mov_609f63,cat_fact,Annette Bening
+mov_60c224,cat_fact,Lily Gladstone
+mov_60f4be,cat_fact,Sandra Hüller
+mov_6069d3,cat_fact,Carey Mulligan
+mov_604c63,cat_msac,Robert Downey Jr.
+mov_6012dc,cat_msac,Sterling K. Brown
+mov_60c224,cat_msac,Robert De Niro
+mov_6060ce,cat_msac,Ryan Gosling
+mov_6075b4,cat_msac,Mark Ruffalo
+mov_60576e,cat_fsac,Da'Vine Joy Randolph
+mov_604c63,cat_fsac,Emily Blunt
+mov_609ff1,cat_fsac,Danielle Brooks
+mov_6060ce,cat_fsac,America Ferrera
+mov_609f63,cat_fsac,Jodie Foster
+mov_60f4be,cat_oscp,
+mov_60576e,cat_oscp,
+mov_6069d3,cat_oscp,
+mov_60a53c,cat_oscp,
+mov_60c4f0,cat_oscp,
+mov_6012dc,cat_ascp,
+mov_6060ce,cat_ascp,
+mov_604c63,cat_ascp,
+mov_6075b4,cat_ascp,
+mov_601f65,cat_ascp,
+mov_60ceeb,cat_anim,
+mov_60ad6e,cat_anim,
+mov_6070fb,cat_anim,
+mov_606919,cat_anim,
+mov_608f22,cat_anim,
+mov_601f65,cat_frgn,United Kingdom
+mov_600ec3,cat_frgn,Italy
+mov_6052da,cat_frgn,Japan
+mov_60332a,cat_frgn,Spain
+mov_60cf47,cat_frgn,Germany
+mov_60f0c3,cat_docu,
+mov_609c65,cat_docu,
+mov_60d911,cat_docu,
+mov_60f6bc,cat_docu,
+mov_6046c8,cat_docu,
+mov_60542f,cat_sdoc,
+mov_606d51,cat_sdoc,
+mov_60ad15,cat_sdoc,
+mov_60f938,cat_sdoc,
+mov_601ed8,cat_sdoc,
+mov_607bea,cat_shla,
+mov_6089ef,cat_shla,
+mov_60bbb4,cat_shla,
+mov_60c94c,cat_shla,
+mov_60bf18,cat_shla,
+mov_60b5a5,cat_sanm,
+mov_60afc9,cat_sanm,
+mov_607919,cat_sanm,
+mov_60a35a,cat_sanm,
+mov_6057cb,cat_sanm,
+mov_604c63,cat_scor,
+mov_6012dc,cat_scor,
+mov_6060ec,cat_scor,
+mov_60c224,cat_scor,
+mov_6075b4,cat_scor,
+mov_6060ce,cat_song,What Was I Made For?
+mov_603a90,cat_song,The Fire Inside
+mov_6060ce,cat_song,I'm Just Ken
+mov_602ea6,cat_song,It Never Went Away
+mov_60c224,cat_song,Wahzhazhe (A Song for My People)
+mov_601f65,cat_soun,
+mov_602269,cat_soun,
+mov_6069d3,cat_soun,
+mov_6063de,cat_soun,
+mov_604c63,cat_soun,
+mov_6075b4,cat_prod,
+mov_6060ce,cat_prod,
+mov_60c224,cat_prod,
+mov_6035a4,cat_prod,
+mov_604c63,cat_prod,
+mov_604c63,cat_cine,
+mov_60c9ef,cat_cine,
+mov_60c224,cat_cine,
+mov_6069d3,cat_cine,
+mov_6075b4,cat_cine,
+mov_6075b4,cat_mkup,
+mov_609470,cat_mkup,
+mov_6069d3,cat_mkup,
+mov_604c63,cat_mkup,
+mov_60332a,cat_mkup,
+mov_6075b4,cat_cstu,
+mov_6060ce,cat_cstu,
+mov_60c224,cat_cstu,
+mov_6035a4,cat_cstu,
+mov_604c63,cat_cstu,
+mov_604c63,cat_edit,
+mov_60f4be,cat_edit,
+mov_60576e,cat_edit,
+mov_60c224,cat_edit,
+mov_6075b4,cat_edit,
+mov_605563,cat_vfxx,
+mov_602269,cat_vfxx,
+mov_608b01,cat_vfxx,
+mov_6063de,cat_vfxx,
+mov_6035a4,cat_vfxx,

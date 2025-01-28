@@ -8,7 +8,6 @@ import {addUserOnSuccess, onMutateError} from '../../hooks/mutationOptions';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {addUserMutationFn} from '../../hooks/mutationOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
-import Tooltip from '@mui/material/Tooltip';
 import {useState} from 'react';
 
 type Props = {

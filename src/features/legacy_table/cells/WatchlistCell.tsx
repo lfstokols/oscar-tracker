@@ -4,25 +4,25 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import {LinearProgress, Tooltip, TableCell} from '@mui/material';
+import {LinearProgress, TableCell} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
-import {WatchStatuses} from '../../types/Enums';
-import {watchlistOptions} from '../../hooks/dataOptions';
+import {WatchStatuses} from '../../../types/Enums';
+import {watchlistOptions} from '../../../hooks/dataOptions';
 import {
   onMutateError,
   updateCacheOnSuccess,
   updateWatchlistMutationFn,
-} from '../../hooks/mutationOptions';
-import {useOscarAppContext} from '../../providers/AppContext';
-import {useNotifications} from '../../providers/NotificationContext';
-import {WatchListSchema} from '../../types/APIDataSchema';
+} from '../../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../../providers/AppContext';
+import {useNotifications} from '../../../providers/NotificationContext';
+import {WatchListSchema} from '../../../types/APIDataSchema';
 import {Typography} from '@mui/material';
-import {ClickableTooltip} from '../../components/ClickableTooltip';
+import {ClickableTooltip} from '../../../components/ClickableTooltip';
 import {
   TODO_COLOR,
   SEEN_COLOR,
   NO_STATUS_COLOR,
-} from '../../config/StyleChoices';
+} from '../../../config/StyleChoices';
 type Props =
   | {
       movieId: MovieId;
@@ -34,13 +34,14 @@ type Props =
     };
 
 function WatchlistCell({movieId, userId}: Props): React.ReactElement {
-  const queryClient = useQueryClient();
+  // TODO - Consider upgrading to React v19 to get fancy use() hook
+  const context = useOscarAppContext();
+
+  const year = context.year;
   const notifications = useNotifications();
-  const watchlistDataPromise = useSuspenseQuery(
-    watchlistOptions(useOscarAppContext().year),
-  );
   const idList = movieId instanceof Array ? movieId : [movieId];
-  const year = useOscarAppContext().year;
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: updateWatchlistMutationFn(idList, year),
     onSuccess: updateCacheOnSuccess(
@@ -51,16 +52,14 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
     onError: onMutateError('Failed to update watch status.', notifications),
   });
 
+  const watchlistDataPromise = useSuspenseQuery(watchlistOptions(year));
   if (watchlistDataPromise.isPending) return <LinearProgress />;
   if (watchlistDataPromise.isError) return <ErrorIcon />;
-  const watchlist = watchlistDataPromise.data; //as WatchNotice[];
+  const watchlist = watchlistDataPromise.data;
 
-  // TODO - Consider upgrading to React v19 to get fancy use() hook
-  //const isEditingDisabled = use(OscarAppContext).activeUserId !== userId;
-  const context = useOscarAppContext();
   const isEditingDisabled = context.activeUserId !== userId;
   const seenIsLocked = context.preferences.lockSeenToggle;
-  const remoteWatchState: WatchStatuses =
+  const remoteWatchState =
     watchlist.find(item => item.movieId === movieId && item.userId === userId)
       ?.status ?? WatchStatuses.blank;
   const localWatchState = mutation.isPending
@@ -95,11 +94,11 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
 function createStatusSwitcher(
   seenIsLocked: boolean,
 ): (prevStatus: WatchStatuses) => WatchStatuses {
-  const nextStatus = (prevStatus: WatchStatuses): WatchStatuses => {
+  return prevStatus => {
     if (seenIsLocked && prevStatus === WatchStatuses.seen) {
       return WatchStatuses.seen;
     }
-    const statuses: WatchStatuses[] = [
+    const statuses = [
       WatchStatuses.todo,
       WatchStatuses.blank,
       WatchStatuses.seen,
@@ -110,7 +109,6 @@ function createStatusSwitcher(
     const range = seenIsLocked ? 2 : 3;
     return statuses[(statuses.indexOf(prevStatus) + 1) % range];
   };
-  return nextStatus;
 }
 
 function display(watchstate: WatchStatuses): string {
@@ -133,7 +131,7 @@ export function MyFill({
 }: FillProps): React.ReactElement {
   return (
     <Typography
-      variant="h6"
+      variant="body2"
       onClick={handleInteract}
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -145,7 +143,7 @@ export function MyFill({
             : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,
         minHeight: '32px',
-        width: '80px',
+        width: '60px',
         height: '100%',
         borderRadius: '5px',
         display: 'flex',

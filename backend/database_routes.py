@@ -2,7 +2,7 @@ import os, logging
 from datetime import datetime
 import time
 from functools import wraps
-from flask import Blueprint, send_from_directory, request, jsonify, abort
+from flask import Blueprint, send_from_directory, request, jsonify, abort, make_response
 from pathlib import Path
 from pydantic import ValidationError
 import requests
@@ -30,7 +30,6 @@ from backend.scheduled_tasks.check_rss import (
     get_movie_list_from_rss,
 )
 
-#! vvv this is dumb vvv
 from backend.routing_lib import utils
 from backend.routing_lib.utils import (
     has_flag,
@@ -120,7 +119,15 @@ def serve_movies():
 @handle_errors
 def serve_users_GET():
     userId = utils.get_active_user_id(request)
-    if has_flag(request, "myData") and userId:
+    if has_flag(request, "myData"):
+        if userId is None:
+            if request.cookies.get("activeUserId") is not None:
+                response = make_response()
+                response.delete_cookie("activeUserId")
+                return response, 400
+            raise MissingAPIArgumentError(
+                "No active user id", [("activeUserId", "cookie")]
+            )
         data = qu.get_my_user_data(userId)
         return jsonify(validate_my_user_data(data))
     else:

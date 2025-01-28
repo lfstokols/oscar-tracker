@@ -6,8 +6,8 @@ import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CssBaseline} from '@mui/material';
 import ThemeConfig from '../config/ThemeConfig';
 import QueryClientConfig from '../config/QueryClientConfig';
-import {BrowserRouter, Routes, Route} from 'react-router-dom';
-import App from './App';
+import {BrowserRouter} from 'react-router-dom';
+import RouteParser from '../providers/RouteParser';
 
 const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;
 
@@ -21,16 +21,18 @@ export default function AppProvider({
 }): React.ReactElement {
   return (
     <BrowserRouter basename={ROUTE_BASENAME}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <OscarAppContextProvider>
-            <NotificationsContextProvider>
-              {children}
-            </NotificationsContextProvider>
-          </OscarAppContextProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <RouteParser>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <QueryClientProvider client={queryClient}>
+            <OscarAppContextProvider>
+              <NotificationsContextProvider>
+                {children}
+              </NotificationsContextProvider>
+            </OscarAppContextProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </RouteParser>
     </BrowserRouter>
   );
 }
