@@ -1,28 +1,12 @@
 import * as React from 'react';
-import {z} from 'zod';
-import {
-  useMutation,
-  useSuspenseQuery,
-  useQueryClient,
-  UseMutationResult,
-} from '@tanstack/react-query';
+import {useSuspenseQuery} from '@tanstack/react-query';
 import {myUserDataOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
-import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
-import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
 import ButtonIcon from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import ErrorIcon from '@mui/icons-material/Error';
 import EditIcon from '@mui/icons-material/Edit';
-import {
-  updateCacheOnSuccess,
-  updateUserMutationFn,
-  onMutateError,
-} from '../../hooks/mutationOptions';
-import {MyUserData, MyUserDataSchema} from '../../types/APIDataSchema';
-import {useNotifications} from '../../providers/NotificationContext';
 
 type Props<T> = {
   label: string;
@@ -38,13 +22,15 @@ export default function UserDataField<T>(props: Props<T>) {
   const {activeUserId} = useOscarAppContext();
   if (activeUserId === null)
     throw new Error('Loading UserDataField with no active user. How?');
-  const {data, isError} = useSuspenseQuery(myUserDataOptions(activeUserId));
+  const {data: _data, isError} = useSuspenseQuery(
+    myUserDataOptions(activeUserId),
+  );
   if (isError) {
     return <ErrorIcon />;
   }
   const [isEditing, setIsEditing] = React.useState(false);
   // const mutation = props.mutation;
-  const remoteValue = props.remoteValue;
+  // const remoteValue = props.remoteValue;
   const localValue = props.localValue; //mutation.isPending ? props.optimisticValue : remoteValue;
   if (isEditing) {
     return (

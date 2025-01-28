@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {useQueryClient} from '@tanstack/react-query';
 import {watchlistOptions} from '../../../hooks/dataOptions';
-import {Button, Paper, Stack, IconButton} from '@mui/material';
+import {Paper, Stack} from '@mui/material';
 import {Sync as RefreshIcon} from '@mui/icons-material';
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {useIsMobile} from '../../../hooks/useIsMobile';
@@ -31,7 +31,12 @@ export default function TableControls({
   const canRefresh = useOscarAppContext().activeUserId !== null;
 
   return (
-    <Paper sx={{width: '50vw', position: 'sticky', top: '-40px'}}>
+    <Paper
+      sx={{
+        width: '50vw',
+        // position: 'sticky',
+        // top: '-40px',
+      }}>
       <Stack direction="row" width="100%" justifyContent="space-between">
         <NoAccountBlocker hasAccess={canRefresh}>
           <RefreshWidget handleRefresh={handleRefresh} isMobile={isMobile} />

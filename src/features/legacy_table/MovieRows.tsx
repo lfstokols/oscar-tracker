@@ -1,10 +1,9 @@
-import MultiMovieRuntimeCell from './MultiMovieRuntimeCell';
-import MultiMovieTitleCell from './MultiMovieTitleCell';
-import NominationsCell from './NominationsCell';
-import RuntimeCell from './RuntimeCell';
-import TitleCell from './TitleCell';
+import NominationsCell from './cells/NominationsCell';
+import RuntimeCell from './cells/RuntimeCell';
+import TitleCell from './cells/TitleCell';
 import TableRow from '@mui/material/TableRow';
-import WatchlistCell from './WatchlistCell';
+import WatchlistCell from './cells/WatchlistCell';
+import MoviePosterCell from './cells/MoviePosterCell';
 
 type Props = {
   filteredMovies: Movie[];
@@ -34,6 +33,7 @@ export default function MovieRows({
                 // backgroundColor: TABLE_ROW_COLOR,
               }
             }>
+            <MoviePosterCell movie={movie} />
             <TitleCell
               movie={movie}
               nominations={nominations}
@@ -45,9 +45,9 @@ export default function MovieRows({
               categories={categories}
             />
             <RuntimeCell
-              runtime_minutes={movie['runtime_minutes']}
-              runtime_hours={movie['runtime_hours']}
-              display_formatted={isRuntimeFormatted}
+              runtimeMinutes={movie['runtime_minutes']}
+              runtimeHours={movie['runtime_hours']}
+              isRuntimeFormatted={isRuntimeFormatted}
             />
             {sortedUsers.map(user => (
               <WatchlistCell

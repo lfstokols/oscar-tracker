@@ -1,37 +1,28 @@
-import {Container} from '@mui/material';
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
-import React, {Suspense} from 'react';
+import React, {Suspense, useEffect, useRef, useState} from 'react';
 import {ErrorBoundary} from 'react-error-boundary';
-import {Routes, Route, Navigate} from 'react-router-dom';
-import ErrorPage from '../assets/ErrorPage.png';
 import {LoadScreen} from '../components/LoadScreen';
-import SiteHeader from '../features/siteHeader/SiteHeader';
-import PageContainer from './AppContent';
+import AppHeader from '../features/app_header/AppHeader';
 import AppProvider from './AppProvider';
-import CategoryTab from './routes/CategoryTab';
-import HomeTab from './routes/HomeTab';
-import UserTab from './routes/UserTab';
+import AppContent from './AppContent';
+import AppErrorScreen from '../components/AppErrorScreen';
+import AppNavDrawer from './AppNavDrawer';
+import {useIsMobile} from '../hooks/useIsMobile';
 
 export default function App(): React.ReactElement {
+  const isMobile = useIsMobile();
+  const isDrawerPersistent = !isMobile;
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(isDrawerPersistent);
+  const prevIsMobile = useRef(isMobile);
+  useEffect(() => {
+    if (isMobile && !prevIsMobile.current && isDrawerOpen) {
+      setIsDrawerOpen(false);
+    }
+    prevIsMobile.current = isMobile;
+  }, [isMobile, isDrawerOpen]);
+
   return (
-    <ErrorBoundary
-      fallback={
-        <Container
-          sx={{
-            height: '100vh',
-            width: '100vw',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
-          <img
-            src={ErrorPage}
-            alt="Error"
-            height={Math.min(window.innerHeight, window.innerWidth) * 0.8}
-            width={Math.min(window.innerHeight, window.innerWidth) * 0.8}
-          />
-        </Container>
-      }>
+    <ErrorBoundary fallback={<AppErrorScreen isFullScreen />}>
       <Suspense fallback={<LoadScreen />}>
         <AppProvider>
           <ReactQueryDevtools />
@@ -40,27 +31,23 @@ export default function App(): React.ReactElement {
             style={{
               height: '100vh',
               width: '100vw',
-              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              paddingBottom: '12px',
             }}>
-            <SiteHeader />
-            <Routes>
-              <Route path="/" element={<Navigate to="/legacy" replace />} />
-              <Route
-                path="/legacy"
-                element={<PageContainer currentTab={<HomeTab />} />}
-              />
-              <Route
-                path="/users"
-                element={<PageContainer currentTab={<UserTab />} />}
-              />
-              <Route
-                path="/categories"
-                element={<PageContainer currentTab={<CategoryTab />} />}
-              />
-            </Routes>
+            <AppHeader
+              isDrawerOpen={isDrawerOpen}
+              setIsDrawerOpen={setIsDrawerOpen}
+              isDrawerPersistent={isDrawerPersistent}
+            />
+            <AppNavDrawer
+              open={isDrawerOpen}
+              onClose={() => setIsDrawerOpen(false)}
+              isDrawerPersistent={isDrawerPersistent}
+            />
+            <AppContent
+              isDrawerOpen={isDrawerOpen}
+              isDrawerPersistent={isDrawerPersistent}
+            />
           </div>
         </AppProvider>
       </Suspense>

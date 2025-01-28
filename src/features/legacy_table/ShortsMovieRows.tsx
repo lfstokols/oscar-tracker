@@ -1,9 +1,9 @@
 import MovieRows from './MovieRows';
 import TableRow from '@mui/material/TableRow';
-import MultiMovieTitleCell from './MultiMovieTitleCell';
-import NominationsCell from './NominationsCell';
-import MultiMovieRuntimeCell from './MultiMovieRuntimeCell';
-import WatchlistCell from './WatchlistCell';
+import MultiMovieTitleCell from './cells/MultiMovieTitleCell';
+import NominationsCell from './cells/NominationsCell';
+import MultiMovieRuntimeCell from './cells/MultiMovieRuntimeCell';
+import WatchlistCell from './cells/WatchlistCell';
 
 type Props = {
   merge: boolean;
@@ -28,7 +28,6 @@ export default function ShortsMovieRows(
 
   return (
     <TableRow
-      key={props.filteredMovies.reduce((acc, movie) => acc + movie.id, '')}
       sx={
         {
           // backgroundColor: TABLE_ROW_COLOR,

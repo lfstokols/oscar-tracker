@@ -1,4 +1,4 @@
-import React, {use, useState, useMemo, useCallback, useContext} from 'react';
+import React, {useState, useMemo, useCallback, useContext} from 'react';
 import NotificationToast, {
   Notification,
   NotificationType,
@@ -12,7 +12,7 @@ export type NotificationContextValue = Readonly<{
 // NotificationContext should not be exported
 const NotificationContext: React.Context<NotificationContextValue> =
   React.createContext({
-    setActiveNotification: notif => {},
+    setActiveNotification: _notif => {},
   });
 
 type Props = {

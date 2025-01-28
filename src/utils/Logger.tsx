@@ -2,19 +2,19 @@
 
 const RUN_DEBUG = import.meta.env.VITE_RUN_DEBUG;
 
-export function logToConsole(message: any) {
+export function logToConsole(message: unknown) {
   if (RUN_DEBUG) {
     console.log(message);
   }
 }
 
-export function warnToConsole(message: any) {
+export function warnToConsole(message: unknown) {
   if (RUN_DEBUG) {
     console.warn(message);
   }
 }
 
-export function logToConsoleError(message: any) {
+export function logToConsoleError(message: unknown) {
   if (RUN_DEBUG) {
     console.error(message);
   }

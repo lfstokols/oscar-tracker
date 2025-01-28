@@ -1,34 +1,38 @@
-import React, {Suspense, useState} from 'react';
+import React, {Dispatch, SetStateAction, Suspense} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import MenuIcon from '@mui/icons-material/Menu';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import UserButton from './UserButton';
 import OurWordmark from '../../components/OurWordmark';
 import Avatar from '@mui/material/Avatar';
 import YearSelector from './YearSelector';
-import TabDrawer from '../tabDrawer/tabDrawer';
 import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import Cookies from 'js-cookie';
 import {useIsMobile} from '../../hooks/useIsMobile';
 
-type Props = {};
+type Props = {
+  isDrawerPersistent: boolean;
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: Dispatch<SetStateAction<boolean>>;
+};
 
-export default function SiteHeader(props: Props): React.ReactElement {
-  const [openDrawer, setOpenDrawer] = useState(false);
+export default function AppHeader({
+  isDrawerOpen,
+  setIsDrawerOpen,
+  isDrawerPersistent,
+}: Props): React.ReactElement {
   const isMobile = useIsMobile();
 
-  const handleDrawerOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setOpenDrawer(true);
-  };
-
-  const handleDrawerClose = () => {
-    setOpenDrawer(false);
-  };
-
   return (
-    <AppBar position="static" sx={{backgroundColor: SITE_HEADER_COLOR}}>
+    <AppBar
+      position="sticky"
+      sx={{
+        backgroundColor: SITE_HEADER_COLOR,
+        zIndex: theme => theme.zIndex.drawer + 1,
+      }}>
       <Toolbar
         sx={{
           display: 'flex',
@@ -41,14 +45,17 @@ export default function SiteHeader(props: Props): React.ReactElement {
             edge="start"
             color="inherit"
             aria-label="menu"
-            onClick={handleDrawerOpen}>
-            <MenuIcon />
+            onClick={() => setIsDrawerOpen(isDrawerOpen => !isDrawerOpen)}>
+            {isDrawerPersistent && isDrawerOpen ? (
+              <MenuOpenIcon />
+            ) : (
+              <MenuIcon />
+            )}
           </IconButton>
-          <TabDrawer open={openDrawer} onClose={handleDrawerClose} />
           <OurWordmark mini={isMobile} />
         </Stack>
         <Stack direction="row" alignItems="center" gap="12px">
-          <YearSelector />
+          {!isMobile && <YearSelector />}
           <Suspense
             fallback={
               <Avatar>

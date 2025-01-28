@@ -17,4 +17,13 @@ export default {
     //   main: red.A400,
     // },
   },
+  components: {
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          padding: '8px',
+        }
+      },
+    },
+  },
 } satisfies Parameters<typeof createTheme>[0];

@@ -4,16 +4,12 @@ import {
   useMutation,
   useSuspenseQuery,
   useQueryClient,
-  UseMutationResult,
 } from '@tanstack/react-query';
 import {myUserDataOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
-import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import Card from '@mui/material/Card';
 import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import ErrorIcon from '@mui/icons-material/Error';
 import LetterboxdSearchBar from './SearchBar';
 import {
   updateCacheOnSuccess,
@@ -42,7 +38,7 @@ export default function LetterboxdField() {
       notifications,
     ),
   });
-  const {data, isError} = useSuspenseQuery(myUserDataOptions(activeUserId));
+  const {data} = useSuspenseQuery(myUserDataOptions(activeUserId));
 
   return (
     <UserDataField
@@ -108,7 +104,7 @@ export default function LetterboxdField() {
 // }
 
 function EditableLetterboxdField({
-  activeUserId,
+  activeUserId: _activeUserId,
   mutation,
   onCancel,
 }: {

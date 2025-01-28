@@ -20,7 +20,7 @@ export function getMovieWatchStatusForUser(
 }
 
 export function getNominationCategoriesForMovie(
-  movieId: String,
+  movieId: string,
   nominations: Nom[],
   categories: Category[],
 ): Category[] {

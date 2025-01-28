@@ -10,7 +10,7 @@ export default function ClickableSortIcon({
   onSelect: () => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
-  const isHidden = !(isSelected || isHovered);
+  // const isHidden = !(isSelected || isHovered);
   return (
     <IconButton
       onClick={onSelect}

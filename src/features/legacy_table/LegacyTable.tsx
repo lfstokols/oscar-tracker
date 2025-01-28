@@ -90,20 +90,15 @@ export default function LegacyTable({
   return (
     <TableContainer
       sx={{
-        scrollBehavior: 'smooth',
-        overflowY: 'auto',
-        height: 'calc(100vh - 64px)',
-        width: '100%',
+        backgroundImage: 'var(--mui-overlays-1)',
+        paddingBottom: 2,
+        borderRadius: '5px',
       }}>
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell text="" />
-            <TableHeaderCell
-              text="Film"
-              sx={{maxWidth: '10ch', overflow: 'wrap'}}
-            />
-            <TableHeaderCell text="Nominated For" />
+            <TableHeaderCell text="Film" colSpan={2} />
+            <TableHeaderCell text="Nominations" />
             <TableHeaderCell
               text="Runtime"
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
@@ -116,19 +111,22 @@ export default function LegacyTable({
             ))}
           </TableRow>
         </TableHead>
-        <TableBody sx={{borderRadius: 5}}>
+        <TableBody>
           <MovieRows filteredMovies={sortedData} {...rowProps} />
           <ShortsMovieRows
+            key={sortedShortsLive.join(',')}
             filteredMovies={sortedShortsLive}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
+            key={sortedShortsAnimated.join(',')}
             filteredMovies={sortedShortsAnimated}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
+            key={sortedShortsDoc.join(',')}
             filteredMovies={sortedShortsDoc}
             merge={shortsAreOneFilm}
             {...rowProps}
