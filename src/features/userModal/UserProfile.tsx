@@ -98,21 +98,21 @@ export default function UserProfile({closer}: Props) {
         <div style={{marginTop: '2px'}}>
           <UserAvatar userId={activeUserId} username={activeUsername} />
         </div>
-        <TitleLine title={activeUsername ?? 'User Profile'} />
+        <TitleLine title={activeUsername} />
       </Stack>
       <Box component="menu" sx={boxStyle}>
         <DefaultCatcher>
           <UserDataField
             label="Username"
-            remoteValue={myUserData?.username ?? 'Not Set'}
-            localValue={myUserData?.username ?? 'Not Set'}
+            remoteValue={myUserData.username ?? 'Not Set'}
+            localValue={myUserData.username ?? 'Not Set'}
             editableComponent={placeholderEditableComponent}
             editableComponentProps={{}}
           />
           <UserDataField
             label="Email"
-            remoteValue={myUserData?.email ?? 'Not Set'}
-            localValue={myUserData?.email ?? 'Not Set'}
+            remoteValue={myUserData.email ?? 'Not Set'}
+            localValue={myUserData.email ?? 'Not Set'}
             editableComponent={placeholderEditableComponent}
             editableComponentProps={{}}
           />

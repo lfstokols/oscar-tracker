@@ -66,7 +66,7 @@ export default [
       ],
 
       // Disabling for now until we understand the implications
-      "@typescript-eslint/unbound-method": "warn",
+      "@typescript-eslint/unbound-method": "off",
 
       // Naming conventions
       // "@typescript-eslint/naming-convention": [
