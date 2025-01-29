@@ -11,3 +11,4 @@ pandera==0.22.1
 gunicorn
 flask_apscheduler
 lxml
+sqlalchemy==2.0.37

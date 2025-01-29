@@ -10,7 +10,7 @@ from backend.types.api_schemas import Flavor, UserID
 from backend.types.api_validators import AnnotatedValidator
 import backend.types.flavors as flv
 from backend.types.my_types import *
-from backend.logic.storage_manager import StorageManager
+import backend.data.queries as qu
 
 
 class MissingAPIArgumentError(Exception):
@@ -86,14 +86,14 @@ def has_flag(request: Request, arg: str) -> bool:
     return output
 
 
-def get_active_user_id(storage: StorageManager, request: Request) -> UserID | None:
+def get_active_user_id(request: Request) -> UserID | None:
     active_user_id = request.cookies.get("activeUserId")
     if active_user_id is None:
         return None
     if not re.fullmatch(r"^usr_[0-9a-fA-F]{6}$", active_user_id):
         return None
-    users = storage.read("users")
-    if active_user_id not in users.index:
+    users = qu.get_users()
+    if active_user_id not in [user["id"] for user in users]:
         return None
-    AnnotatedValidator(user=active_user_id)
+    active_user_id = AnnotatedValidator(user=active_user_id).user
     return active_user_id

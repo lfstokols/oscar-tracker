@@ -18,7 +18,6 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
-import {logToConsole} from '../../utils/Logger';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
 
@@ -56,13 +55,10 @@ export default function LegacyTable({
     myWatchlist,
     filterState,
   );
-  logToConsole(movies.length);
-  logToConsole(filteredMovies.length);
   const {features, shortsAnimated, shortsLive, shortsDoc} = groupByShort(
     filteredMovies,
     nominations,
   );
-  logToConsole(features.length);
 
   const sortedUsers = useSortUsers(users);
 
@@ -97,9 +93,10 @@ export default function LegacyTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell text="Film" colSpan={2} />
-            <TableHeaderCell text="Nominations" />
+            <TableHeaderCell key="film" text="Film" colSpan={2} />
+            <TableHeaderCell key="nominations" text="Nominations" />
             <TableHeaderCell
+              key="runtime"
               text="Runtime"
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
               style={{cursor: 'pointer'}}
@@ -114,19 +111,19 @@ export default function LegacyTable({
         <TableBody>
           <MovieRows filteredMovies={sortedData} {...rowProps} />
           <ShortsMovieRows
-            key={sortedShortsLive.join(',')}
+            key={'sortedShortsLive'}
             filteredMovies={sortedShortsLive}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
-            key={sortedShortsAnimated.join(',')}
+            key={'sortedShortsAnimated'}
             filteredMovies={sortedShortsAnimated}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
-            key={sortedShortsDoc.join(',')}
+            key={'sortedShortsDoc'}
             filteredMovies={sortedShortsDoc}
             merge={shortsAreOneFilm}
             {...rowProps}

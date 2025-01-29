@@ -27,7 +27,6 @@ export type RawWatchStatus = z.infer<typeof RawWatchStatusSchema>;
 export const UserSchema = z.object({
   id: UserIdSchema,
   username: z.string(),
-  propic: z.string().url().nullable(),
 });
 
 export const MovieSchema = z
@@ -114,9 +113,27 @@ export const UserStatsSchema = z.object({
   todoWatchtime: z.number().nullable().default(0),
   numSeenMultinom: z.number().nullable().default(0),
   numTodoMultinom: z.number().nullable().default(0),
+  numCatsSeen: z.number().nullable().default(0),
+  numCatsTodo: z.number().nullable().default(0),
 });
 export const UserStatsListSchema = z.array(UserStatsSchema).describe("A list of users' stats");
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;
 export type UserStats = z.infer<typeof UserStatsSchema>;
 export type UserStatsList = z.infer<typeof UserStatsListSchema>;
+
+export const HypotheticalityTupleSchema = z.object({
+  seen: z.number(),
+  todo: z.number(),
+  total: z.number(),
+});
+export type HypotheticalityTuple = z.infer<typeof HypotheticalityTupleSchema>;
+
+export const CategoryCompletionKeySchema = z.union([CategoryIdSchema, GroupingSchema]);
+export type CategoryCompletionKey = z.infer<typeof CategoryCompletionKeySchema>;
+
+export const CategoryCompletionSchema = z.record(
+  UserIdSchema, z.record(CategoryCompletionKeySchema, HypotheticalityTupleSchema)
+);
+
+export type CategoryCompletionData = z.infer<typeof CategoryCompletionSchema>;

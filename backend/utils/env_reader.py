@@ -62,6 +62,7 @@ try:
     BACKUPS_PATH = get_path_env_var("BACKUPS_PATH", project_root_directory)
     STATIC_PATH = get_path_env_var("STATIC_PATH", project_root_directory)
     LOG_PATH = get_path_env_var("LOG_PATH", project_root_directory)
+    SQLITE_FILE_NAME = get_str_env_var("SQLITE_FILE_NAME")
 except Exception as e:
     raise ValueError(
         f"A variable from the .env file is missing or improperly formatted: {e}"

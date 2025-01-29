@@ -10,6 +10,7 @@ import pandas as pd
 # * local imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
+os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
 import backend.utils.env_reader as env
 from backend.types.my_types import *
 from backend.types.api_schemas import MovieID

@@ -37,6 +37,7 @@ import {
   updateCacheOnSuccess,
 } from '../../hooks/mutationOptions';
 import {UserListSchema} from '../../types/APIDataSchema';
+import {errorToConsole} from '../../utils/Logger';
 type Props = {
   closer: () => void;
 };
@@ -188,11 +189,12 @@ function Preference({
       setPreferences({...preferences, [whichPref]: newValue});
     },
   ];
-  // const [checked, setChecked] = React.useState(prefState);
-  React.useEffect(() => {
-    prefState;
-  }, [prefState]);
-
+  if (typeof prefState !== 'boolean') {
+    errorToConsole(
+      `Preference ${whichPref} is not a boolean, it can't be set with a checkbox`,
+    );
+    throw new Error(`Preference ${whichPref} is not a boolean: ${prefState}`);
+  }
   const handleToggle = () => {
     setPrefState(!prefState);
   };

@@ -2,14 +2,15 @@ import os, logging
 from datetime import datetime
 import time
 from functools import wraps
-from flask import Blueprint, send_from_directory, request, jsonify, abort
+from flask import Blueprint, send_from_directory, request, jsonify, abort, make_response
 from pathlib import Path
-from flask import session
 from pydantic import ValidationError
 import requests
 import backend.utils.env_reader as env
+import backend.data.queries as qu
+import backend.data.mutations as mu
 from backend.types.my_types import *
-from backend.types.api_schemas import UserID
+from backend.types.api_schemas import UserID, WatchStatus_pyd
 from backend.types.api_validators import (
     validate_nom_list,
     validate_movie_list,
@@ -20,16 +21,19 @@ from backend.types.api_validators import (
     validate_category_completion_dict,
     validate_user_stats_list,
     AnnotatedValidator,
+    UserValidator,
+    MovieValidator,
+    CategoryValidator,
+    PosterPathValidator,
 )
 from backend.routing_lib.user_session import session_added_user
-from backend.logic.storage_manager import StorageManager
+
+# from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
-import backend.logic.Mutations as mu
 from backend.scheduled_tasks.check_rss import (
     get_movie_list_from_rss,
 )
 
-#! vvv this is dumb vvv
 from backend.routing_lib import utils
 from backend.routing_lib.utils import (
     has_flag,
@@ -38,17 +42,15 @@ from backend.routing_lib.utils import (
 )
 
 
-try:
-    storage = StorageManager.get_storage()
-except Exception as e:
-    logging.error(f"Must create storage before importing database_routes.py")
-    raise
+# try:
+#     storage = StorageManager.get_storage()
+# except Exception as e:
+#     logging.error(f"Must create storage before importing database_routes.py")
+#     raise
 
 static_folder = env.STATIC_PATH
 if not static_folder.exists():
-    raise FileNotFoundError(
-        f"The static folder {static_folder} does not exist."
-    )
+    raise FileNotFoundError(f"The static folder {static_folder} does not exist.")
 oscars = Blueprint(
     "oscars",
     __name__,
@@ -86,7 +88,7 @@ def handle_errors(func):
             return jsonify({"error": e.message, "missing_data": e.missing_data}), 422
         except Exception as e:
             logging.error(
-                f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})"
+                f"Request yielded uncaught error while running {func.__name__}({args}, {kwargs})"
             )
             logging.error(f"Error of type {type(e)} with message {e}")
             raise
@@ -100,8 +102,11 @@ def handle_errors(func):
 def serve_noms():
     if not (year := request.args.get("year")):
         raise YearError()
-
-    data = storage.read("nominations", year)
+    try:
+        year = int(year)
+    except ValueError:
+        raise ValueError("Year must be an integer")
+    data = qu.get_noms(year)
     return validate_nom_list(data)
 
 
@@ -110,26 +115,27 @@ def serve_noms():
 def serve_movies():
     if not (year := request.args.get("year")):
         raise YearError("query params")
-    data = pr.get_movies(storage, year)
+    data = qu.get_movies(year)
     return validate_movie_list(data)
 
 
 @oscars.route("/users", methods=["GET"])
 @handle_errors
 def serve_users_GET():
-    userId = utils.get_active_user_id(storage, request)
-    if has_flag(request, "myData") and userId:
-        data = pr.get_my_user_data(storage, userId)
-        return validate_my_user_data(data)
-    # elif has_flag(request, "categoryCompletionData"):
-    #     year = request.args.get("year", None)
-    #     if year is None:
-    #         raise YearError("query params")
-    #     #! should this be here?
-    #     data = pr.get_category_completion_data(storage, year=year)
-    #     return validate_category_completion_dict(data)
+    userId = utils.get_active_user_id(request)
+    if has_flag(request, "myData"):
+        if userId is None:
+            if request.cookies.get("activeUserId") is not None:
+                response = make_response()
+                response.delete_cookie("activeUserId")
+                return response, 400
+            raise MissingAPIArgumentError(
+                "No active user id", [("activeUserId", "cookie")]
+            )
+        data = qu.get_my_user_data(userId)
+        return jsonify(validate_my_user_data(data))
     else:
-        return validate_user_list(pr.get_users(storage))
+        return jsonify(validate_user_list(qu.get_users()))
 
 
 @oscars.route("/users", methods=["POST"])
@@ -140,11 +146,11 @@ def serve_users_POST():
     if request.json is None:
         raise ValueError("No body provided, what am I supposed to update?")
     username = request.json.get("username")
-    newUserId: UserID = mu.add_user(storage, username)
-    AnnotatedValidator(user=newUserId)
+    newUserId: UserID = mu.add_user(username)
+    newUserId = UserValidator(user=newUserId).user
     session_added_user()
-    mu.update_user(storage, newUserId, request.json)
-    newState = pr.get_users(storage)
+    mu.update_user(newUserId, request.json)
+    newState = qu.get_users()
     newState = validate_user_list(newState)
     return jsonify({"userId": newUserId, "users": newState})
 
@@ -153,13 +159,13 @@ def serve_users_POST():
 @handle_errors
 def serve_users_PUT():
     # * Expects any dictionary of user data
-    userId = utils.get_active_user_id(storage, request)
+    userId = utils.get_active_user_id(request)
     if userId is None:
         raise MissingAPIArgumentError("No active user id", [("activeUserId", "cookie")])
     if request.json is None:
         raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
-    mu.update_user(storage, userId, request.json)
-    newState = pr.get_my_user_data(storage, userId)
+    mu.update_user(userId, request.json)
+    newState = qu.get_my_user_data(userId)
     newState = validate_my_user_data(newState)
     return jsonify(newState)
 
@@ -181,15 +187,15 @@ def serve_users_DELETE():
             "Need matching ids in cookie, param, and body",
             [("activeUserId", "cookie"), ("userId", "param"), ("userId", "body")],
         )
-    AnnotatedValidator(user=body_id)
-    mu.delete_user(storage, body_id)
-    return validate_user_list(pr.get_users(storage))
+    real_id = UserValidator(user=body_id).user
+    mu.delete_user(real_id)
+    return validate_user_list(qu.get_users())
 
 
 @oscars.route("/categories", methods=["GET"])
 @handle_errors
 def serve_categories():
-    return validate_category_list(storage.read("categories"))
+    return validate_category_list(qu.get_categories())
 
 
 # Expect justMe = bool
@@ -197,33 +203,43 @@ def serve_categories():
 @oscars.route("/watchlist", methods=["GET"])
 @handle_errors
 def serve_watchlist_GET():
-    userId = utils.get_active_user_id(storage, request)
+    userId = utils.get_active_user_id(request)
     justMe = (
         x.lower() == "true" if ((x := request.args.get("justMe")) != None) else False
     )
     if not (year := request.args.get("year")):
         raise YearError()
+    try:
+        year = int(year)
+    except ValueError:
+        raise ValueError("Year must be an integer")
     if justMe:
-        data = storage.read("watchlist", year)
-        data = data.loc[data[WatchlistColumns.USER.value] == userId]
+        data = qu.get_watchlist(year)
+        data = [row for row in data if row["userId"] == userId]
         return validate_watchlist(data)
     else:
-        return validate_watchlist(storage.read("watchlist", year))
+        return validate_watchlist(qu.get_watchlist(year))
 
 
 @oscars.route("/watchlist", methods=["PUT"])
 @handle_errors
 def serve_watchlist_PUT():
-    userId = utils.get_active_user_id(storage, request)
+    userId = utils.get_active_user_id(request)
     if request.json is None:
         raise MissingAPIArgumentError("No body provided", [("anythng json-y", "body")])
     if not (year := request.json.get("year")):
         raise YearError()
+    try:
+        year = int(year)
+    except ValueError:
+        raise ValueError("Year must be an integer")
+    if userId is None:
+        raise MissingAPIArgumentError("No active user id", [("activeUserId", "cookie")])
     movieIds = request.json.get("movieIds")
     status = request.json.get("status")
     for movieId in movieIds:
-        mu.add_watchlist_entry(storage, year, userId, movieId, status)
-    return validate_watchlist(storage.read("watchlist", year))
+        mu.add_watchlist_entry(year, userId, movieId, status)
+    return validate_watchlist(qu.get_watchlist(year))
 
 
 @oscars.route("/by_user", methods=["GET"])
@@ -232,7 +248,11 @@ def serve_by_user():
     year = request.args.get("year")
     if year is None:
         raise YearError()
-    data = pr.get_user_stats(storage, year)
+    try:
+        year = int(year)
+    except ValueError:
+        raise ValueError("Year must be an integer")
+    data = qu.get_user_stats(year)
     return validate_user_stats_list(data)
 
 
@@ -242,7 +262,11 @@ def serve_by_category():
     year = request.args.get("year")
     if year is None:
         raise YearError()
-    data = pr.get_category_completion_dict(storage, year)
+    try:
+        year = int(year)
+    except ValueError:
+        raise ValueError("Year must be an integer")
+    data = qu.get_category_completion_dict(year)
     return validate_category_completion_dict(data)
 
 
@@ -266,17 +290,16 @@ def serve_letterboxd_search():
 def force_refresh():
     print("got a force refresh")
     # try:
-    user_id = AnnotatedValidator(user=utils.get_active_user_id(storage, request)).user
+    user_id = AnnotatedValidator(user=utils.get_active_user_id(request)).user
     assert user_id is not None
     movie_list = get_movie_list_from_rss(user_id, year=datetime.now().year - 1)
     for movie_id in movie_list:
         logging.debug(f"Got {movie_id} from {user_id}'s letterboxd.")
         mu.add_watchlist_entry(
-            storage,
             year=datetime.now().year - 1,
             userId=user_id,
             movieId=movie_id,
-            status=WatchStatus.SEEN,
+            status=WatchStatus_pyd.SEEN,
         )
     return jsonify({"message": "Watchlist updated"}), 200
     # except Exception as e:

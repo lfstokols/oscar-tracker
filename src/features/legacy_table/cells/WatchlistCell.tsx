@@ -60,8 +60,9 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   const isEditingDisabled = context.activeUserId !== userId;
   const seenIsLocked = context.preferences.lockSeenToggle;
   const remoteWatchState =
-    watchlist.find(item => item.movieId === movieId && item.userId === userId)
-      ?.status ?? WatchStatuses.blank;
+    watchlist.find(
+      item => idList.includes(item.movieId) && item.userId === userId,
+    )?.status ?? WatchStatuses.blank;
   const localWatchState = mutation.isPending
     ? mutation.variables
     : remoteWatchState;

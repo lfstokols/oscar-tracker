@@ -197,6 +197,7 @@ const MovieTitle = forwardRef(function MovieTitle(
           : {}
       }>
       <Typography
+        key={`title-${movie.id}`}
         ref={ref}
         variant="body1"
         textAlign="center"
@@ -209,6 +210,7 @@ const MovieTitle = forwardRef(function MovieTitle(
       </Typography>
       {movie.subtitle && (
         <Typography
+          key={`subtitle-${movie.id}`}
           variant="subtitle2"
           textAlign="center"
           style={{

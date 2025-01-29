@@ -10,10 +10,10 @@ import {
   WatchListSchema,
   MyUserDataSchema,
   UserStatsListSchema,
+  CategoryCompletionSchema,
   // CategoryCompletionListSchema,
 } from '../types/APIDataSchema';
-import {logToConsole} from '../utils/Logger';
-
+import {API_BASE_URL} from '../config/GlobalConstants';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -101,10 +101,11 @@ export function userStatsOptions(year: number | string) {
 export function categoryCompletionOptions(year: number | string) {
   return queryOptions({
     queryKey: ['categoryCompletion', year.toString()],
-    queryFn: qFunction(Endpoints.byCategory, {year: year.toString()}, x => {
-      logToConsole(x);
-      return x;
-    }),
+    queryFn: qFunction(
+      Endpoints.byCategory,
+      {year: year.toString()},
+      CategoryCompletionSchema.parse,
+    ),
     retry: retryFunction,
   });
 }
@@ -120,9 +121,12 @@ function qFunction<T>(
 ): () => Promise<T> {
   return async () => {
     const params = new URLSearchParams(qParams);
-    const response = await fetch(`api/${endpoint}?${params.toString()}`, {
-      method: 'GET',
-    });
+    const response = await fetch(
+      `${API_BASE_URL}/${endpoint}?${params.toString()}`,
+      {
+        method: 'GET',
+      },
+    );
     if (!response.ok) {
       if (response.status === 429) {
         throw new LockError('Data was locked.');
