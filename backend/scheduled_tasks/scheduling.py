@@ -1,4 +1,5 @@
 import logging, os
+import sqlite3
 from flask import Flask
 from flask_apscheduler import APScheduler
 import shutil
@@ -15,8 +16,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 """
-Database_Path = env.DATABASE_PATH
-Backup_Path = env.BACKUPS_PATH
+
 
 class Config:
     JOBS = [
@@ -50,18 +50,30 @@ def backup_database():
     """
     Creates a backup of the database files by copying them to a backup directory.
     """
-    backup_dir = Backup_Path / datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    main_db_filepath = env.DATABASE_PATH / env.SQLITE_FILE_NAME
+    backup_db_filepath = env.BACKUPS_PATH / (timestamp + "_" + env.SQLITE_FILE_NAME)
     # * Create backup directory if it doesn't exist
-    backup_dir.mkdir(parents=True, exist_ok=True)
+    backup_db_filepath.parent.mkdir(parents=True, exist_ok=True)
 
-    # * Copy all files from database directory to backup directory
-    for file in Database_Path.glob("**/*"):
-        if file.is_file():
-            # * Preserve directory structure in backup
-            relative_path = file.relative_to(Database_Path)
-            backup_path = backup_dir / relative_path
-            backup_path.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(file, backup_path)
+    # * Create source and backup databases
+    source_db = sqlite3.connect(main_db_filepath)
+    backup_db = sqlite3.connect(backup_db_filepath)
 
-    logging.info(f"Database backed up to {backup_dir}")
+    # * Perform the backup
+    source_db.backup(backup_db)
+
+    # * Clean up
+    source_db.close()
+    backup_db.close()
+
+    # # * Copy all files from database directory to backup directory
+    # for file in Database_Path.glob("**/*"):
+    #     if file.is_file():
+    #         # * Preserve directory structure in backup
+    #         relative_path = file.relative_to(Database_Path)
+    #         backup_path = backup_dir / relative_path
+    #         backup_path.parent.mkdir(parents=True, exist_ok=True)
+    #         shutil.copy2(file, backup_path)
+
+    logging.info(f"Database backed up to {backup_db_filepath}")
