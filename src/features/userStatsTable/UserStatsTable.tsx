@@ -179,71 +179,68 @@ export default function UserStatsTable({
     //     height: '100%',
     //   }}
     //   alignItems="center">
-    <>
-      <TableContainer
-        sx={{
-          backgroundImage: 'var(--mui-overlays-1)',
-          paddingBottom: 2,
-          borderRadius: '5px',
-        }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableHeaderCell key="rank" />
-              <TableHeaderCell key="username" />
-              {statsColumns.map((column, index) =>
-                checkDisabledCombination(column.label, hypotheticality) ? (
-                  <></>
-                ) : (
-                  <TableHeaderCell
-                    text={column.title}
-                    key={column.label}
-                    icon={
-                      <TableSortLabel
-                        onClick={() => setSortByIndex(index)}
-                        direction="asc"
-                        active={sortByIndex === index}
-                        sx={{
-                          padding: 0,
-                          position: 'absolute',
-                          left: '95%',
-                        }}
-                        // hideSortIcon={true}
-                      />
-                    }
-                  />
+    <TableContainer
+      sx={{
+        backgroundImage: 'var(--mui-overlays-1)',
+        paddingBottom: 2,
+        borderRadius: '5px',
+      }}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableHeaderCell key="rank" />
+            <TableHeaderCell key="username" />
+            {statsColumns.map((column, index) =>
+              checkDisabledCombination(column.label, hypotheticality) ? null : (
+                <TableHeaderCell
+                  text={column.title}
+                  key={column.label}
+                  icon={
+                    <TableSortLabel
+                      onClick={() => setSortByIndex(index)}
+                      direction="asc"
+                      active={sortByIndex === index}
+                      sx={{
+                        padding: 0,
+                        position: 'absolute',
+                        left: '95%',
+                      }}
+                      // hideSortIcon={true}
+                    />
+                  }
+                />
+              ),
+            )}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {sortedUserList.map((user, index) => (
+            <TableRow key={user.id}>
+              <TableCell key="rank">
+                <Typography variant="h6">{index + 1}</Typography>
+              </TableCell>
+              <TableCell key="username">
+                <Typography variant="h6">
+                  {getUsernameFromId(user.id, users) ?? ''}
+                </Typography>
+              </TableCell>
+              {statsColumns.map(column =>
+                checkDisabledCombination(
+                  column.label,
+                  hypotheticality,
+                ) ? null : (
+                  <TableCell key={column.label} align="center">
+                    <Typography variant="h6">
+                      {column.getValue(user).display}
+                    </Typography>
+                  </TableCell>
                 ),
               )}
             </TableRow>
-          </TableHead>
-          <TableBody>
-            {sortedUserList.map((user, index) => (
-              <TableRow key={user.id}>
-                <TableCell key="rank">
-                  <Typography variant="h6">{index + 1}</Typography>
-                </TableCell>
-                <TableCell key="username">
-                  <Typography variant="h6">
-                    {getUsernameFromId(user.id, users) ?? ''}
-                  </Typography>
-                </TableCell>
-                {statsColumns.map(column =>
-                  checkDisabledCombination(column.label, hypotheticality) ? (
-                    <React.Fragment key={column.label}></React.Fragment>
-                  ) : (
-                    <TableCell key={column.label} align="center">
-                      <Typography variant="h6">
-                        {column.getValue(user).display}
-                      </Typography>
-                    </TableCell>
-                  ),
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 

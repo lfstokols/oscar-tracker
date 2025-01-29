@@ -19,9 +19,9 @@ type Props = {
   children: React.ReactNode;
 };
 
-export default function NotificationContextProvider(
-  props: Props,
-): React.ReactElement {
+export default function NotificationContextProvider({
+  children,
+}: Props): React.ReactElement {
   const [activeNotification, setActiveNotification] =
     useState<Notification | null>(null);
 
@@ -34,7 +34,7 @@ export default function NotificationContextProvider(
 
   return (
     <NotificationContext.Provider value={contextValue}>
-      {props.children}
+      {children}
       <NotificationToast
         activeNotification={activeNotification}
         setActiveNotification={setActiveNotification}

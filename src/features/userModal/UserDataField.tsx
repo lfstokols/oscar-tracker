@@ -18,26 +18,33 @@ type Props<T> = {
   editableComponentProps: T;
 };
 
-export default function UserDataField<T>(props: Props<T>) {
+export default function UserDataField<T>({
+  label,
+  localValue,
+  remoteValue: _remoteValue,
+  editableComponent: EditableComponent,
+  editableComponentProps,
+}: Props<T>) {
   const {activeUserId} = useOscarAppContext();
   if (activeUserId === null)
     throw new Error('Loading UserDataField with no active user. How?');
   const {data: _data, isError} = useSuspenseQuery(
     myUserDataOptions(activeUserId),
   );
+  const [isEditing, setIsEditing] = React.useState(false);
+
   if (isError) {
     return <ErrorIcon />;
   }
-  const [isEditing, setIsEditing] = React.useState(false);
   // const mutation = props.mutation;
   // const remoteValue = props.remoteValue;
-  const localValue = props.localValue; //mutation.isPending ? props.optimisticValue : remoteValue;
+  //mutation.isPending ? props.optimisticValue : remoteValue;
   if (isEditing) {
     return (
-      <props.editableComponent
+      <EditableComponent
         activeUserId={activeUserId}
         onCancel={() => setIsEditing(false)}
-        {...props.editableComponentProps}
+        {...editableComponentProps}
       />
     );
   }
@@ -46,7 +53,7 @@ export default function UserDataField<T>(props: Props<T>) {
       <Typography
         variant="h6"
         sx={{width: '250px', position: 'relative', bottom: '6px'}}>
-        {props.label}:
+        {label}:
       </Typography>
       <Typography variant="body1" sx={{width: '200px'}}>
         {localValue ? localValue : 'Not Set'}
@@ -54,8 +61,8 @@ export default function UserDataField<T>(props: Props<T>) {
       <span style={{flexGrow: 1}} />
       <ButtonIcon
         // variant="contained"
-        size="small"
-        onClick={() => setIsEditing(true)}>
+        onClick={() => setIsEditing(true)}
+        size="small">
         <EditIcon />
       </ButtonIcon>
     </Stack>

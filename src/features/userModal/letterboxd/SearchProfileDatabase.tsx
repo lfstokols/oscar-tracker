@@ -23,9 +23,9 @@ export default async function SearchProfileDatabase(
 
   // Map each li element to an LProfile object
   const profiles: LProfile[] = Array.from(liElements).map(li => {
-    const avatar = li.querySelector('img')?.getAttribute('src') || '';
-    const username = li.querySelector('.metadata')?.textContent?.trim() || '';
-    const fullName = li.querySelector('.name')?.textContent?.trim() || '';
+    const avatar = li.querySelector('img')?.getAttribute('src') ?? '';
+    const username = li.querySelector('.metadata')?.textContent?.trim() ?? '';
+    const fullName = li.querySelector('.name')?.textContent?.trim() ?? '';
 
     return {
       username,

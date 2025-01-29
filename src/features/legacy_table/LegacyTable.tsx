@@ -20,6 +20,7 @@ import {
 } from '../../hooks/dataOptions';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
+import {WatchStatus} from '../../types/Enums';
 
 export const columnList = ['title', 'nominations', 'runtime'];
 
@@ -111,19 +112,19 @@ export default function LegacyTable({
         <TableBody>
           <MovieRows filteredMovies={sortedData} {...rowProps} />
           <ShortsMovieRows
-            key={'sortedShortsLive'}
+            key="sortedShortsLive"
             filteredMovies={sortedShortsLive}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
-            key={'sortedShortsAnimated'}
+            key="sortedShortsAnimated"
             filteredMovies={sortedShortsAnimated}
             merge={shortsAreOneFilm}
             {...rowProps}
           />
           <ShortsMovieRows
-            key={'sortedShortsDoc'}
+            key="sortedShortsDoc"
             filteredMovies={sortedShortsDoc}
             merge={shortsAreOneFilm}
             {...rowProps}
@@ -143,13 +144,10 @@ function filterMovies(
   let currentMovies = movies;
   if (filterState.watchstatus.length !== 0) {
     currentMovies = movies.filter(movie => {
-      const status = myWatchlist.find(
-        watch => watch.movieId === movie.id,
-      )?.status;
-      return (
-        (status === null && filterState.watchstatus) ||
-        (status !== null && filterState.watchstatus.includes(status))
-      );
+      const status =
+        myWatchlist.find(watch => watch.movieId === movie.id)?.status ??
+        WatchStatus.blank;
+      return filterState.watchstatus.includes(status);
     });
   }
   if (filterState.categories.length !== 0) {

@@ -53,6 +53,7 @@ export default function CategoryCompletionTable({
     Object.values(Grouping).reduce((acc, grouping) => {
       acc[grouping] = false;
       return acc;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     }, {} as Record<Grouping, boolean>),
   );
 

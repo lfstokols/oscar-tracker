@@ -1,13 +1,13 @@
 import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
-import {Grouping, WatchStatuses} from '../types/Enums';
+import {Grouping, WatchStatus} from '../types/Enums';
 import {warnToConsole} from './Logger';
 
 export function getMovieWatchStatusForUser(
   userId: UserId,
   movieId: MovieId,
   watchlist: WatchNotice[],
-): WatchStatuses {
+): WatchStatus {
   const watchNotice = watchlist
     .slice()
     .reverse()
@@ -16,7 +16,7 @@ export function getMovieWatchStatusForUser(
         watchNotice.movieId === movieId && watchNotice.userId === userId,
     );
 
-  return watchNotice?.status ?? WatchStatuses.blank;
+  return watchNotice?.status ?? WatchStatus.blank;
 }
 
 export function getNominationCategoriesForMovie(
@@ -102,7 +102,7 @@ export function useSortUsers(users: User[]): User[] {
 
 export function getNominees(catId: CategoryId, nominations: Nom[]): MovieId[] {
   return nominations
-    ?.filter(nom => nom.categoryId === catId)
+    .filter(nom => nom.categoryId === catId)
     .map(nom => nom.movieId);
 }
 
@@ -110,6 +110,7 @@ export function catssByGrouping(
   categories: Category[],
   // grouping?: Grouping,
 ): Record<Grouping, Category[]> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
   const result: Record<Grouping, Category[]> = {} as Record<
     Grouping,
     Category[]

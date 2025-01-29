@@ -31,18 +31,16 @@ export function TableHeaderCell({
           alignItems="center"
           justifyContent="center"
           sx={{position: 'relative'}}>
-          {text === undefined ? (
-            <></>
-          ) : (
+          {text === undefined ? null : (
             <Typography variant="subtitle1">{text}</Typography>
           )}
           {icon}
         </Stack>
-        {subtext && (
+        {!!subtext && (
           <Typography
             variant="subtitle2"
             sx={{height: '4px', overflow: 'visible'}}>
-            {<i> {`(${subtext})`} </i>}
+            <i> ({subtext}) </i>
           </Typography>
         )}
       </Stack>

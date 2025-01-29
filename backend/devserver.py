@@ -29,6 +29,7 @@ from backend.routing_lib.user_session import (
 )
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
+import backend.data.db_connections
 from backend.database_routes import oscars  #! must instantiate storage first
 
 DEVSERVER_PORT = env.DEVSERVER_PORT  #! Gunicorn breaks without this!!!
