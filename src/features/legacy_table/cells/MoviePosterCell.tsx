@@ -8,6 +8,7 @@ type Props = {movie: Movie};
 
 export default function MoviePosterCell({movie}: Props): React.ReactElement {
   const [hasError, setHasError] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   return (
     <TableCell
       sx={{className: 'runtime-column'}}
@@ -19,14 +20,26 @@ export default function MoviePosterCell({movie}: Props): React.ReactElement {
           {hasError ? (
             <ErrorIcon color="error" />
           ) : (
-            <img
-              src={MovieDb_POSTER_URL + movie.posterPath}
-              alt={movie.mainTitle}
-              style={{maxHeight: '100px', borderRadius: '4px'}}
-              onError={() => {
-                setHasError(true);
-              }}
-            />
+            <>
+              {!hasLoaded && (
+                <Skeleton variant="rectangular" height={100} width={66} />
+              )}
+              <img
+                src={MovieDb_POSTER_URL + movie.posterPath}
+                alt={movie.mainTitle}
+                style={{
+                  maxHeight: '100px',
+                  borderRadius: '4px',
+                  display: hasLoaded ? 'block' : 'none',
+                }}
+                onError={() => {
+                  setHasError(true);
+                }}
+                onLoad={() => {
+                  setHasLoaded(true);
+                }}
+              />
+            </>
           )}
         </Suspense>
       </ErrorBoundary>
