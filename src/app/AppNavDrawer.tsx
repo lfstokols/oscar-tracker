@@ -74,13 +74,13 @@ export default function AppNavDrawer({
   const handleTabClick = (tab: AppTabType) => {
     switch (tab) {
       case AppTabType.legacy:
-        navigate(`/${LEGACY_URL}/${year}`);
+        void navigate(`/${LEGACY_URL}/${year}`);
         break;
       case AppTabType.byUser:
-        navigate(`/${BY_USER_URL}/${year}`);
+        void navigate(`/${BY_USER_URL}/${year}`);
         break;
       case AppTabType.byCategory:
-        navigate(`/${BY_CATEGORY_URL}/${year}`);
+        void navigate(`/${BY_CATEGORY_URL}/${year}`);
         break;
     }
     if (!isDrawerPersistent) {
@@ -124,7 +124,7 @@ export default function AppNavDrawer({
       {/* <Divider /> */}
 
       <List>
-        {isMobile && (
+        {!!isMobile && (
           <ListItem key="year-selector">
             <YearSelector />
           </ListItem>

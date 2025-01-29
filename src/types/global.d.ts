@@ -1,10 +1,12 @@
 import * as zodTypes from './APIDataSchema';
+import {WatchStatus as WatchStatusEnum} from './Enums';
+
 declare global {
   // * Primitive Types
   type UserId = zodTypes.UserId;
   type MovieId = zodTypes.MovieId;
   type CategoryId = zodTypes.CategoryId;
-  type WatchStatus = zodTypes.WatchStatus;
+  type WatchStatus = WatchStatusEnum;
 
   // * Object Types
   type User = zodTypes.User;

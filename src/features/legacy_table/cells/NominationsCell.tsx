@@ -40,7 +40,7 @@ export default function NominationsCell({
   const content = (
     <>
       <LineClampText setIsTruncated={setIsTruncated}>{entries}</LineClampText>
-      {tooBig && (
+      {!!tooBig && (
         <Typography variant="caption">
           <i>{remainingEntries.length} more</i>
         </Typography>
@@ -75,7 +75,7 @@ function getFlag(country: string): React.ReactNode {
   //* Convert country names to 2-letter ISO country codes
   const data = countryCodes.find(c => c.name === country);
   if (!data) return '';
-  return <span className={`fi fi-${data.code.toLowerCase()}`}></span>;
+  return <span className={`fi fi-${data.code.toLowerCase()}`} />;
 }
 
 function getSong(song: string): React.ReactNode {

@@ -13,7 +13,7 @@ type Props = {
   setter: (newValue: string | null) => void;
 };
 
-export default function LetterboxdSearchBar(props: Props): React.ReactNode {
+export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
   const [value, setValue] = React.useState<LProfile | null>(null);
   const [inputValue, setInputValue] = React.useState('');
   const [options, setOptions] = React.useState<LProfile[]>([]);
@@ -49,12 +49,12 @@ export default function LetterboxdSearchBar(props: Props): React.ReactNode {
       value={value}
       noOptionsText="No profiles"
       onSubmit={_event => {
-        props.setter(value?.username || null);
+        setter(value?.username ?? null);
       }}
       onChange={(_event, newValue: LProfile | null) => {
         setOptions(newValue ? [newValue, ...options] : options);
         setValue(newValue);
-        props.setter(newValue?.username || null);
+        setter(newValue?.username ?? null);
       }}
       onInputChange={(_event, newInputValue) => {
         setInputValue(newInputValue);

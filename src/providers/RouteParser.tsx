@@ -44,9 +44,9 @@ export default function RouteParser({children}: {children: React.ReactNode}) {
           getValidParams(location.pathname),
         )}`,
       );
-      navigate(makeUrl({year: validYear, tab: validTab}), {replace: true});
+      void navigate(makeUrl({year: validYear, tab: validTab}), {replace: true});
     }
-  }, [location]);
+  }, [location, navigate]);
 
   logToConsole(
     `RouteParser is about to navigate to ${makeUrl(
@@ -72,11 +72,11 @@ function getValidParams(pathname: string) {
 
   // Extract whatever parameters are available
   const year =
-    completeMatch?.params?.year ||
-    yearOnlyMatch?.params?.year ||
+    completeMatch?.params.year ??
+    yearOnlyMatch?.params.year ??
     DEFAULT_YEAR.toString();
   const tab =
-    completeMatch?.params?.tab || tabOnlyMatch?.params?.tab || LEGACY_URL;
+    completeMatch?.params.tab ?? tabOnlyMatch?.params.tab ?? LEGACY_URL;
   //* Validate Tab
   const validTab = VALID_TABS.includes(tab) ? tab : LEGACY_URL;
 

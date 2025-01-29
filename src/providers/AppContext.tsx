@@ -269,9 +269,11 @@ function upgradeSetYear(
     const currentPath = window.location.pathname;
     const match = currentPath.match(/(\d{4})/);
     if (match) {
-      navigate(currentPath.replace(match[0], year.toString()), {replace: true});
+      void navigate(currentPath.replace(match[0], year.toString()), {
+        replace: true,
+      });
     } else {
-      navigate(`/${year}`, {replace: true});
+      void navigate(`/${year}`, {replace: true});
     }
   };
 }

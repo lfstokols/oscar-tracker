@@ -1,6 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import {Routes, Route, Navigate, useParams} from 'react-router-dom';
+import {Routes, Route} from 'react-router-dom';
 import HomeTab from './routes/HomeTab';
 import UserTab from './routes/UserTab';
 import CategoryTab from './routes/CategoryTab';
@@ -9,7 +9,6 @@ import {
   LEGACY_URL,
   BY_USER_URL,
   BY_CATEGORY_URL,
-  DEFAULT_YEAR,
 } from '../config/GlobalConstants';
 type Props = {isDrawerOpen: boolean; isDrawerPersistent: boolean};
 

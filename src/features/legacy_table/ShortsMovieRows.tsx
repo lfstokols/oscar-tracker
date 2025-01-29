@@ -18,11 +18,13 @@ type Props = {
 export default function ShortsMovieRows(
   props: Props,
 ): React.ReactElement | null {
-  if (props.filteredMovies.length === 0) {
+  const {merge, filteredMovies, nominations, categories, sortedUsers} = props;
+
+  if (filteredMovies.length === 0) {
     return null;
   }
 
-  if (!props.merge) {
+  if (!merge) {
     return <MovieRows {...props} />;
   }
 
@@ -33,21 +35,21 @@ export default function ShortsMovieRows(
           // backgroundColor: TABLE_ROW_COLOR,
         }
       }>
-      <MultiMovieTitleCell filteredMovies={props.filteredMovies} />
+      <MultiMovieTitleCell filteredMovies={filteredMovies} />
       <NominationsCell
-        movieId={props.filteredMovies[0].id}
-        nominations={props.nominations}
-        categories={props.categories}
+        movieId={filteredMovies[0].id}
+        nominations={nominations}
+        categories={categories}
       />
       <MultiMovieRuntimeCell
-        filteredMovies={props.filteredMovies}
+        filteredMovies={filteredMovies}
         isRuntimeFormatted
       />
-      {props.sortedUsers.map(user => (
+      {sortedUsers.map(user => (
         <WatchlistCell
           key={user.id}
           userId={user.id}
-          movieId={props.filteredMovies.map(movie => movie.id)}
+          movieId={filteredMovies.map(movie => movie.id)}
         />
       ))}
     </TableRow>

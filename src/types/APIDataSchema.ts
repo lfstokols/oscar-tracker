@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {WatchStatuses} from './Enums';
+import {WatchStatus} from './Enums';
 
 // * Primitive Schemas
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
@@ -68,10 +68,11 @@ export const WatchNoticeSchema = z.object({
   movieId: MovieIdSchema,
   status: RawWatchStatusSchema.transform(status => {
     return status === RawWatchStatusSchema.enum['seen']
-      ? WatchStatuses.seen
+      ? WatchStatus.seen
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       : status === RawWatchStatusSchema.enum['todo']
-      ? WatchStatuses.todo 
-      : WatchStatuses.blank;
+      ? WatchStatus.todo 
+      : WatchStatus.blank;
   }),
 });
 

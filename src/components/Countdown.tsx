@@ -2,12 +2,16 @@ import {useState, useEffect} from 'react';
 
 export default function Countdown(): React.ReactElement {
   const [now, setNow] = useState(new Date());
+
+  const timeDelta = Math.floor(Date.now() - now.getTime());
+
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
     }, 1000);
     return () => clearInterval(interval);
-  }, [Math.floor(Date.now() - now.getTime())]);
+  }, [timeDelta]);
+
   return <Clock now={Date.now()} />;
 }
 

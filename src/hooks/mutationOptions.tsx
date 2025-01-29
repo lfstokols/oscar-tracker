@@ -28,7 +28,7 @@ export function onMutateError(
   message: string,
   notifications: NotificationsDispatch,
 ) {
-  return async (response: Response) => {
+  return (response: Response) => {
     errorToConsole(response);
     notifications.show({
       type: 'error',
@@ -75,7 +75,7 @@ export function addUserOnSuccess(
   setActiveUserId: (userId: UserId) => void,
 ) {
   return async (response: Response) => {
-    const data = await response.json();
+    const data = (await response.json()) as unknown;
     const newId = UserIdSchema.parse(data.userId);
     const newState = UserListSchema.parse(data.users);
     setActiveUserId(newId);

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 import {
   useMutation,
   useQueryClient,
@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-query';
 import {LinearProgress, TableCell} from '@mui/material';
 import {Error as ErrorIcon} from '@mui/icons-material';
-import {WatchStatuses} from '../../../types/Enums';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {
   onMutateError,
@@ -23,6 +22,8 @@ import {
   SEEN_COLOR,
   NO_STATUS_COLOR,
 } from '../../../config/StyleChoices';
+import {WatchStatus} from '../../../types/Enums';
+
 type Props =
   | {
       movieId: MovieId;
@@ -53,7 +54,7 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   });
 
   const watchlistDataPromise = useSuspenseQuery(watchlistOptions(year));
-  if (watchlistDataPromise.isPending) return <LinearProgress />;
+  // if (watchlistDataPromise.isPending) return <LinearProgress />;
   if (watchlistDataPromise.isError) return <ErrorIcon />;
   const watchlist = watchlistDataPromise.data;
 
@@ -62,7 +63,7 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   const remoteWatchState =
     watchlist.find(
       item => idList.includes(item.movieId) && item.userId === userId,
-    )?.status ?? WatchStatuses.blank;
+    )?.status ?? WatchStatus.blank;
   const localWatchState = mutation.isPending
     ? mutation.variables
     : remoteWatchState;
@@ -94,34 +95,30 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
 
 function createStatusSwitcher(
   seenIsLocked: boolean,
-): (prevStatus: WatchStatuses) => WatchStatuses {
+): (prevStatus: WatchStatus) => WatchStatus {
   return prevStatus => {
-    if (seenIsLocked && prevStatus === WatchStatuses.seen) {
-      return WatchStatuses.seen;
+    if (seenIsLocked && prevStatus === WatchStatus.seen) {
+      return WatchStatus.seen;
     }
-    const statuses = [
-      WatchStatuses.todo,
-      WatchStatuses.blank,
-      WatchStatuses.seen,
-    ];
+    const statuses = [WatchStatus.todo, WatchStatus.blank, WatchStatus.seen];
     if (seenIsLocked) {
-      statuses.splice(statuses.indexOf(WatchStatuses.seen), 1);
+      statuses.splice(statuses.indexOf(WatchStatus.seen), 1);
     }
     const range = seenIsLocked ? 2 : 3;
     return statuses[(statuses.indexOf(prevStatus) + 1) % range];
   };
 }
 
-function display(watchstate: WatchStatuses): string {
-  return watchstate === WatchStatuses.seen
+function display(watchstate: WatchStatus): string {
+  return watchstate === WatchStatus.seen
     ? 'Seen'
-    : watchstate === WatchStatuses.todo
+    : watchstate === WatchStatus.todo
     ? 'To-Do'
     : ' ';
 }
 
 type FillProps = {
-  watchstate: WatchStatuses;
+  watchstate: WatchStatus;
   handleInteract: () => void;
   disabled?: boolean;
 };
@@ -137,9 +134,9 @@ export function MyFill({
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
         backgroundColor:
-          watchstate === WatchStatuses.blank
+          watchstate === WatchStatus.blank
             ? NO_STATUS_COLOR
-            : watchstate === WatchStatuses.seen
+            : watchstate === WatchStatus.seen
             ? SEEN_COLOR
             : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,
@@ -158,12 +155,16 @@ export function MyFill({
 }
 
 export default function WatchlistCellWrapper(props: Props): React.ReactElement {
+  const {userId} = props;
+
   return (
-    <TableCell
-      key={props.userId}
-      sx={{display: 'fill', className: 'watchlist-column'}}
-      align="center">
-      <WatchlistCell {...props} />
-    </TableCell>
+    <Suspense fallback={<LinearProgress />}>
+      <TableCell
+        key={userId}
+        sx={{display: 'fill', className: 'watchlist-column'}}
+        align="center">
+        <WatchlistCell {...props} />
+      </TableCell>
+    </Suspense>
   );
 }

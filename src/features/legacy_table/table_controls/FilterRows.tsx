@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {FilterAlt} from '@mui/icons-material';
-import {Grouping, WatchStatuses} from '../../../types/Enums';
+import {Grouping, WatchStatus} from '../../../types/Enums';
 import {DisplayedSettingsButton, CenteredMenu, useMenuState} from './Common';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
@@ -78,7 +78,7 @@ export default function FilterRowsWidget({
         icon={<FilterAlt />}
         text="Filter Rows"
       />
-      {isOpen && (
+      {!!isOpen && (
         <SelectionMenu
           menuPosition={menuPosition}
           isOpen={isOpen}
@@ -130,9 +130,9 @@ function SelectionMenu({
           <FormControlLabel
             control={
               <Checkbox
-                checked={filterState.watchstatus.includes(WatchStatuses.seen)}
+                checked={filterState.watchstatus.includes(WatchStatus.seen)}
                 onChange={() => {
-                  toggleWatchStatusFilter(WatchStatuses.seen);
+                  toggleWatchStatusFilter(WatchStatus.seen);
                 }}
               />
             }
@@ -141,9 +141,9 @@ function SelectionMenu({
           <FormControlLabel
             control={
               <Checkbox
-                checked={filterState.watchstatus.includes(WatchStatuses.todo)}
+                checked={filterState.watchstatus.includes(WatchStatus.todo)}
                 onChange={() => {
-                  toggleWatchStatusFilter(WatchStatuses.todo);
+                  toggleWatchStatusFilter(WatchStatus.todo);
                 }}
               />
             }
@@ -152,9 +152,9 @@ function SelectionMenu({
           <FormControlLabel
             control={
               <Checkbox
-                checked={filterState.watchstatus.includes(WatchStatuses.blank)}
+                checked={filterState.watchstatus.includes(WatchStatus.blank)}
                 onChange={() => {
-                  toggleWatchStatusFilter(WatchStatuses.blank);
+                  toggleWatchStatusFilter(WatchStatus.blank);
                 }}
               />
             }
