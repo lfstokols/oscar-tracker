@@ -298,7 +298,7 @@ function sortUsers(users: User[], userStats: UserStats[]): User[] {
   });
 }
 
-function enumToBool(value: Hypotheticality): {
+export function enumToBool(value: Hypotheticality): {
   includeSeen: boolean;
   includeTodo: boolean;
 } {

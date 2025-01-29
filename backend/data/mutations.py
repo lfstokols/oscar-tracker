@@ -55,8 +55,10 @@ def get_and_set_rss_timestamp(userId: UserID):
     with Session() as session:
         last_checked = session.execute(
             sa.select(User.last_letterboxd_check).where(User.user_id == userId)
-        ).one_scalar()
-        last_checked = pd.Timestamp(last_checked, tz="UTC")
+        ).scalar()
+        last_checked = (
+            pd.Timestamp(last_checked, tz="UTC") if last_checked else pd.Timestamp.min
+        )
         new_time = pd.Timestamp.now(tz="UTC")
         try:
             yield last_checked
