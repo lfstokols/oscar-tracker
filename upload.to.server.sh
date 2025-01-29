@@ -52,17 +52,18 @@ ssh "$MY_SSH" "find $REMOTE_VERSION_DIR/dist/ -type f -not -type l -exec chmod 6
 ssh "$MY_SSH" "chmod -R 750 $REMOTE_VERSION_DIR/backend/"
 
 #* 6. Update symlinks, pointing current/ to new release
+echo "Are you ready to update symlinks?"
+read -p "Yes to continue, No to exit (y/N): " -n 1 -r UPDATE_SYMLINKS
+if [ "$UPDATE_SYMLINKS" != "Y" ] && [ "$UPDATE_SYMLINKS" != "y" ]; then
+    echo "Exiting without updating symlinks..."
+    exit 0
+fi
 ssh "$MY_SSH" "rm $REMOTE_CURRENT \
 && ln -s $REMOTE_VERSION_DIR $REMOTE_CURRENT \
 && ln -s $REMOTE_ROOT/var $REMOTE_CURRENT/var \
 && ln -s $REMOTE_ROOT/.env $REMOTE_CURRENT/.env"
 
 #* 7. Restart service
-read -p "Do you want to restart gunicorn? \(Y/n\) " -n 1 -r RESTART_SERVICE
-if [ "$RESTART_SERVICE" != "Y" ] && [ "$RESTART_SERVICE" != "y" ]; then
-    echo "Exiting without restarting gunicorn..."
-    exit 0
-fi
 echo "Restarting gunicorn..."
 ssh "$MY_SSH" "sudo systemctl restart $SERVICE_NAME"
 echo "gunicorn restarted."
