@@ -15,7 +15,7 @@ import backend.utils.env_reader as env
 from backend.utils.logging_config import setup_logging
 
 setup_logging(env.LOG_PATH)
-from backend.types.api_validators import AnnotatedValidator
+from backend.types.api_validators import UserValidator, AnnotatedValidator
 
 # * Set up StorageManager
 # from backend.logic.storage_manager import StorageManager
@@ -98,10 +98,10 @@ def favicon():
 @app.before_request
 def before_request():
     login = request.cookies.get("activeUserId")
-    if login is None:
+    if login is None or login == "":
         return
     try:
-        assert AnnotatedValidator(user=login)
+        login = UserValidator(user=login).user
     except Exception as e:
         logging.error(f"Invalid user id {e} found in cookie.")
         login = None

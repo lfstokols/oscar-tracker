@@ -21,6 +21,10 @@ from backend.types.api_validators import (
     validate_category_completion_dict,
     validate_user_stats_list,
     AnnotatedValidator,
+    UserValidator,
+    MovieValidator,
+    CategoryValidator,
+    PosterPathValidator,
 )
 from backend.routing_lib.user_session import session_added_user
 
@@ -84,7 +88,7 @@ def handle_errors(func):
             return jsonify({"error": e.message, "missing_data": e.missing_data}), 422
         except Exception as e:
             logging.error(
-                f"Identifiable string <892734> at {func.__name__}({args}, {kwargs})"
+                f"Request yielded uncaught error while running {func.__name__}({args}, {kwargs})"
             )
             logging.error(f"Error of type {type(e)} with message {e}")
             raise
@@ -143,7 +147,7 @@ def serve_users_POST():
         raise ValueError("No body provided, what am I supposed to update?")
     username = request.json.get("username")
     newUserId: UserID = mu.add_user(username)
-    AnnotatedValidator(user=newUserId)
+    newUserId = UserValidator(user=newUserId).user
     session_added_user()
     mu.update_user(newUserId, request.json)
     newState = qu.get_users()
@@ -183,8 +187,8 @@ def serve_users_DELETE():
             "Need matching ids in cookie, param, and body",
             [("activeUserId", "cookie"), ("userId", "param"), ("userId", "body")],
         )
-    AnnotatedValidator(user=body_id)
-    mu.delete_user(body_id)
+    real_id = UserValidator(user=body_id).user
+    mu.delete_user(real_id)
     return validate_user_list(qu.get_users())
 
 

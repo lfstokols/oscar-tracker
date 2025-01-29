@@ -8,7 +8,11 @@ import requests
 from bs4 import BeautifulSoup
 import os, pathlib
 import backend.logic.Mutations as mu
-from backend.types.api_validators import AnnotatedValidator
+from backend.types.api_validators import (
+    AnnotatedValidator,
+    MovieValidator,
+    UserValidator,
+)
 
 
 def update_user_watchlist(user_id: UserID) -> bool:
@@ -94,7 +98,7 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     validated_idlist = []
     for id in idlist:
         try:
-            validated_idlist.append(AnnotatedValidator(movie=id).movie)
+            validated_idlist.append(MovieValidator(movie=id).movie)
         except:
             logging.warning(f"Invalid movie id: {id}")
 

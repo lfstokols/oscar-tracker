@@ -10,6 +10,7 @@ import {
   WatchListSchema,
   MyUserDataSchema,
   UserStatsListSchema,
+  CategoryCompletionSchema,
   // CategoryCompletionListSchema,
 } from '../types/APIDataSchema';
 import {API_BASE_URL} from '../config/GlobalConstants';
@@ -100,9 +101,11 @@ export function userStatsOptions(year: number | string) {
 export function categoryCompletionOptions(year: number | string) {
   return queryOptions({
     queryKey: ['categoryCompletion', year.toString()],
-    queryFn: qFunction(Endpoints.byCategory, {year: year.toString()}, x => {
-      return x;
-    }),
+    queryFn: qFunction(
+      Endpoints.byCategory,
+      {year: year.toString()},
+      CategoryCompletionSchema.parse,
+    ),
     retry: retryFunction,
   });
 }

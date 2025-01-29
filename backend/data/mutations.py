@@ -3,9 +3,9 @@ from contextlib import contextmanager
 import sqlalchemy as sa
 import pandas as pd
 from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
-from backend.data.id_creation import create_unique_user_id, create_unique_movie_id
+from backend.data.utils import create_unique_user_id, create_unique_movie_id
 from backend.types.api_schemas import UserID, MovieID, CategoryID
-from backend.types.api_validators import AnnotatedValidator
+from backend.types.api_validators import MovieValidator
 from backend.data.db_connections import Session
 from backend.types.my_types import *
 from typing import Any
@@ -164,7 +164,7 @@ def update_movie(
 ):
     movieId = movie
     try:
-        AnnotatedValidator(movie=movieId)
+        MovieValidator(movie=movieId)
     except:
         raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?")
     assert all(

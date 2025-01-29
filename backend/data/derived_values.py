@@ -87,7 +87,7 @@ def break_into_subtitles() -> sa.Select[tuple[MovieID, str, str]]:
     )
 
 
-def num_movies_marked():  # -> sa.Select[tuple[UserID, int, int, int, int]]:
+def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
     """
     Gets five columns:
     - user ID
@@ -156,7 +156,9 @@ def num_movies_marked():  # -> sa.Select[tuple[UserID, int, int, int, int]]:
     )
 
 
-def num_categories_completed(status: WatchStatus, year: int):
+def num_categories_completed(
+    status: WatchStatus, year: int
+) -> sa.Select[tuple[UserID, int]]:
     if status == WatchStatus_pyd.SEEN:
         x = 0
     elif status == WatchStatus_pyd.TODO:

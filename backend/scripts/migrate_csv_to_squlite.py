@@ -9,8 +9,16 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
 import backend.utils.env_reader as env
-from backend.data.db_schema import init_db
-from backend.data.db_connections import get_connection
+from backend.data.db_schema import (
+    init_db,
+    Movie,
+    User,
+    Category,
+    Nomination,
+    Watchnotice,
+)
+from backend.data.db_connections import Session
+import sqlalchemy as sa
 from backend.logic.storage_manager import StorageManager
 
 
@@ -24,104 +32,109 @@ def clean_na(value):
 
 
 def migrate_users():
-    with get_connection() as (conn, cursor):
-        df = storage.read("users")
-
+    df = storage.read("users")
+    with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating user {row.name}")
-            cursor.execute(
-                """
-                REPLACE INTO users (user_id, username, letterboxd, email, last_letterboxd_check)
-                VALUES (?, ?, ?, ?, ?)
-            """,
-                (
-                    row.name,
-                    clean_na(row["username"]),
-                    clean_na(row["letterboxd"]),
-                    clean_na(row["email"]),
-                    clean_na(row["lastLetterboxdCheck"]),
-                ),
+            session.execute(
+                sa.insert(User)
+                .prefix_with("OR REPLACE")
+                .values(
+                    id=row.name,
+                    username=clean_na(row["username"]),
+                    letterboxd=clean_na(row["letterboxd"]),
+                    email=clean_na(row["email"]),
+                    last_letterboxd_check=clean_na(row["lastLetterboxdCheck"]),
+                )
             )
+        debug_print("Ready to commit")
+        session.commit()
 
 
 def migrate_movies(year: int):
-    with get_connection() as (conn, cursor):
-        df = storage.read("movies", year)
-
+    df = storage.read("movies", year)
+    with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating movie {row.name}")
-            cursor.execute(
-                """
-                REPLACE INTO movies (year, movie_id, title, imdb_id, movie_db_id, runtime, poster_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    year,
-                    row.name,
-                    clean_na(row["title"]),
-                    clean_na(row["ImdbId"]),
-                    clean_na(row["movieDbId"]),
-                    clean_na(row["runtime"]),
-                    clean_na(row["posterPath"]),
-                ),
+            session.execute(
+                sa.insert(Movie)
+                .prefix_with("OR REPLACE")
+                .values(
+                    year=year,
+                    id=row.name,
+                    title=clean_na(row["title"]),
+                    imdb_id=clean_na(row["ImdbId"]),
+                    movie_db_id=clean_na(row["movieDbId"]),
+                    runtime=clean_na(row["runtime"]),
+                    poster_path=clean_na(row["posterPath"]),
+                )
             )
+        debug_print("Ready to commit")
+        session.commit()
 
 
 def migrate_categories():
-    with get_connection() as (conn, cursor):
-        df = storage.read("categories")
-
+    df = storage.read("categories")
+    with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating category {row.name}")
-            cursor.execute(
-                """
-                REPLACE INTO categories (category_id, short_name, full_name, has_note, is_short, grouping, max_nominations)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    row.name,
-                    row["shortName"],
-                    row["fullName"],
-                    row["hasNote"],
-                    row["isShort"],
-                    row["grouping"],
-                    row["maxNoms"],
-                ),
+            session.execute(
+                sa.insert(Category)
+                .prefix_with("OR REPLACE")
+                .values(
+                    id=row.name,
+                    short_name=clean_na(row["shortName"]),
+                    full_name=clean_na(row["fullName"]),
+                    has_note=clean_na(row["hasNote"]),
+                    is_short=clean_na(row["isShort"]),
+                    grouping=clean_na(row["grouping"]),
+                    max_nominations=clean_na(row["maxNoms"]),
+                )
             )
+        debug_print("Ready to commit")
+        session.commit()
 
 
 def migrate_nominations(year: int):
-    with get_connection() as (conn, cursor):
-        df = storage.read("nominations", year)
-
+    df = storage.read("nominations", year)
+    with Session() as session:
         for _, row in df.iterrows():
             debug_print(
                 f"Migrating nomination {row['movieId']} for category {row['categoryId']}"
             )
-            cursor.execute(
-                """
-                INSERT INTO nominations (year, movie_id, category_id, note)
-                VALUES (?, ?, ?, ?)
-            """,
-                (year, row["movieId"], row["categoryId"], clean_na(row["note"])),
+            session.execute(
+                sa.insert(Nomination)
+                .prefix_with("OR REPLACE")
+                .values(
+                    year=year,
+                    movie_id=row["movieId"],
+                    category_id=row["categoryId"],
+                    note=clean_na(row["note"]),
+                )
             )
+        debug_print("Ready to commit")
+        session.commit()
 
 
 def migrate_watchlist(year: int):
-    with get_connection() as (conn, cursor):
-        df = storage.read("watchlist", year)
-
+    df = storage.read("watchlist", year)
+    with Session() as session:
         for _, row in df.iterrows():
             debug_print(
                 f"Migrating watchlist {row['userId']} for movie {row['movieId']}"
             )
-            cursor.execute(
-                """
-                INSERT INTO watchlist (year, user_id, movie_id, status)
-                VALUES (?, ?, ?, ?)
-            """,
-                (year, row["userId"], row["movieId"], row["status"]),
+            session.execute(
+                sa.insert(Watchnotice)
+                .prefix_with("OR REPLACE")
+                .values(
+                    year=year,
+                    user_id=row["userId"],
+                    movie_id=row["movieId"],
+                    status=clean_na(row["status"]),
+                )
             )
+        debug_print("Ready to commit")
+        session.commit()
 
 
 def migrate_year(year: int):

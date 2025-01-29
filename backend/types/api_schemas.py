@@ -6,13 +6,9 @@ from pydantic import (
     EmailStr,
     RootModel,
 )
-from datetime import datetime
-from typing import Optional, Annotated, Literal, Union, KeysView
+from typing import Optional, Annotated, Literal, Union
 from enum import Enum
 import backend.types.my_types as my_types
-
-from backend.types.my_types import UserStatsColumns
-
 
 # * Primitives
 MovieID = Annotated[str, StringConstraints(pattern=r"^mov_[0-9a-f]{6}$")]
@@ -45,45 +41,6 @@ class Flavor(str, Enum):
     NOMINATIONS = "nominations"
     WATCHLIST = "watchlist"
     CATEGORIES = "categories"
-
-
-# # * Database Models (matching CSV storage)
-# class db_User(BaseModel):
-#     id: UserID
-#     username: str
-#     letterboxd: Optional[str] = None
-#     email: Optional[EmailStr] = None
-
-
-# class db_Movie(BaseModel):
-#     id: MovieID
-#     title: str
-#     ImdbId: Optional[str] = None
-#     movieDbId: Optional[int] = None
-#     runtime: Optional[int] = None  # Stored in minutes
-#     posterPath: Optional[PosterPath] = None
-
-
-# class db_Category(BaseModel):
-#     id: CategoryID
-#     shortName: str
-#     fullName: str
-#     hasNote: bool
-#     isShort: bool
-#     grouping: Grouping_pyd
-#     maxNoms: Literal[5, 10]
-
-
-# class db_Nom(BaseModel):
-#     movieId: MovieID
-#     categoryId: CategoryID
-#     note: Optional[str] = None
-
-
-# class db_Watchlist(BaseModel):
-#     userId: UserID
-#     movieId: MovieID
-#     status: WatchStatus_pyd
 
 
 # * API Response Models
@@ -169,6 +126,8 @@ class api_UserStats(BaseModel):
     numTodoFeature: Optional[int] = Field(default=0)
     numSeenMultinom: Optional[int] = Field(default=0)
     numTodoMultinom: Optional[int] = Field(default=0)
+    numCatsSeen: Optional[int] = Field(default=0)
+    numCatsTodo: Optional[int] = Field(default=0)
     seenWatchtime: Optional[int] = Field(default=0)
     todoWatchtime: Optional[int] = Field(default=0)
 
@@ -179,14 +138,15 @@ class api_UserStatsList(BaseModel):
 
 
 CategoryCompletionKey = Annotated[
-    Union[CategoryID, Grouping_pyd, Literal["numCats"]],
+    Union[CategoryID, Grouping_pyd],
     "Valid keys for category completions",
 ]
+countTypes = Literal["seen", "todo", "total"]
 
 
 class api_CategoryCompletions(RootModel):
-    root: dict[CategoryCompletionKey, int]
+    root: dict[CategoryCompletionKey, dict[countTypes, int]]
 
 
 class api_CategoryCompletionsDict(RootModel):
-    root: dict[UserID, list[api_CategoryCompletions]]
+    root: dict[UserID, api_CategoryCompletions]

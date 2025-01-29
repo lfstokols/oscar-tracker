@@ -6,7 +6,13 @@ from backend.types.api_schemas import (
     CategoryID,
     WatchStatus_pyd,
 )
-from backend.types.api_validators import AnnotatedValidator
+from backend.types.api_validators import (
+    AnnotatedValidator,
+    UserValidator,
+    MovieValidator,
+    CategoryValidator,
+    PosterPathValidator,
+)
 from backend.logic.storage_manager import StorageManager
 from backend.types.my_types import *
 from typing import Any
@@ -181,12 +187,11 @@ def update_movie(
                 f"Weird data: {str(val)}"
             )
     if not try_title_lookup:
-        movieId = movie
         try:
-            AnnotatedValidator(movie=movieId)
+            movieId = MovieValidator(movie=movie).movie
         except:
             raise Exception(
-                f"Invalid movie id '{movieId}'.\n"
+                f"Invalid movie id '{movie}'.\n"
                 "Did you mean to send a title? Consider try_title_lookup=True."
             )
 

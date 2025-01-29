@@ -1,11 +1,18 @@
+from __future__ import annotations
 import sqlite3
 from pydantic import EmailStr
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-
-# from sqlalchemy.orm import declarative_base, relationship
+from datetime import datetime
 from contextlib import contextmanager
-from backend.types.api_validators import AnnotatedValidator
+from backend.types.api_schemas import CategoryID, MovieID, UserID
+from backend.types.api_validators import (
+    AnnotatedValidator,
+    UserValidator,
+    MovieValidator,
+    CategoryValidator,
+    PosterPathValidator,
+)
 import backend.utils.env_reader as env
 
 DB_PATH = env.DATABASE_PATH / env.SQLITE_FILE_NAME
@@ -113,7 +120,7 @@ class UserID_SQL(sa.TypeDecorator):
         return str(value) if value is not None else None
 
     def process_result_value(self, value, dialect):
-        return AnnotatedValidator(user=value).user if value is not None else None
+        return AnnotatedValidator(user=value).user
 
 
 class MovieID_SQL(sa.TypeDecorator):
@@ -124,7 +131,7 @@ class MovieID_SQL(sa.TypeDecorator):
         return str(value) if value is not None else None
 
     def process_result_value(self, value, dialect):
-        return AnnotatedValidator(movie=value).movie if value is not None else None
+        return AnnotatedValidator(movie=value).movie
 
 
 class CategoryID_SQL(sa.TypeDecorator):
@@ -135,9 +142,7 @@ class CategoryID_SQL(sa.TypeDecorator):
         return str(value) if value is not None else None
 
     def process_result_value(self, value, dialect):
-        return (
-            AnnotatedValidator(category=value).category if value is not None else None
-        )
+        return AnnotatedValidator(category=value).category
 
 
 class Email_SQL(sa.TypeDecorator):
@@ -158,12 +163,12 @@ class Email_SQL(sa.TypeDecorator):
 
 class User(Base):
     __tablename__ = "users"
-    user_id = sa.Column(UserID_SQL, primary_key=True)
-    username = sa.Column(sa.String)
-    letterboxd = sa.Column(sa.String)
-    email = sa.Column(sa.String)
+    user_id: sa.Column[UserID] = sa.Column(UserID_SQL, primary_key=True)
+    username: sa.Column[str] = sa.Column(sa.String)
+    letterboxd: sa.Column[str] = sa.Column(sa.String)
+    email: sa.Column[Email_SQL] = sa.Column(Email_SQL)
     # propic = sa.Column(sa.String)
-    last_letterboxd_check = sa.Column(sa.DateTime)
+    last_letterboxd_check: sa.Column[datetime] = sa.Column(sa.DateTime)
 
     watchnotices = orm.relationship("Watchnotice", back_populates="user", viewonly=True)
 
@@ -172,14 +177,14 @@ class User(Base):
 
 class Movie(Base):
     __tablename__ = "movies"
-    movie_id = sa.Column(MovieID_SQL, primary_key=True)
-    year = sa.Column(sa.Integer)
-    title = sa.Column(sa.String)
-    imdb_id = sa.Column(sa.String)
-    movie_db_id = sa.Column(sa.String)
-    runtime = sa.Column(sa.Integer)
-    poster_path = sa.Column(sa.String)
-    subtitle_position = sa.Column(sa.Integer)
+    movie_id: sa.Column[MovieID] = sa.Column(MovieID_SQL, primary_key=True)
+    year: sa.Column[int] = sa.Column(sa.Integer)
+    title: sa.Column[str] = sa.Column(sa.String)
+    imdb_id: sa.Column[str] = sa.Column(sa.String)
+    movie_db_id: sa.Column[str] = sa.Column(sa.String)
+    runtime: sa.Column[int] = sa.Column(sa.Integer)
+    poster_path: sa.Column[str] = sa.Column(sa.String)
+    subtitle_position: sa.Column[int] = sa.Column(sa.Integer)
 
     nominations = orm.relationship("Nomination", back_populates="movie", viewonly=True)
     watchnotices = orm.relationship(
@@ -193,13 +198,13 @@ class Movie(Base):
 
 class Category(Base):
     __tablename__ = "categories"
-    category_id = sa.Column(CategoryID_SQL, primary_key=True)
-    short_name = sa.Column(sa.String)
-    full_name = sa.Column(sa.String)
-    max_nominations = sa.Column(sa.Integer)
-    is_short = sa.Column(sa.Boolean)
-    has_note = sa.Column(sa.Boolean)
-    grouping = sa.Column(sa.String)
+    category_id: sa.Column[CategoryID] = sa.Column(CategoryID_SQL, primary_key=True)
+    short_name: sa.Column[str] = sa.Column(sa.String)
+    full_name: sa.Column[str] = sa.Column(sa.String)
+    max_nominations: sa.Column[int] = sa.Column(sa.Integer)
+    is_short: sa.Column[bool] = sa.Column(sa.Boolean)
+    has_note: sa.Column[bool] = sa.Column(sa.Boolean)
+    grouping: sa.Column[str] = sa.Column(sa.String)
 
     nominations = orm.relationship(
         "Nomination", back_populates="category", viewonly=True
@@ -212,11 +217,17 @@ class Category(Base):
 
 class Nomination(Base):
     __tablename__ = "nominations"
-    nomination_id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    year = sa.Column(sa.Integer)
-    movie_id = sa.Column(MovieID_SQL, sa.ForeignKey("movies.movie_id"))
-    category_id = sa.Column(CategoryID_SQL, sa.ForeignKey("categories.category_id"))
-    note = sa.Column(sa.String)
+    nomination_id: sa.Column[int] = sa.Column(
+        sa.Integer, primary_key=True, autoincrement=True
+    )
+    year: sa.Column[int] = sa.Column(sa.Integer)
+    movie_id: sa.Column[MovieID] = sa.Column(
+        MovieID_SQL, sa.ForeignKey("movies.movie_id")
+    )
+    category_id: sa.Column[CategoryID] = sa.Column(
+        CategoryID_SQL, sa.ForeignKey("categories.category_id")
+    )
+    note: sa.Column[str] = sa.Column(sa.String)
 
     movie = orm.relationship("Movie", back_populates="nominations", viewonly=True)
     category = orm.relationship("Category", back_populates="nominations", viewonly=True)
@@ -224,12 +235,14 @@ class Nomination(Base):
 
 class Watchnotice(Base):
     __tablename__ = "watchlist"
-    year = sa.Column(sa.Integer)
-    user_id = sa.Column(UserID_SQL, sa.ForeignKey("users.user_id"), primary_key=True)
-    movie_id = sa.Column(
+    year: sa.Column[int] = sa.Column(sa.Integer)
+    user_id: sa.Column[UserID] = sa.Column(
+        UserID_SQL, sa.ForeignKey("users.user_id"), primary_key=True
+    )
+    movie_id: sa.Column[MovieID] = sa.Column(
         MovieID_SQL, sa.ForeignKey("movies.movie_id"), primary_key=True
     )
-    status = sa.Column(sa.String)
+    status: sa.Column[str] = sa.Column(sa.String)
 
     user = orm.relationship("User", back_populates="watchnotices", viewonly=True)
     movie = orm.relationship("Movie", back_populates="watchnotices", viewonly=True)

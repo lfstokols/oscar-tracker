@@ -1,13 +1,16 @@
 import logging
 from typing import Any
+from typing_extensions import Literal
 import requests
 from bs4 import BeautifulSoup, Tag
 import sqlalchemy as sa
 from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
+from backend.data.utils import result_to_dict
 from backend.types.api_schemas import (
     MovieID,
     CategoryCompletionKey,
     UserID,
+    countTypes,
 )
 from backend.types.my_types import WatchStatus, Grouping
 from backend.data.db_connections import Session
@@ -89,7 +92,7 @@ def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]
         query = query.where(Movie.movie_id.in_(idList))
     with Session() as session:
         result = session.execute(query)
-        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)
 
 
 def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
@@ -98,7 +101,7 @@ def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
         query = query.where(User.user_id.in_(idList))
     with Session() as session:
         result = session.execute(query)
-    return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)
 
 
 def get_my_user_data(userId: UserID) -> dict[str, Any]:
@@ -111,10 +114,13 @@ def get_my_user_data(userId: UserID) -> dict[str, Any]:
     query = query.where(User.user_id == userId)
     with Session() as session:
         result = session.execute(query)
-        result = dict(zip(result.keys(), result.fetchone()))
-    assert result is not None, f"User with id {userId} not found <in get_my_user_data>"
-    result["propic"] = get_user_propic(result["letterboxd"])
-    return result
+        data = result_to_dict(result)
+    assert (
+        data is not None and len(data) > 0
+    ), f"User with id {userId} not found <in get_my_user_data>"
+    data = data[0]
+    data["propic"] = get_user_propic(data["letterboxd"])
+    return data
 
 
 def get_user_propic(letterboxd_username: str | None) -> str | None:
@@ -145,7 +151,7 @@ def get_user_propic(letterboxd_username: str | None) -> str | None:
 
 def get_category_completion_dict(
     year: int,
-) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
+) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
     """
     This is for the 'by category' view.
     Returns a dict with keys as UserIDs and values as
@@ -159,72 +165,111 @@ def get_category_completion_dict(
     all_categories = [c for c, in result]
 
     seen_watchlist = (
-        sa.select(User, Watchnotice)
+        sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
-        .join(Watchnotice, User.user_id == Watchnotice.user_id, isouter=True)
+        .outerjoin(Watchnotice, User.user_id == Watchnotice.user_id)
         .where(Watchnotice.year == year)
         .where(Watchnotice.status == WatchStatus.SEEN.value)
         .subquery()
     )
     todo_watchlist = (
-        sa.select(User, Watchnotice)
+        sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
-        .join(Watchnotice, User.user_id == Watchnotice.user_id, isouter=True)
+        .outerjoin(Watchnotice, User.user_id == Watchnotice.user_id)
         .where(Watchnotice.year == year)
+        .where(Watchnotice.status == WatchStatus.TODO.value)
+        .subquery()
+    )
+    all_movies = (
+        sa.select(User.user_id.label("user_id"), Movie.movie_id.label("movie_id"))
+        .select_from(User, Movie)
+        .where(Movie.year == year)
         .subquery()
     )
 
-    def query(status: WatchStatus):
-        start = seen_watchlist if status == WatchStatus.SEEN else todo_watchlist
+    relevant_movie_data = (
+        sa.select(
+            Nomination.movie_id.label("movie_id"),
+            Nomination.category_id.label("category_id"),
+            Category.grouping.label("grouping"),
+        )
+        .select_from(Nomination)
+        .outerjoin(Category)
+        .where(Nomination.year == year)
+        # .group_by(Nomination.movie_id)
+        .subquery()
+    )
+
+    def query(status: countTypes):
+        start = {
+            "seen": seen_watchlist,
+            "todo": todo_watchlist,
+            "total": all_movies,
+        }[status]
         return (
             sa.select(
                 start.c.user_id.label("id"),
                 *[
-                    sa.func.count(Movie.movie_id)
-                    .filter(Nomination.category_id == c)
-                    .label(str(c))
-                    for c in all_categories
+                    sa.func.count(sa.func.distinct(start.c.movie_id))
+                    .filter(relevant_movie_data.c.category_id == cat)
+                    .label(str(cat))
+                    for cat in all_categories
                 ],
                 *[
-                    sa.func.count(Movie.movie_id)
-                    .filter(Category.grouping == g)
-                    .label(str(g))
-                    for g in all_groupings
+                    sa.func.count(sa.func.distinct(start.c.movie_id))
+                    .filter(relevant_movie_data.c.grouping == grp)
+                    .label(str(grp))
+                    for grp in all_groupings
                 ],
             )
             .select_from(start)
-            .join(Movie, start.c.movie_id == Movie.movie_id, isouter=True)
-            .join(Nomination, Movie.movie_id == Nomination.movie_id, isouter=True)
-            .join(
-                Category, Nomination.category_id == Category.category_id, isouter=True
+            .outerjoin(
+                relevant_movie_data, start.c.movie_id == relevant_movie_data.c.movie_id
             )
             .group_by(start.c.user_id)
         )
 
     with Session() as session:
-        seen_result = session.execute(query(WatchStatus.SEEN))
-        todo_result = session.execute(query(WatchStatus.TODO))
-        seen_data = [
-            dict(zip(seen_result.keys(), row)) for row in seen_result.fetchall()
-        ]
-        todo_data = [
-            dict(zip(todo_result.keys(), row)) for row in todo_result.fetchall()
-        ]
-    return format_category_completion_dict(seen_data, todo_data)
+        seen_result = session.execute(query("seen"))
+        todo_result = session.execute(query("todo"))
+        total_result = session.execute(query("total"))
+        seen_data = result_to_dict(seen_result)
+        todo_data = result_to_dict(todo_result)
+        total_data = result_to_dict(total_result)
+
+        # seen_intermediate = session.execute(seen_watchlist.select())
+        # todo_intermediate = session.execute(todo_watchlist.select())
+        # total_intermediate = session.execute(all_movies.select())
+        # relevant_movie_data_intermediate = session.execute(relevant_movie_data.select())
+    return format_category_completion_dict(seen_data, todo_data, total_data)
 
 
 def format_category_completion_dict(
-    seen_data: list[dict[CategoryCompletionKey | UserID, int]],
-    todo_data: list[dict[CategoryCompletionKey | UserID, int]],
-) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
+    seen_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
+    todo_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
+    total_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
+) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
     result = {}
     for row in seen_data:
         user_id = row.pop("id")
-        result[user_id] = [row]
+        result[user_id] = {"seen": row}
     for row in todo_data:
         user_id = row.pop("id")
-        result[user_id].append(row)
-    return result
+        result[user_id]["todo"] = row
+    for row in total_data:
+        user_id = row.pop("id")
+        result[user_id]["total"] = row
+    output = {}
+    for user_id in result:
+        output[user_id] = {
+            key: {
+                "seen": result[user_id]["seen"][key],
+                "todo": result[user_id]["todo"][key],
+                "total": result[user_id]["total"][key],
+            }
+            for key in result[user_id]["seen"]
+        }
+    return output
 
 
 def compute_user_stats(year: int) -> list[dict[str, Any]]:
@@ -250,8 +295,6 @@ def compute_user_stats(year: int) -> list[dict[str, Any]]:
 
     shortness = dv.movie_is_short().subquery()
     multinom = dv.movie_is_multinom().subquery()
-    num_cats_seen = dv.num_categories_completed(WatchStatus.SEEN, year).subquery()
-    num_cats_todo = dv.num_categories_completed(WatchStatus.TODO, year).subquery()
 
     seen_watchlist = (
         sa.select(User, Watchnotice)
@@ -300,23 +343,13 @@ def compute_user_stats(year: int) -> list[dict[str, Any]]:
     seen_query = query_by_status(WatchStatus.SEEN).subquery()
     todo_query = query_by_status(WatchStatus.TODO).subquery()
     full_query = (
-        sa.select(
-            seen_query.c.id,
-            seen_query.c.numSeenShort,
-            seen_query.c.numSeenFeature,
-            seen_query.c.numSeenMultinom,
-            seen_query.c.seenWatchtime,
-            todo_query.c.numTodoShort,
-            todo_query.c.numTodoFeature,
-            todo_query.c.numTodoMultinom,
-            todo_query.c.todoWatchtime,
-        )
+        sa.select(seen_query, todo_query)
         .select_from(seen_query)
         .join(todo_query, seen_query.c.id == todo_query.c.id)
     )
     with Session() as session:
         result = session.execute(full_query)
-        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)
 
 
 def get_user_stats(year: int) -> list[dict[str, Any]]:
@@ -332,7 +365,7 @@ def get_noms(year: int) -> list[dict[str, Any]]:
                 Nomination.note.label("note"),
             ).where(Nomination.year == year)
         )
-        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)
 
 
 def get_watchlist(year: int) -> list[dict[str, Any]]:
@@ -344,7 +377,7 @@ def get_watchlist(year: int) -> list[dict[str, Any]]:
                 Watchnotice.status.label("status"),
             ).where(Watchnotice.year == year)
         )
-        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)
 
 
 def get_categories() -> list[dict[str, Any]]:
@@ -360,4 +393,4 @@ def get_categories() -> list[dict[str, Any]]:
                 Category.grouping.label("grouping"),
             )
         )
-        return [dict(zip(result.keys(), row)) for row in result.fetchall()]
+        return result_to_dict(result)

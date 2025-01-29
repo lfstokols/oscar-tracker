@@ -2,7 +2,7 @@ from flask import jsonify
 import numpy as np
 import pandas as pd
 from backend.types.api_schemas import *
-from backend.types.my_types import DataFlavor
+from backend.types.my_types import WatchStatus
 import backend.types.flavors as flv
 
 
@@ -39,15 +39,14 @@ def validate_my_user_data(my_user_data: dict) -> api_MyUserData:
 
 
 def validate_category_completion_dict(
-    category_completion_dict: dict[UserID, list[dict[CategoryCompletionKey, int]]]
-) -> dict[UserID, list[dict[CategoryCompletionKey, int]]]:
-    return category_completion_dict
-    # return api_CategoryCompletionsDict(
-    #     root={
-    #         UserID(k): list[api_CategoryCompletions(root=v.to_dict())]
-    #         for k, v in category_completion_dict.items()
-    #     }
-    # ).model_dump()
+    category_completion_dict: dict[
+        UserID, dict[CategoryCompletionKey, dict[countTypes, int]]
+    ]
+) -> dict[UserID, api_CategoryCompletions]:
+    return {
+        UserValidator(user=k).user: api_CategoryCompletions(**v).model_dump()  # type: ignore
+        for k, v in category_completion_dict.items()
+    }
 
 
 class AnnotatedValidator(BaseModel):
@@ -57,13 +56,17 @@ class AnnotatedValidator(BaseModel):
     poster_path: Optional[PosterPath] = None
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
-    """
-    Converts a pandas DataFrame to a list of dictionaries.
-    It's not a json, but it's easily castable to json.
-    """
-    # flavor = flv.format_flavor(flavor)
-    if flv.flavor_props(flavor)["shape"] == "entity":
-        df = df.reset_index()
-    df = df.replace({pd.NA: None, np.nan: None})
-    return df.to_dict(orient="records")
+class MovieValidator(BaseModel):
+    movie: MovieID
+
+
+class UserValidator(BaseModel):
+    user: UserID
+
+
+class CategoryValidator(BaseModel):
+    category: CategoryID
+
+
+class PosterPathValidator(BaseModel):
+    poster_path: PosterPath

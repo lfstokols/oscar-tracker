@@ -29,13 +29,12 @@ import {
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Grouping} from '../../types/Enums';
 import {WatchList} from '../../types/APIDataSchema';
-import {groupCounts, categoryNomCounts} from '../../utils/hardcodedFunctions';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {TABLE_ROW_MINOR_COLOR, TODO_COLOR} from '../../config/StyleChoices';
 import {grouping_display_names} from '../../types/Enums';
 
 export default function CategoryCompletionTable(): React.ReactElement {
-  const {year, preferences} = useOscarAppContext();
+  const {year} = useOscarAppContext();
   const [mainDataQ, usersQ, nominationsQ, categoriesQ, moviesQ, watchlistQ] =
     useSuspenseQueries({
       queries: [
@@ -54,7 +53,8 @@ export default function CategoryCompletionTable(): React.ReactElement {
   const categories = categoriesQ.data;
   const nominations = nominationsQ.data;
   const groupingDict = catssByGrouping(categories);
-  const groupNomCounts = groupCounts(preferences.shortsAreOneFilm);
+  const groupNomCounts = (grp: Grouping) =>
+    Object.values(data)[0]?.[grp]?.['total'] ?? 0;
   const groupingList = Object.values(Grouping);
 
   const [areOpenRegular, setAreOpenRegular] = React.useState<
@@ -81,11 +81,11 @@ export default function CategoryCompletionTable(): React.ReactElement {
     isOpen: boolean,
   ): React.ReactElement {
     // if (!isOpen) return <></>;
-    const i = planned ? 1 : 0;
-    const denominator = categoryNomCounts(cat.id, preferences.shortsAreOneFilm);
+    const hypotheticality = planned ? 'todo' : 'seen';
+    const denominator = data?.[userList[0].id]?.[cat.id]?.['total'] ?? 0;
     return (
       <TableRow
-        key={planned ? `planned-${cat.id}` : cat.id}
+        key={`${hypotheticality}-${cat.id}`}
         // color="secondary"
         sx={{
           backgroundColor: TABLE_ROW_MINOR_COLOR,
@@ -119,7 +119,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
           </Typography>
         </TableCell>
         {userList.map(user => (
-          <TableCell key={user.id} align="center">
+          <TableCell key={`${hypotheticality}-${user.id}`} align="center">
             <ClickableTooltip
               popup={makeCategoryTooltip(
                 cat.id,
@@ -130,7 +130,9 @@ export default function CategoryCompletionTable(): React.ReactElement {
               )}
               followCursor>
               <Typography variant="h6">
-                {data[user.id][i][cat.id].toString() +
+                {(
+                  data?.[user.id]?.[cat.id]?.[hypotheticality] ?? 0
+                ).toString() +
                   ' / ' +
                   denominator.toString()}
               </Typography>
@@ -152,7 +154,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
     handleToggle: () => void;
     planned: boolean;
   }): React.ReactElement {
-    const i = planned ? 1 : 0;
+    const hypotheticality = planned ? 'todo' : 'seen';
     const rowRef = React.useRef<HTMLTableRowElement>(null);
 
     const handleClick = () => {
@@ -188,9 +190,11 @@ export default function CategoryCompletionTable(): React.ReactElement {
         {userList.map(user => (
           <TableCell key={user.id} align="center">
             <Typography variant="h6">
-              {data[user.id][i][grouping].toString() +
+              {(
+                data?.[user.id]?.[grouping]?.[hypotheticality] ?? 0
+              ).toString() +
                 ' / ' +
-                groupNomCounts[grouping].toString()}
+                groupNomCounts(grouping).toString()}
             </Typography>
           </TableCell>
         ))}
@@ -216,19 +220,21 @@ export default function CategoryCompletionTable(): React.ReactElement {
           </TableRow>
         </TableHead>
         <TableBody>
-          {[0, 1].map(i => (
-            <React.Fragment key={`plannedness-${i}`}>
-              {i === 1 && plannedBanner}
+          {['seen', 'todo'].map(hypotheticality => (
+            <React.Fragment key={`hypotheticality-${hypotheticality}`}>
+              {hypotheticality === 'todo' && plannedBanner}
               {groupingList.map(grouping => {
                 const isExpanded =
-                  i === 1 ? areOpenPlanned[grouping] : areOpenRegular[grouping];
+                  hypotheticality === 'todo'
+                    ? areOpenPlanned[grouping]
+                    : areOpenRegular[grouping];
                 return (
-                  <React.Fragment key={`${i}-${grouping}`}>
+                  <React.Fragment key={`${hypotheticality}-${grouping}`}>
                     {makeGroupingRow({
                       grouping,
                       isExpanded,
                       handleToggle: () =>
-                        i === 1
+                        hypotheticality === 'todo'
                           ? setAreOpenPlanned(prev => ({
                               ...prev,
                               [grouping]: !prev[grouping],
@@ -237,10 +243,14 @@ export default function CategoryCompletionTable(): React.ReactElement {
                               ...prev,
                               [grouping]: !prev[grouping],
                             })),
-                      planned: i === 1,
+                      planned: hypotheticality === 'todo',
                     })}
                     {groupingDict[grouping].map(cat =>
-                      makeCategoryRow(cat, i === 1, isExpanded),
+                      makeCategoryRow(
+                        cat,
+                        hypotheticality === 'todo',
+                        isExpanded,
+                      ),
                     )}
                   </React.Fragment>
                 );

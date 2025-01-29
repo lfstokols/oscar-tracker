@@ -1,5 +1,5 @@
-import sqlite3
 import sqlalchemy as sa
+import sqlalchemy.orm as sa_orm
 from contextlib import contextmanager
 from backend.data.db_schema import DB_PATH
 
@@ -11,11 +11,11 @@ except Exception as e:
     raise
 
 
-@contextmanager
-def get_connection():
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        yield conn, cursor
+# @contextmanager
+# def get_connection():
+#     with sqlite3.connect(DB_PATH) as conn:
+#         cursor = conn.cursor()
+#         yield conn, cursor
 
 
-Session = sa.orm.sessionmaker(bind=engine)
+Session = sa_orm.sessionmaker(bind=engine)
