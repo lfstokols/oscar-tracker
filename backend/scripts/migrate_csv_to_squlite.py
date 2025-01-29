@@ -40,11 +40,10 @@ def migrate_users():
                 sa.insert(User)
                 .prefix_with("OR REPLACE")
                 .values(
-                    id=row.name,
+                    user_id=row.name,
                     username=clean_na(row["username"]),
                     letterboxd=clean_na(row["letterboxd"]),
                     email=clean_na(row["email"]),
-                    last_letterboxd_check=clean_na(row["lastLetterboxdCheck"]),
                 )
             )
         debug_print("Ready to commit")
@@ -61,7 +60,7 @@ def migrate_movies(year: int):
                 .prefix_with("OR REPLACE")
                 .values(
                     year=year,
-                    id=row.name,
+                    movie_id=row.name,
                     title=clean_na(row["title"]),
                     imdb_id=clean_na(row["ImdbId"]),
                     movie_db_id=clean_na(row["movieDbId"]),
@@ -82,7 +81,7 @@ def migrate_categories():
                 sa.insert(Category)
                 .prefix_with("OR REPLACE")
                 .values(
-                    id=row.name,
+                    category_id=row.name,
                     short_name=clean_na(row["shortName"]),
                     full_name=clean_na(row["fullName"]),
                     has_note=clean_na(row["hasNote"]),

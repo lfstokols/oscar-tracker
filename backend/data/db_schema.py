@@ -167,7 +167,6 @@ class User(Base):
     username: sa.Column[str] = sa.Column(sa.String)
     letterboxd: sa.Column[str] = sa.Column(sa.String)
     email: sa.Column[Email_SQL] = sa.Column(Email_SQL)
-    # propic = sa.Column(sa.String)
     last_letterboxd_check: sa.Column[datetime] = sa.Column(sa.DateTime)
 
     watchnotices = orm.relationship("Watchnotice", back_populates="user", viewonly=True)
