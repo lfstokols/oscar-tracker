@@ -167,17 +167,27 @@ def get_category_completion_dict(
     seen_watchlist = (
         sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
-        .outerjoin(Watchnotice, User.user_id == Watchnotice.user_id)
-        .where(Watchnotice.year == year)
-        .where(Watchnotice.status == WatchStatus.SEEN.value)
+        .outerjoin(
+            Watchnotice,
+            sa.and_(
+                User.user_id == Watchnotice.user_id,
+                Watchnotice.year == year,
+                Watchnotice.status == WatchStatus.SEEN.value,
+            ),
+        )
         .subquery()
     )
     todo_watchlist = (
         sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
-        .outerjoin(Watchnotice, User.user_id == Watchnotice.user_id)
-        .where(Watchnotice.year == year)
-        .where(Watchnotice.status == WatchStatus.TODO.value)
+        .outerjoin(
+            Watchnotice,
+            sa.and_(
+                User.user_id == Watchnotice.user_id,
+                Watchnotice.year == year,
+                Watchnotice.status == WatchStatus.TODO.value,
+            ),
+        )
         .subquery()
     )
     all_movies = (
@@ -242,6 +252,7 @@ def get_category_completion_dict(
         # total_intermediate = session.execute(all_movies.select())
         # relevant_movie_data_intermediate = session.execute(relevant_movie_data.select())
     return format_category_completion_dict(seen_data, todo_data, total_data)
+    # return seen_data, todo_data, total_data
 
 
 def format_category_completion_dict(
@@ -255,9 +266,13 @@ def format_category_completion_dict(
         result[user_id] = {"seen": row}
     for row in todo_data:
         user_id = row.pop("id")
+        if user_id not in result:
+            result[user_id] = {}
         result[user_id]["todo"] = row
     for row in total_data:
         user_id = row.pop("id")
+        if user_id not in result:
+            result[user_id] = {}
         result[user_id]["total"] = row
     output = {}
     for user_id in result:
