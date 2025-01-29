@@ -8,6 +8,7 @@ try:
     assert DB_PATH is not None, "No database path provided"
     if not DB_PATH.exists():
         logging.warning(f"Database file {DB_PATH} does not exist, creating it")
+        DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         DB_PATH.touch()
     engine = sa.create_engine(f"sqlite:///{DB_PATH}")
 except Exception as e:
@@ -20,6 +21,12 @@ try:
 except Exception as e:
     print(f"Error creating engine: {e}")
     raise
+try:
+    with engine.connect() as conn:
+        conn.execute(sa.text("PRAGMA journal_mode=WAL"))
+except Exception as e:
+    logging.error(f"Error setting journal mode: {e}")
+
 
 # @contextmanager
 # def get_connection():

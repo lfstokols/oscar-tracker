@@ -1,5 +1,9 @@
 import logging
-from logging.handlers import RotatingFileHandler
+from logging.handlers import (
+    RotatingFileHandler,
+    WatchedFileHandler,
+    TimedRotatingFileHandler,
+)
 import os, sys
 from pathlib import Path
 from datetime import datetime, timezone
@@ -47,11 +51,27 @@ class DebugLevelFilter(logging.Filter):
         return record.levelno == logging.DEBUG
 
 
+# class SafeRotatingFileHandler(RotatingFileHandler):
+#     def rotate(self, source, dest):
+#         if os.path.exists(dest):
+#             try:
+#                 os.remove(dest)
+#             except OSError:
+#                 pass
+#         try:
+#             os.rename(source, dest)
+#         except OSError:
+#             # If rotation fails, just continue logging to current file
+#             pass
+
+
 def setup_file_handler(log_dir: Path, filename: str):
-    file_handler = RotatingFileHandler(
-        log_dir / filename,
-        maxBytes=max_log_file_size,
+    file_handler = TimedRotatingFileHandler(
+        filename=log_dir / filename,
+        when="midnight",
+        interval=1,
         backupCount=max_backup_files,
+        delay=True,
     )
     return file_handler
 
