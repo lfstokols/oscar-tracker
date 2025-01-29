@@ -187,7 +187,7 @@ export default function CategoryCompletionTable(): React.ReactElement {
         </TableCell>
         {userList.map(user => (
           <TableCell key={user.id} align="center">
-            <Typography variant="h6">
+            <Typography variant="h6" noWrap>
               {data[user.id][i][grouping].toString() +
                 ' / ' +
                 groupNomCounts[grouping].toString()}

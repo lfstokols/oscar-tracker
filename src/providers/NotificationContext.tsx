@@ -79,7 +79,7 @@ export function useNotifications(): NotificationsDispatch {
           autoHideDurationMs === 0 ? null : autoHideDurationMs,
         key: String(new Date().getTime()),
       }),
-    [],
+    [setActiveNotification],
   );
 
   return {show};
