@@ -204,7 +204,7 @@ function GroupingAccordion({
     toggleGroupingFilter(myCategoryIds, !isSelected);
   };
   return (
-    <Accordion key={grouping} sx={{width: '100%'}}>
+    <Accordion key={grouping} disableGutters sx={{width: '100%'}}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Stack
           direction="row"
