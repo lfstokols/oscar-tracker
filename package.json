@@ -35,8 +35,8 @@
 		"@vitejs/plugin-react": "^4.2.0",
 		"eslint": "^9.17.0",
 		"eslint-plugin-react": "^7.37.3",
-		"eslint-config-airbnb": "",
-		"eslint-config-airbnb-typescript": "",
+		"eslint-plugin-react-hooks": "",
+		"eslint-plugin-prettier": "",
 		"globals": "^15.14.0",
 		"typescript": "",
 		"typescript-eslint": "^8.19.0",
@@ -52,6 +52,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"preview": "vite preview",
-		"build:prod": "vite build --mode production"
+		"build:prod": "vite build --mode production",
+		"lint": "npx eslint \"**/*.{ts,tsx}\""
 	}
 }
