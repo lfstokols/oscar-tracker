@@ -1,13 +1,12 @@
-import * as React from 'react';
-import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Grid2';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {debounce} from '@mui/material/utils';
-import {LProfile} from './SearchProfileDatabase';
-import SearchProfileDatabase from './SearchProfileDatabase';
+import * as React from 'react';
 import {MIN_SEARCH_LENGTH} from '../../../config/GlobalConstants';
+import SearchProfileDatabase, {LProfile} from './SearchProfileDatabase';
 
 type Props = {
   setter: (newValue: string | null) => void;

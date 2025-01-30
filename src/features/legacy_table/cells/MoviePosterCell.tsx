@@ -1,8 +1,9 @@
-import React, {Suspense, useState} from 'react';
-import {MovieDb_POSTER_URL} from '../../../config/GlobalConstants';
-import {Skeleton, TableCell} from '@mui/material';
-import {ErrorBoundary} from 'react-error-boundary';
 import ErrorIcon from '@mui/icons-material/DoNotDisturbAlt';
+import {Skeleton, TableCell} from '@mui/material';
+import * as React from 'react';
+import {Suspense, useState} from 'react';
+import {ErrorBoundary} from 'react-error-boundary';
+import {MovieDb_POSTER_URL} from '../../../config/GlobalConstants';
 
 type Props = {movie: Movie};
 

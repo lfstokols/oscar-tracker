@@ -1,28 +1,27 @@
-import {useOscarAppContext} from '../../../providers/AppContext';
-
+import {FilterAlt} from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   // Menu,
   // MenuItem,
   Checkbox,
-  Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Stack,
-  List,
   Divider,
-  ListItem,
-  FormGroup,
   FormControlLabel,
+  FormGroup,
+  List,
+  ListItem,
+  Stack,
+  Typography,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {FilterAlt} from '@mui/icons-material';
-import {Grouping, WatchStatus} from '../../../types/Enums';
-import {DisplayedSettingsButton, CenteredMenu} from './Common';
-import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
-import {grouping_display_names} from '../../../types/Enums';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
+import {categoryOptions} from '../../../hooks/dataOptions';
+import {useOscarAppContext} from '../../../providers/AppContext';
+
+import {Grouping, WatchStatus,grouping_display_names} from '../../../types/Enums';
+import {CenteredMenu, DisplayedSettingsButton} from './Common';
 import useMenuState from './useMenuState';
 
 export default function FilterRowsWidget({

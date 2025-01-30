@@ -1,5 +1,5 @@
-import React from 'react';
 import {FormControl, FormLabel, TextField} from '@mui/material';
+import * as React from 'react';
 
 export default function TextEntry({
   display_name,

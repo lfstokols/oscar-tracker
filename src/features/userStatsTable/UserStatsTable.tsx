@@ -1,14 +1,21 @@
-import {useSuspenseQueries} from '@tanstack/react-query';
-import React, {useState} from 'react';
 import {
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
   Typography,
-  TableContainer,
 } from '@mui/material';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import {useSuspenseQueries} from '@tanstack/react-query';
+import * as React from 'react';
+import {useState} from 'react';
+import {TableHeaderCell} from '../../components/TableHeader';
+import {
+  NUM_SHORT_CATEGORIES,
+  NUM_SHORT_FILMS_PER_CATEGORY,
+} from '../../config/GlobalConstants';
 import {
   movieOptions,
   userOptions,
@@ -16,17 +23,11 @@ import {
 } from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {UserStats} from '../../types/APIDataSchema';
-import {
-  NUM_SHORT_CATEGORIES,
-  NUM_SHORT_FILMS_PER_CATEGORY,
-} from '../../config/GlobalConstants';
 import {getUsernameFromId} from '../../utils/dataSelectors';
-import {TableHeaderCell} from '../../components/TableHeader';
 // import {TODO_COLOR} from '../../config/StyleChoices';
 import {TOTAL_CATEGORY_COUNT} from '../../utils/hardcodedFunctions';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import {Hypotheticality, ColumnLabels} from './Enums';
 import {enumToBool} from '../category_completion_table/utils';
+import {ColumnLabels, Hypotheticality} from './Enums';
 // import {useIsMobile} from '../../hooks/useIsMobile';
 
 const disabledCombinations: {

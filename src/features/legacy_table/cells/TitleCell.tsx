@@ -1,11 +1,10 @@
-import {Stack, TableCell, Typography} from '@mui/material';
-import {SxProps, Theme} from '@mui/material';
+import {Stack,SxProps, TableCell, Theme, Typography} from '@mui/material';
+import {forwardRef, useEffect, useRef, useState} from 'react';
 import {
-  HIGHLIGHT_ANIMATED_COLOR,
   BEST_PICTURE_COLOR,
+  HIGHLIGHT_ANIMATED_COLOR,
 } from '../../../config/StyleChoices';
 import {CategoryIdSchema} from '../../../types/APIDataSchema';
-import {forwardRef, useEffect, useRef, useState} from 'react';
 
 export default function TitleCell({
   movie,

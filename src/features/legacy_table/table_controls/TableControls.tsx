@@ -1,15 +1,15 @@
-import React from 'react';
-import {useQueryClient} from '@tanstack/react-query';
-import {watchlistOptions} from '../../../hooks/dataOptions';
-import {Paper, Stack} from '@mui/material';
 import {Sync as RefreshIcon} from '@mui/icons-material';
-import {useOscarAppContext} from '../../../providers/AppContext';
-import {useIsMobile} from '../../../hooks/useIsMobile';
-import HideColumnsWidget from './HideColumns';
-import FilterRowsWidget from './FilterRows';
+import {Paper, Stack} from '@mui/material';
+import {useQueryClient} from '@tanstack/react-query';
+import * as React from 'react';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
-import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
 import {API_BASE_URL} from '../../../config/GlobalConstants';
+import {watchlistOptions} from '../../../hooks/dataOptions';
+import {useIsMobile} from '../../../hooks/useIsMobile';
+import {useOscarAppContext} from '../../../providers/AppContext';
+import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
+import FilterRowsWidget from './FilterRows';
+import HideColumnsWidget from './HideColumns';
 export default function TableControls({
   filterState,
   setFilterState,

@@ -1,10 +1,11 @@
-import React, {useCallback, useState} from 'react';
-import {Chip, Button, IconButton} from '@mui/material';
-import {useOscarAppContext} from '../../providers/AppContext';
-import LoginMenu from './LoginMenu';
-import ProfileScreen from '../userModal/ProfileScreen';
+import {Button, Chip, IconButton} from '@mui/material';
+import * as React from 'react';
+import {useCallback, useState} from 'react';
 import UserAvatar from '../../components/userAvatar';
 import {useIsMobile} from '../../hooks/useIsMobile';
+import {useOscarAppContext} from '../../providers/AppContext';
+import ProfileScreen from '../userModal/ProfileScreen';
+import LoginMenu from './LoginMenu';
 
 export default function UserButton(): React.ReactElement {
   // hooks

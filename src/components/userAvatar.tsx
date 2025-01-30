@@ -1,9 +1,9 @@
 import Avatar from '@mui/material/Avatar';
 import {useSuspenseQuery} from '@tanstack/react-query';
-import {myUserDataOptions} from '../hooks/dataOptions';
 import {Suspense} from 'react';
 
 import {ErrorBoundary} from 'react-error-boundary';
+import {myUserDataOptions} from '../hooks/dataOptions';
 
 export default function UserAvatarWrapper({
   userId,

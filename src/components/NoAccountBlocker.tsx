@@ -2,8 +2,8 @@
 //* Accepts a boollean, and if you have access to the feature, this component just wraps its children in a React.Fragment
 //* If you don't have access, it shows the tooltip and then the children
 
+import * as React from 'react';
 import {ClickableTooltip} from './ClickableTooltip';
-import React from 'react';
 
 export function NoAccountBlocker({
   children,

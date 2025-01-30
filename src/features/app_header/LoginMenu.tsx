@@ -1,12 +1,12 @@
-import React, {Suspense} from 'react';
-import {CircularProgress, Menu, MenuItem} from '@mui/material';
-import {useOscarAppContext} from '../../providers/AppContext';
-import {Button} from '@mui/material';
-// import {useMyUsers} from '../hooks/useMyQuery';
 import {Error} from '@mui/icons-material';
-import {userOptions} from '../../hooks/dataOptions';
-import {ErrorBoundary} from 'react-error-boundary';
+import {Button, CircularProgress, Menu, MenuItem} from '@mui/material';
 import {useSuspenseQuery} from '@tanstack/react-query';
+import {Suspense} from 'react';
+import * as React from 'react';
+import {ErrorBoundary} from 'react-error-boundary';
+import {userOptions} from '../../hooks/dataOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+// import {useMyUsers} from '../hooks/useMyQuery';
 
 type Props = {
   anchorEl: HTMLElement | null;

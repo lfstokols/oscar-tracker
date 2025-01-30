@@ -1,5 +1,5 @@
-import {Box, Typography, Stack} from '@mui/material';
-import oscarIcon from '/src/assets/Trophy_Icon_Outlined_512.png';
+import {Box, Stack, Typography} from '@mui/material';
+import oscarIcon from './../assets/Trophy_Icon_Outlined_512.png';
 
 export default function OurWordmark({
   mini,

@@ -1,11 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {useLocation, useNavigate, matchPath, Navigate} from 'react-router-dom';
+import * as React from 'react';
+import {useEffect, useState} from 'react';
+import { Navigate, matchPath,useLocation, useNavigate} from 'react-router-dom';
 import {
-  LEGACY_URL,
-  BY_USER_URL,
-  BY_CATEGORY_URL,
-  DEFAULT_YEAR,
   AVAILABLE_YEARS,
+  BY_CATEGORY_URL,
+  BY_USER_URL,
+  DEFAULT_YEAR,
+  LEGACY_URL,
 } from '../config/GlobalConstants';
 import {logToConsole} from '../utils/Logger';
 import {UrlParams, UrlParamsContext} from './UrlParamsContext';

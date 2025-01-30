@@ -1,6 +1,6 @@
 import {
-  CategoryCompletionKey,
   CategoryCompletionData,
+  CategoryCompletionKey,
   UserId,
 } from '../../types/APIDataSchema';
 import {Hypotheticality} from '../userStatsTable/Enums';

@@ -1,7 +1,12 @@
-import {FormControl, InputLabel, Select, MenuItem} from '@mui/material';
-import {useOscarAppContext} from '../../providers/AppContext';
-import {SelectChangeEvent} from '@mui/material';
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SelectChangeEvent,
+} from '@mui/material';
 import {AVAILABLE_YEARS} from '../../config/GlobalConstants';
+import {useOscarAppContext} from '../../providers/AppContext';
 
 export default function YearSelector() {
   const {year, setYear} = useOscarAppContext();

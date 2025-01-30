@@ -1,20 +1,20 @@
-import React from 'react';
 import {
+  Category as ColumnsIcon,
+  // FilterAlt as RowsIcon,
+} from '@mui/icons-material';
+import {
+  Paper,
   // Menu,
   // MenuItem,
   // IconButton,
   // Button,
   Typography,
-  Paper,
   // Checkbox,
 } from '@mui/material';
-import {
-  Category as ColumnsIcon,
-  // FilterAlt as RowsIcon,
-} from '@mui/icons-material';
+import * as React from 'react';
 import {useOscarAppContext} from '../../../providers/AppContext';
 // import {columnList} from '../LegacyTable';
-import {DisplayedSettingsButton, CenteredMenu} from './Common';
+import {CenteredMenu, DisplayedSettingsButton} from './Common';
 import useMenuState from './useMenuState';
 
 export default function HideColumnsWidget({

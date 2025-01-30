@@ -1,12 +1,12 @@
 /// <reference types="vite/client" />
+import {CssBaseline} from '@mui/material';
+import {ThemeProvider, createTheme} from '@mui/material/styles';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {BrowserRouter} from 'react-router-dom';
+import QueryClientConfig from '../config/QueryClientConfig';
+import ThemeConfig from '../config/ThemeConfig';
 import AppContextProvider from '../providers/AppContextProvider';
 import NotificationsContextProvider from '../providers/NotificationContextProvider';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {ThemeProvider, createTheme} from '@mui/material/styles';
-import {CssBaseline} from '@mui/material';
-import ThemeConfig from '../config/ThemeConfig';
-import QueryClientConfig from '../config/QueryClientConfig';
-import {BrowserRouter} from 'react-router-dom';
 import RouteParser from '../providers/RouteParser';
 
 const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;

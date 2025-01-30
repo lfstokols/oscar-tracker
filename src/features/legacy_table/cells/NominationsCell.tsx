@@ -1,12 +1,14 @@
-import React, {forwardRef, useEffect, useRef, useState} from 'react';
 import {TableCell, Typography} from '@mui/material';
-import {NomList, CategoryList, MovieId} from '../../../types/APIDataSchema';
+import * as React from 'react';
+import {forwardRef, useEffect, useRef, useState} from 'react';
 import countries from '../../../assets/countries.json';
 import musicVideos from '../../../assets/musicVideos.json';
-import 'flag-icons/css/flag-icons.min.css';
 import {ClickableTooltip} from '../../../components/ClickableTooltip';
-import {Grouping} from '../../../types/Enums';
 import {useIsMobile} from '../../../hooks/useIsMobile';
+import {CategoryList, MovieId, NomList} from '../../../types/APIDataSchema';
+import {Grouping} from '../../../types/Enums';
+
+import 'flag-icons/css/flag-icons.min.css';
 
 const countryCodes: {name: string; flag: string; code: string}[] = countries;
 const songUrls: {title: string; url: string}[] = musicVideos;

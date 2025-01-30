@@ -1,15 +1,15 @@
 import {QueryClient, useQueryClient} from '@tanstack/react-query';
-import {UserIdSchema} from '../types/APIDataSchema';
 import Cookies from 'js-cookie';
+import {useState} from 'react';
+import {EXPIRATION_DAYS} from '../config/GlobalConstants';
 import {
   NotificationsDispatch,
   useNotifications,
 } from '../providers/NotificationContext';
+import {UserIdSchema} from '../types/APIDataSchema';
 import {warnToConsole} from '../utils/Logger';
-import {EXPIRATION_DAYS} from '../config/GlobalConstants';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {userOptions} from './dataOptions';
-import {useState} from 'react';
 
 export default function useActiveUserState(): [
   UserId | null,

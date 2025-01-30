@@ -1,19 +1,18 @@
 import {queryOptions} from '@tanstack/react-query';
-import {Endpoints} from '../types/Enums';
-import LockError from '../types/LockErorr';
 import {z} from 'zod';
+import {API_BASE_URL} from '../config/GlobalConstants';
 import {
+  CategoryCompletionSchema,
   CategoryListSchema,
   MovieListSchema,
+  MyUserDataSchema,
   NomListSchema,
   UserListSchema,
-  WatchListSchema,
-  MyUserDataSchema,
   UserStatsListSchema,
-  CategoryCompletionSchema,
-  // CategoryCompletionListSchema,
+  WatchListSchema,
 } from '../types/APIDataSchema';
-import {API_BASE_URL} from '../config/GlobalConstants';
+import {Endpoints} from '../types/Enums';
+import LockError from '../types/LockErorr';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({

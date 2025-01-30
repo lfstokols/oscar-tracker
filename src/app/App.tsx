@@ -1,13 +1,14 @@
 import {ReactQueryDevtools} from '@tanstack/react-query-devtools';
-import React, {Suspense, useEffect, useRef, useState} from 'react';
+import * as React from 'react';
+import {Suspense, useEffect, useRef, useState} from 'react';
 import {ErrorBoundary} from 'react-error-boundary';
+import AppErrorScreen from '../components/AppErrorScreen';
 import {LoadScreen} from '../components/LoadScreen';
 import AppHeader from '../features/app_header/AppHeader';
-import AppProvider from './AppProvider';
-import AppContent from './AppContent';
-import AppErrorScreen from '../components/AppErrorScreen';
-import AppNavDrawer from './AppNavDrawer';
 import {useIsMobile} from '../hooks/useIsMobile';
+import AppContent from './AppContent';
+import AppNavDrawer from './AppNavDrawer';
+import AppProvider from './AppProvider';
 
 export default function App(): React.ReactElement {
   const isMobile = useIsMobile();

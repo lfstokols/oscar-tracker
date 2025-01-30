@@ -1,15 +1,14 @@
-import React from 'react';
-import {Typography, TableCell, TableRow} from '@mui/material';
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowRight as KeyboardArrowRightIcon,
 } from '@mui/icons-material';
-import {Grouping} from '../../types/Enums';
-import {make_fraction_display, get_num, get_total} from './utils';
+import {TableCell, TableRow, Typography} from '@mui/material';
+import * as React from 'react';
+import {useRef} from 'react';
+import {CategoryCompletionData, UserId} from '../../types/APIDataSchema';
+import {Grouping, grouping_display_names} from '../../types/Enums';
 import {Hypotheticality} from '../userStatsTable/Enums';
-import {CategoryCompletionData} from '../../types/APIDataSchema';
-import {UserId} from '../../types/APIDataSchema';
-import {grouping_display_names} from '../../types/Enums';
+import {get_num, get_total, make_fraction_display} from './utils';
 
 export default function GroupingRow({
   grouping,
@@ -26,7 +25,7 @@ export default function GroupingRow({
   hypotheticality: Hypotheticality;
   userList: UserId[];
 }): React.ReactElement {
-  const rowRef = React.useRef<HTMLTableRowElement>(null);
+  const rowRef = useRef<HTMLTableRowElement>(null);
 
   const handleClick = () => {
     const currentPosition = rowRef.current?.getBoundingClientRect().top;

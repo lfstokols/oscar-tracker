@@ -1,7 +1,8 @@
-import React, {memo, useCallback} from 'react';
-// import { useNotifications } from './NotificationContext';
-import Snackbar, {SnackbarCloseReason} from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Snackbar, {SnackbarCloseReason} from '@mui/material/Snackbar';
+import * as React from 'react';
+import {memo, useCallback} from 'react';
+// import { useNotifications } from './NotificationContext';
 
 export type Notification = {
   key: string;

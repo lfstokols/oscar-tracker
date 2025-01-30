@@ -1,5 +1,5 @@
+import {Box, ClickAwayListener, Tooltip} from '@mui/material';
 import {useState} from 'react';
-import {Box, Tooltip, ClickAwayListener} from '@mui/material';
 
 export function ClickableTooltip({
   children,

@@ -1,17 +1,17 @@
-import React, {Dispatch, SetStateAction, Suspense} from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import UserButton from './UserButton';
-import OurWordmark from '../../components/OurWordmark';
+import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
-import YearSelector from './YearSelector';
-import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
 import Cookies from 'js-cookie';
+import {Dispatch, SetStateAction, Suspense} from 'react';
+import OurWordmark from '../../components/OurWordmark';
+import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import {useIsMobile} from '../../hooks/useIsMobile';
+import UserButton from './UserButton';
+import YearSelector from './YearSelector';
 
 type Props = {
   isDrawerPersistent: boolean;

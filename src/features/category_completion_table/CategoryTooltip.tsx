@@ -1,12 +1,12 @@
 import {Stack, Typography} from '@mui/material';
-import {getNominees} from '../../utils/dataSelectors';
 import {
   CategoryId,
-  UserId,
-  NomList,
-  WatchList,
   MovieList,
+  NomList,
+  UserId,
+  WatchList,
 } from '../../types/APIDataSchema';
+import {getNominees} from '../../utils/dataSelectors';
 
 export default function makeCategoryTooltip(
   catId: CategoryId,

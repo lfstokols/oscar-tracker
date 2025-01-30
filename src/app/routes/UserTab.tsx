@@ -1,10 +1,10 @@
 import {useState} from 'react';
-import UserStatsTable from '../../features/userStatsTable/UserStatsTable';
-import DefaultCatcher from '../../components/LoadScreen';
 import Countdown from '../../components/Countdown';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
-import TableControls from '../../features/userStatsTable/TableControls';
+import DefaultCatcher from '../../components/LoadScreen';
 import {Hypotheticality} from '../../features/userStatsTable/Enums';
+import TableControls from '../../features/userStatsTable/TableControls';
+import UserStatsTable from '../../features/userStatsTable/UserStatsTable';
 
 export default function UserTab(): React.ReactElement {
   const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);

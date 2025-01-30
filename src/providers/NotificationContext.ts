@@ -1,4 +1,5 @@
-import React, {useCallback, useContext} from 'react';
+import * as React from 'react';
+import {useCallback, useContext} from 'react';
 import {Notification, NotificationType} from '../components/NotificationToast';
 import {DEFAULT_HIDE_DURATION_MS} from '../config/GlobalConstants';
 

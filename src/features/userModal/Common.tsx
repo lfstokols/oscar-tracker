@@ -1,5 +1,5 @@
-import Typography from '@mui/material/Typography';
 import MuiDivider from '@mui/material/Divider';
+import Typography from '@mui/material/Typography';
 
 export default function TitleLine({title}: {title: string}) {
   return (

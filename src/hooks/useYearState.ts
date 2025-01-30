@@ -1,6 +1,6 @@
 import {useContext, useEffect, useState} from 'react';
-import {DEFAULT_YEAR, AVAILABLE_YEARS} from '../config/GlobalConstants';
 import {useNavigate} from 'react-router-dom';
+import { AVAILABLE_YEARS,DEFAULT_YEAR} from '../config/GlobalConstants';
 import {UrlParamsContext} from './../providers/UrlParamsContext';
 
 export default function useYearState(): [number, (year: number) => void] {

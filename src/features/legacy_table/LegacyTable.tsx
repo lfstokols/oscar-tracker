@@ -1,5 +1,4 @@
-import React, {useState} from 'react';
-import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
+import {SwapHoriz} from '@mui/icons-material';
 import {
   Table,
   TableBody,
@@ -7,10 +6,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {SwapHoriz} from '@mui/icons-material';
-import {TableHeaderCell} from '../../components/TableHeader';
 import {useSuspenseQueries} from '@tanstack/react-query';
-import {useOscarAppContext} from '../../providers/AppContext';
+import * as React from 'react';
+import {useState} from 'react';
+import {TableHeaderCell} from '../../components/TableHeader';
 import {
   categoryOptions,
   movieOptions,
@@ -18,9 +17,11 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {WatchStatus} from '../../types/Enums';
+import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
-import {WatchStatus} from '../../types/Enums';
 
 // export const columnList = ['title', 'nominations', 'runtime'];
 

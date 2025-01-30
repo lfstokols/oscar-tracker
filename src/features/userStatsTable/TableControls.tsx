@@ -1,8 +1,8 @@
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import FollowTheSignsIcon from '@mui/icons-material/FollowTheSigns';
 import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import {Hypotheticality} from './Enums';
 
 export default function TableControls({

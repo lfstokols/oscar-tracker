@@ -1,14 +1,17 @@
-import React from 'react';
-import TitleLine, {boxStyle} from './Common';
-import TextEntry from './DataEntryField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import {useNotifications} from '../../providers/NotificationContext';
-import {addUserOnSuccess, onMutateError} from '../../hooks/mutationOptions';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {addUserMutationFn} from '../../hooks/mutationOptions';
-import {useOscarAppContext} from '../../providers/AppContext';
+import * as React from 'react';
 import {useState} from 'react';
+import {
+  addUserMutationFn,
+  addUserOnSuccess,
+  onMutateError,
+} from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
+import TitleLine, {boxStyle} from './Common';
+import TextEntry from './DataEntryField';
 
 type Props = {
   closer: () => void;

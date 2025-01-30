@@ -1,9 +1,9 @@
-import React from 'react';
-import ReactDOM, {Container} from 'react-dom/client';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom/client';
+import {Container} from 'react-dom/client';
 import App from './app/App';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const root = ReactDOM.createRoot(
+const _root = ReactDOM.createRoot(
   document.getElementById('root') as Container,
 ).render(
   <React.StrictMode>

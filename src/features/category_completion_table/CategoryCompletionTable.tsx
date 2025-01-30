@@ -1,12 +1,14 @@
-import React, {useState} from 'react';
-import {useSuspenseQueries} from '@tanstack/react-query';
 import {
   Table,
-  TableHead,
-  TableRow,
   TableBody,
   TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
+import {useSuspenseQueries} from '@tanstack/react-query';
+import * as React from 'react';
+import {useState} from 'react';
+import {TableHeaderCell} from '../../components/TableHeader';
 import {
   categoryCompletionOptions,
   categoryOptions,
@@ -15,13 +17,12 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
-import {useSortUsers, catssByGrouping} from '../../utils/dataSelectors';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Grouping} from '../../types/Enums';
+import {catssByGrouping, useSortUsers} from '../../utils/dataSelectors';
 import {Hypotheticality} from '../userStatsTable/Enums';
-import GroupingRow from './GroupingRow';
 import CategoryRow from './CategoryRow';
-import {TableHeaderCell} from '../../components/TableHeader';
+import GroupingRow from './GroupingRow';
 export default function CategoryCompletionTable({
   hypotheticality,
 }: {

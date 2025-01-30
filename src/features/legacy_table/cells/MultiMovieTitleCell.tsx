@@ -1,4 +1,4 @@
-import {TableCell, Table, TableBody, TableRow} from '@mui/material';
+import { Table, TableBody,TableCell, TableRow} from '@mui/material';
 import TitleCell from './TitleCell';
 
 type Props = {

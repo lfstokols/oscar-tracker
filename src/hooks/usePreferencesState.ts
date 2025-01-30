@@ -1,7 +1,7 @@
 import {useState} from 'react';
-import {isKeyInObject, objectKeys} from '../utils/commonUtils';
-import {warnToConsole} from '../utils/Logger';
 import {DEFAULT_PREFERENCES} from '../config/GlobalConstants';
+import {warnToConsole} from '../utils/Logger';
+import {isKeyInObject, objectKeys} from '../utils/commonUtils';
 
 export default function usePreferencesState(): [
   Preferences,

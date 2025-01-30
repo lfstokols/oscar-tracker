@@ -1,9 +1,9 @@
-import React, {useMemo} from 'react';
-
-import AppContext from './AppContext';
+import * as React from 'react';
+import {useMemo} from 'react';
 import useActiveUserState from '../hooks/useActiveUserState';
 import usePreferencesState from '../hooks/usePreferencesState';
 import useYearState from '../hooks/useYearState';
+import AppContext from './AppContext';
 
 type Props = {
   children: React.ReactElement;

@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react';
-import NotificationContext from './NotificationContext';
 import NotificationToast, {Notification} from '../components/NotificationToast';
+import NotificationContext from './NotificationContext';
 
 type Props = {
   children: React.ReactNode;

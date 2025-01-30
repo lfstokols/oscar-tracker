@@ -1,11 +1,18 @@
-import React, {Suspense} from 'react';
+import {Error as ErrorIcon} from '@mui/icons-material';
+import {LinearProgress, TableCell, Typography} from '@mui/material';
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import {LinearProgress, TableCell} from '@mui/material';
-import {Error as ErrorIcon} from '@mui/icons-material';
+import * as React from 'react';
+import {Suspense} from 'react';
+import {ClickableTooltip} from '../../../components/ClickableTooltip';
+import {
+  NO_STATUS_COLOR,
+  SEEN_COLOR,
+  TODO_COLOR,
+} from '../../../config/StyleChoices';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {
   onMutateError,
@@ -15,13 +22,6 @@ import {
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {useNotifications} from '../../../providers/NotificationContext';
 import {WatchListSchema} from '../../../types/APIDataSchema';
-import {Typography} from '@mui/material';
-import {ClickableTooltip} from '../../../components/ClickableTooltip';
-import {
-  TODO_COLOR,
-  SEEN_COLOR,
-  NO_STATUS_COLOR,
-} from '../../../config/StyleChoices';
 import {WatchStatus} from '../../../types/Enums';
 
 type Props =

@@ -1,24 +1,24 @@
-import * as React from 'react';
-import {z} from 'zod';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
 import {
   useMutation,
-  useSuspenseQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from '@tanstack/react-query';
+import * as React from 'react';
+import {z} from 'zod';
 import {myUserDataOptions} from '../../../hooks/dataOptions';
-import {useOscarAppContext} from '../../../providers/AppContext';
-import Stack from '@mui/material/Stack';
-import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
-import LetterboxdSearchBar from './SearchBar';
 import {
+  onMutateError,
   updateCacheOnSuccess,
   updateUserMutationFn,
-  onMutateError,
 } from '../../../hooks/mutationOptions';
-import {MyUserDataSchema} from '../../../types/APIDataSchema';
+import {useOscarAppContext} from '../../../providers/AppContext';
 import {useNotifications} from '../../../providers/NotificationContext';
+import {MyUserDataSchema} from '../../../types/APIDataSchema';
 import UserDataField from '../UserDataField';
+import LetterboxdSearchBar from './SearchBar';
 
 export default function LetterboxdField() {
   const queryClient = useQueryClient();

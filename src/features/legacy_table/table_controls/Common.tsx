@@ -1,4 +1,4 @@
-import {Button, IconButton, Typography, Menu} from '@mui/material';
+import {Button, IconButton, Menu, Typography} from '@mui/material';
 
 export function DisplayedSettingsButton({
   onClick,

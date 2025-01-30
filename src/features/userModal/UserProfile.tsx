@@ -1,43 +1,43 @@
-import React from 'react';
-import {useOscarAppContext} from '../../providers/AppContext';
-import TitleLine, {Divider, boxStyle} from './Common';
-import ErrorIcon from '@mui/icons-material/Error';
 import {DeleteForever} from '@mui/icons-material';
-import {useNotifications} from '../../providers/NotificationContext';
+import ErrorIcon from '@mui/icons-material/Error';
 import {
   Box,
-  Typography,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   List,
   ListItem,
   ListItemButton,
-  ListItemText,
   ListItemIcon,
-  Checkbox,
-  Button,
+  ListItemText,
   Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
+  Typography,
 } from '@mui/material';
-import LetterboxdField from './letterboxd/LetterboxdField';
-import DefaultCatcher from '../../components/LoadScreen';
-import UserAvatar from '../../components/userAvatar';
-import UserDataField from './UserDataField';
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import * as React from 'react';
+import DefaultCatcher from '../../components/LoadScreen';
+import UserAvatar from '../../components/userAvatar';
 import {myUserDataOptions, userOptions} from '../../hooks/dataOptions';
 import {
   deleteUserMutationFn,
   onMutateError,
   updateCacheOnSuccess,
 } from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
 import {UserListSchema} from '../../types/APIDataSchema';
 import {errorToConsole} from '../../utils/Logger';
+import TitleLine, {Divider, boxStyle} from './Common';
+import UserDataField from './UserDataField';
+import LetterboxdField from './letterboxd/LetterboxdField';
 type Props = {
   closer: () => void;
 };

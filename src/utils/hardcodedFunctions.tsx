@@ -1,6 +1,5 @@
+import { CategoryId,CategoryIdSchema} from '../types/APIDataSchema';
 import {Grouping} from '../types/Enums';
-import {CategoryIdSchema} from '../types/APIDataSchema';
-import {CategoryId} from '../types/APIDataSchema';
 
 //* Nominees per grouping
 export const groupCounts = (

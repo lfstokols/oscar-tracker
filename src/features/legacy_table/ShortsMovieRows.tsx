@@ -1,8 +1,8 @@
-import MovieRows from './MovieRows';
 import TableRow from '@mui/material/TableRow';
+import MovieRows from './MovieRows';
+import MultiMovieRuntimeCell from './cells/MultiMovieRuntimeCell';
 import MultiMovieTitleCell from './cells/MultiMovieTitleCell';
 import NominationsCell from './cells/NominationsCell';
-import MultiMovieRuntimeCell from './cells/MultiMovieRuntimeCell';
 import WatchlistCell from './cells/WatchlistCell';
 
 type Props = {

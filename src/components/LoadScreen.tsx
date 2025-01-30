@@ -1,6 +1,7 @@
-import React, {Suspense} from 'react';
 import {Box, CircularProgress} from '@mui/material';
 import {QueryErrorResetBoundary} from '@tanstack/react-query';
+import * as React from 'react';
+import {Suspense} from 'react';
 
 export function LoadScreen(): React.ReactElement {
   return (

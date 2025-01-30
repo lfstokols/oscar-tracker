@@ -1,5 +1,5 @@
-import React from 'react';
 import Stack from '@mui/material/Stack';
+import * as React from 'react';
 import {useIsMobile} from '../hooks/useIsMobile';
 
 type Props = {children: React.ReactNode};

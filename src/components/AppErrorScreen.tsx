@@ -1,6 +1,6 @@
-import React from 'react';
-import ErrorPage from '../assets/ErrorPage.png';
 import {Container} from '@mui/material';
+import * as React from 'react';
+import ErrorPage from '../assets/ErrorPage.png';
 
 export default function AppErrorScreen({
   isFullScreen,

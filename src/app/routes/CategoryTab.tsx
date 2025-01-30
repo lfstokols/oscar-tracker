@@ -1,9 +1,9 @@
 import {useState} from 'react';
-import CategoryTable from '../../features/category_completion_table/CategoryCompletionTable';
-import DefaultCatcher from '../../components/LoadScreen';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
-import TableControls from '../../features/userStatsTable/TableControls';
+import DefaultCatcher from '../../components/LoadScreen';
+import CategoryTable from '../../features/category_completion_table/CategoryCompletionTable';
 import {Hypotheticality} from '../../features/userStatsTable/Enums';
+import TableControls from '../../features/userStatsTable/TableControls';
 
 export default function HomeTab(): React.ReactElement {
   const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);

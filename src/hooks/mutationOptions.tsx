@@ -1,14 +1,14 @@
 import {QueryClient, QueryKey} from '@tanstack/react-query';
+import {z} from 'zod';
+import {API_BASE_URL} from '../config/GlobalConstants';
 import {NotificationsDispatch} from '../providers/NotificationContext';
 import {
   MyUserDataSchema,
   UserIdSchema,
   UserListSchema,
 } from '../types/APIDataSchema';
-import {z} from 'zod';
-import {userOptions} from './dataOptions';
 import {errorToConsole} from '../utils/Logger';
-import {API_BASE_URL} from '../config/GlobalConstants';
+import {userOptions} from './dataOptions';
 
 // *
 // * Genera Stuff // *
