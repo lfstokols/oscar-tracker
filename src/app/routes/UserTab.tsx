@@ -1,9 +1,9 @@
 import {useState} from 'react';
 import Countdown from '../../components/Countdown';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
+import HypotheticalityToggleGroup from '../../components/HypotheticalityToggleGroup';
 import DefaultCatcher from '../../components/LoadScreen';
 import {Hypotheticality} from '../../features/userStatsTable/Enums';
-import TableControls from '../../features/userStatsTable/TableControls';
 import UserStatsTable from '../../features/userStatsTable/UserStatsTable';
 
 export default function UserTab(): React.ReactElement {
@@ -12,7 +12,10 @@ export default function UserTab(): React.ReactElement {
   return (
     <DefaultCatcher>
       <DefaultTabContainer>
-        <TableControls setter={setHypotheticality} value={hypotheticality} />
+        <HypotheticalityToggleGroup
+          setter={setHypotheticality}
+          value={hypotheticality}
+        />
         <UserStatsTable hypotheticality={hypotheticality} />
         <div
           style={{

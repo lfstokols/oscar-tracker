@@ -1,16 +1,19 @@
-import { TableCell, TableRow,Typography} from '@mui/material';
+import {TableCell, TableRow, Typography} from '@mui/material';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {TABLE_ROW_MINOR_COLOR} from '../../config/StyleChoices';
 import {
   Category,
   CategoryCompletionData,
- MovieList,NomList,
-  UserId, WatchList} from '../../types/APIDataSchema';
+  MovieList,
+  NomList,
+  UserId,
+  WatchList,
+} from '../../types/APIDataSchema';
 import {Hypotheticality} from '../userStatsTable/Enums';
 import makeCategoryTooltip from './CategoryTooltip';
-import { get_num,get_total,make_fraction_display} from './utils';
+import {get_num, get_total, make_fraction_display} from './utils';
 
-export default function makeCategoryRow({
+export default function CategoryRow({
   category,
   isOpen,
   data,
@@ -61,7 +64,7 @@ export default function makeCategoryRow({
       }}>
       <TableCell />
       <TableCell sx={{paddingLeft: '50px'}}>
-        <Typography variant="h6">
+        <Typography variant="body1">
           <i>{category.fullName}</i>
         </Typography>
       </TableCell>

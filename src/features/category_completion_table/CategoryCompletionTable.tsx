@@ -7,7 +7,7 @@ import {
 } from '@mui/material';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import * as React from 'react';
-import {useState} from 'react';
+import {Dispatch, SetStateAction} from 'react';
 import {TableHeaderCell} from '../../components/TableHeader';
 import {
   categoryCompletionOptions,
@@ -23,9 +23,14 @@ import {catssByGrouping, useSortUsers} from '../../utils/dataSelectors';
 import {Hypotheticality} from '../userStatsTable/Enums';
 import CategoryRow from './CategoryRow';
 import GroupingRow from './GroupingRow';
+import {toggleOpenness} from './toggleOpenness';
 export default function CategoryCompletionTable({
   hypotheticality,
+  areOpen,
+  setAreOpen,
 }: {
+  areOpen: Record<Grouping, boolean>;
+  setAreOpen: Dispatch<SetStateAction<Record<Grouping, boolean>>>;
   hypotheticality: Hypotheticality;
 }): React.ReactElement {
   const {year} = useOscarAppContext();
@@ -49,13 +54,6 @@ export default function CategoryCompletionTable({
 
   const groupingDict = catssByGrouping(categories);
   const groupingList = Object.values(Grouping);
-
-  const [areOpen, setAreOpen] = useState<Record<Grouping, boolean>>(
-    Object.values(Grouping).reduce((acc, grouping) => {
-      acc[grouping] = false;
-      return acc;
-    }, {} as Record<Grouping, boolean>),
-  );
 
   return (
     <TableContainer
@@ -109,11 +107,4 @@ export default function CategoryCompletionTable({
       </Table>
     </TableContainer>
   );
-}
-
-function toggleOpenness(
-  prev: Record<Grouping, boolean>,
-  grouping: Grouping,
-): Record<Grouping, boolean> {
-  return {...prev, [grouping]: !prev[grouping]};
 }
