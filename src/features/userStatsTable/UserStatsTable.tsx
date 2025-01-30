@@ -43,14 +43,16 @@ export default function UserStatsTable({
 }: {
   hypotheticality: Hypotheticality;
 }): React.ReactElement {
-  const year = useOscarAppContext().year;
+  const {
+    year,
+    preferences: {shortsAreOneFilm},
+  } = useOscarAppContext();
   const [userStatsQ, usersQ, movieListQ] = useSuspenseQueries({
     queries: [userStatsOptions(year), userOptions(), movieOptions(year)],
   });
   const userStats = userStatsQ.data;
   const users = sortUsers(usersQ.data, userStats);
   const movieList = movieListQ.data;
-  const {shortsAreOneFilm} = useOscarAppContext().preferences;
   const numMoviesTotal = movieList.length;
   const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
   const numMoviesFeature = numMoviesTotal - numMoviesShort;
@@ -71,16 +73,16 @@ export default function UserStatsTable({
   const {includeSeen, includeTodo} = enumToBool(hypotheticality);
 
   function makeFraction(
-    numFeature: number,
-    numShort: number,
-    shortsAreOneFilm: boolean,
+    howManyFeatures: number,
+    howManyShorts: number,
+    // shortsAreOneFilm: boolean,
     onlyCountMultinom: boolean,
   ) {
     if (onlyCountMultinom) {
-      return makeFraction_display(numFeature, numMultinomTotal);
+      return makeFraction_display(howManyFeatures, numMultinomTotal);
     }
     const ratio = shortsAreOneFilm ? NUM_SHORT_FILMS_PER_CATEGORY : 1;
-    const numerator = numFeature + numShort / ratio;
+    const numerator = howManyFeatures + howManyShorts / ratio;
     const denominator = numMoviesFeature + numMoviesShort / ratio;
     return makeFraction_display(numerator, denominator);
   }
@@ -141,13 +143,12 @@ export default function UserStatsTable({
       title: 'Total Movies',
       label: ColumnLabels.TOTAL_MOVIES,
       getValue: (user: UserStats) =>
-        makeFraction(numFeature(user), numShort(user), shortsAreOneFilm, false),
+        makeFraction(numFeature(user), numShort(user), false),
     },
     {
       title: 'Multi-Nom Movies',
       label: ColumnLabels.MULTINOM,
-      getValue: (user: UserStats) =>
-        makeFraction(numMultinom(user), 0, shortsAreOneFilm, true),
+      getValue: (user: UserStats) => makeFraction(numMultinom(user), 0, true),
     },
     {
       title: 'Complete Categories',

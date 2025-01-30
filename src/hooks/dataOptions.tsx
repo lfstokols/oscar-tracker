@@ -14,6 +14,7 @@ import {
   // CategoryCompletionListSchema,
 } from '../types/APIDataSchema';
 import {API_BASE_URL} from '../config/GlobalConstants';
+import {logToConsole} from '../utils/Logger';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -29,6 +30,9 @@ export function nomOptions(year: number) {
 
 // * Users // *
 export function userOptions() {
+  const stack = new Error().stack;
+  const caller = stack?.split('\n')[2].match(/at\s+([^(\s]+)/)?.[1];
+  logToConsole(`userOptions called by ${caller}`);
   return queryOptions({
     queryKey: ['users'],
     queryFn: qFunction(Endpoints.users, {}, UserListSchema.parse),
@@ -132,7 +136,9 @@ function qFunction<T>(
         throw new LockError('Data was locked.');
       }
       throw new Error(
-        `Data fetch returned error code ${response.status}: ${response.json()}`,
+        `Data fetch returned error code ${response.status}: ${JSON.stringify(
+          await response.json(),
+        )}`,
       );
     }
     try {

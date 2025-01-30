@@ -4,6 +4,7 @@ from typing_extensions import Literal
 import requests
 from bs4 import BeautifulSoup, Tag
 import sqlalchemy as sa
+from backend.data.db_connections import Session
 from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
 from backend.data.utils import result_to_dict
 from backend.types.api_schemas import (
@@ -13,7 +14,6 @@ from backend.types.api_schemas import (
     countTypes,
 )
 from backend.types.my_types import WatchStatus, Grouping
-from backend.data.db_connections import Session
 import backend.data.derived_values as dv
 
 
@@ -287,7 +287,7 @@ def format_category_completion_dict(
     return output
 
 
-def compute_user_stats(year: int) -> list[dict[str, Any]]:
+def get_user_stats(year: int) -> list[dict[str, Any]]:
     """
     finds the total number of movies seen and todo by a user
     If the movie list has complete runtime data,
@@ -365,10 +365,6 @@ def compute_user_stats(year: int) -> list[dict[str, Any]]:
     with Session() as session:
         result = session.execute(full_query)
         return result_to_dict(result)
-
-
-def get_user_stats(year: int) -> list[dict[str, Any]]:
-    return compute_user_stats(year)
 
 
 def get_noms(year: int) -> list[dict[str, Any]]:

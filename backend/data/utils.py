@@ -1,9 +1,9 @@
 import logging
 import random
+from backend.data.db_connections import Session
 from backend.data.db_schema import Movie, User
 from backend.types.api_schemas import MovieID, UserID
 from backend.types.api_validators import MovieValidator, UserValidator
-from backend.data.db_connections import Session
 import sqlalchemy as sa
 
 
@@ -39,7 +39,6 @@ def create_unique_user_id() -> UserID:
                     f"I made a new user ID {id} and it failed validation somehow. Error: {e}"
                 )
                 raise
-            validated_id: UserID = id
             return validated_id
         tries += 1
     raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")

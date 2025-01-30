@@ -12,8 +12,8 @@ export function getMovieWatchStatusForUser(
     .slice()
     .reverse()
     .find(
-      watchNotice =>
-        watchNotice.movieId === movieId && watchNotice.userId === userId,
+      watchnotice =>
+        watchnotice.movieId === movieId && watchnotice.userId === userId,
     );
 
   return watchNotice?.status ?? WatchStatus.blank;
@@ -116,7 +116,9 @@ export function catssByGrouping(
     Category[]
   >;
   for (const grouping of Object.values(Grouping)) {
-    result[grouping] = categories.filter(cat => cat.grouping === grouping);
+    result[grouping] = categories.filter(
+      cat => cat.grouping === grouping.toString(),
+    );
   }
   return result;
 }

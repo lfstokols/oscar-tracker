@@ -21,18 +21,18 @@ export default function AppProvider({
 }): React.ReactElement {
   return (
     <BrowserRouter basename={ROUTE_BASENAME}>
-      <RouteParser>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <QueryClientProvider client={queryClient}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <QueryClientProvider client={queryClient}>
+          <RouteParser>
             <OscarAppContextProvider>
               <NotificationsContextProvider>
                 {children}
               </NotificationsContextProvider>
             </OscarAppContextProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </RouteParser>
+          </RouteParser>
+        </QueryClientProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

@@ -2,11 +2,11 @@ import sqlite3, logging
 from contextlib import contextmanager
 import sqlalchemy as sa
 import pandas as pd
+from backend.data.db_connections import Session
 from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
 from backend.data.utils import create_unique_user_id, create_unique_movie_id
 from backend.types.api_schemas import UserID, MovieID, CategoryID
 from backend.types.api_validators import MovieValidator
-from backend.data.db_connections import Session
 from backend.types.my_types import *
 from typing import Any
 
@@ -117,28 +117,7 @@ def add_watchlist_entry(
             session.commit()
 
 
-# Note: This function does not check if the nomination already exists in the database
-# 	If there's a possibliity of duplicates, you've done something wrong
-# Checks if `movie`, `category` are formatted as IDs
-# Does NOT check if they actually exist in the database
-# 	If you didn't already add/confirm them yourstorage, you're doing something wrong
-# If `validate` is True, the function will at least check if there are too many nominations in a category
 def add_nomination(year, nomination: Nom):
-    """Adds a nomination to the database.
-
-    Args:
-        year (str | int): The year of the nomination.
-        nomination ({dict<NomColumns, str>}): The nomination to add.
-        validate (bool, optional): Whether to validate the nomination. Defaults to False.
-
-    Raises:
-        Exception: If the nomination keys are invalid,
-            or if the nomination is too many nominations in a category,
-            or if the file is locked.
-
-    Returns:
-        None: The function does not return anything.
-    """
     movie = nomination[NomColumns.MOVIE.value]
     category = nomination[NomColumns.CATEGORY.value]
     note = (

@@ -6,8 +6,10 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 import backend.utils.env_reader as env
+from backend.data.db_connections import Session
 from backend.scheduled_tasks.check_rss import update_user_watchlist
-from backend.logic.storage_manager import StorageManager
+from backend.data.db_schema import User
+import sqlalchemy as sa
 
 """
 How to use:
@@ -36,9 +38,9 @@ class Config:
 
 
 def check_letterboxd():
-    storage = StorageManager.get_storage()
-    users = storage.read("users")
-    for user_id in users.index:
+    with Session() as session:
+        users = list(session.execute(sa.select(User.user_id)).scalars().all())
+    for user_id in users:
         had_update = update_user_watchlist(user_id)
         if had_update:
             logging.info(f"Updated watchlist for user {user_id}")

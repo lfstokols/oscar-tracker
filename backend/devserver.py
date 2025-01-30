@@ -15,13 +15,8 @@ import backend.utils.env_reader as env
 from backend.utils.logging_config import setup_logging
 
 setup_logging(env.LOG_PATH)
-from backend.types.api_validators import UserValidator, AnnotatedValidator
-
-# * Set up StorageManager
-# from backend.logic.storage_manager import StorageManager
-
-# StorageManager.make_storage(env.DATABASE_PATH)
 # * The rest of the imports
+from backend.types.api_validators import UserValidator, AnnotatedValidator
 from backend.routing_lib.user_session import (
     start_new_session,
     log_session_activity,
@@ -30,7 +25,7 @@ from backend.routing_lib.user_session import (
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
 import backend.data.db_connections
-from backend.database_routes import oscars  #! must instantiate storage first
+from backend.routes.database_routes import oscars
 
 DEVSERVER_PORT = env.DEVSERVER_PORT  #! Gunicorn breaks without this!!!
 logging.info(f"The port should be {DEVSERVER_PORT}.")

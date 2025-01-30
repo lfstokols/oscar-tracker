@@ -12,7 +12,7 @@ import {
   DEFAULT_PREFERENCES,
   AVAILABLE_YEARS,
 } from '../config/GlobalConstants';
-import {warnToConsole} from '../utils/Logger';
+import {errorToConsole, warnToConsole} from '../utils/Logger';
 import {useNavigate} from 'react-router-dom';
 
 export type OscarAppContextValue = Readonly<{
@@ -29,13 +29,11 @@ export type OscarAppContextValue = Readonly<{
 
 const OscarAppContext = React.createContext<OscarAppContextValue | null>(null);
 
-type Props = {
+export default function OscarAppContextProvider({
+  children,
+}: {
   children: React.ReactElement;
-};
-
-export default function OscarAppContextProvider(
-  props: Props,
-): React.ReactElement {
+}): React.ReactElement {
   const navigate = useNavigate();
   const urlParams = useContext(UrlParamsContext);
   const [year, setYear] = useState<number>(() => {
@@ -88,7 +86,10 @@ export default function OscarAppContextProvider(
         timeStamp,
         TIME_LIMIT,
       ),
-    );
+    )
+    .catch(error => {
+      errorToConsole(error);
+    });
   //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
   const newSetActiveUserId = useUpgradeSetActiveUserId(
     setActiveUserId,
@@ -129,7 +130,7 @@ export default function OscarAppContextProvider(
 
   return (
     <OscarAppContext.Provider value={contextValue}>
-      {props.children}
+      {children}
     </OscarAppContext.Provider>
   );
 }
@@ -179,7 +180,10 @@ function useUpgradeSetActiveUserId(
           timeStamp,
           TIME_LIMIT,
         ),
-      );
+      )
+      .catch(error => {
+        errorToConsole(error);
+      });
   };
 }
 
@@ -187,7 +191,7 @@ function getCallbackForArrivedUserList(
   activeUserId: UserId | null,
   activeUsername: string | null,
   setUsername: (username: string | null) => void,
-  EXPIRATION_DAYS: number,
+  expirationDays: number,
   notifications: NotificationsDispatch,
   timeStamp: number,
   timeLimit?: number,
@@ -211,10 +215,12 @@ function getCallbackForArrivedUserList(
         //* Note to self: It's also possible that the userId is invalid, but that seems less likely
       });
     }
-    setUsername(suggestedUsername);
-    Cookies.set('activeUsername', suggestedUsername as string, {
-      expires: EXPIRATION_DAYS,
-    });
+    if (suggestedUsername != null) {
+      setUsername(suggestedUsername);
+      Cookies.set('activeUsername', suggestedUsername, {
+        expires: expirationDays,
+      });
+    }
   };
 }
 
@@ -237,8 +243,10 @@ function getPreferenceStateAtStartup(
   if (!preferences) {
     return defaultPreferences;
   }
-  const storedVals = JSON.parse(preferences);
-  if (!Object.keys(storedVals).every(key => key in defaultPreferences)) {
+  const storedVals = JSON.parse(preferences) as unknown;
+  if (storedVals == null || !(typeof storedVals === 'object')) {
+    return defaultPreferences;
+  } else if (!Object.keys(storedVals).every(key => key in defaultPreferences)) {
     warnToConsole(
       `The preferences in localStorage are invalid. \nThey are labeled {${Object.keys(
         storedVals,
@@ -255,7 +263,7 @@ function getPreferenceStateAtStartup(
       }
       return [key, storedVals[key]];
     }),
-  ) as Preferences;
+  );
   return bestGuess;
 }
 

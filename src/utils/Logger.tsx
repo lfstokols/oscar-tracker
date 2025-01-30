@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-const RUN_DEBUG = import.meta.env.VITE_RUN_DEBUG;
+const RUN_DEBUG = Boolean(import.meta.env.VITE_RUN_DEBUG);
 
 export function logToConsole(message: unknown) {
   if (RUN_DEBUG) {
