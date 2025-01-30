@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
-import OscarAppContextProvider from '../providers/AppContext';
-import NotificationsContextProvider from '../providers/NotificationContext';
+import AppContextProvider from '../providers/AppContextProvider';
+import NotificationsContextProvider from '../providers/NotificationContextProvider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CssBaseline} from '@mui/material';
@@ -25,11 +25,11 @@ export default function AppProvider({
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <QueryClientProvider client={queryClient}>
-            <OscarAppContextProvider>
+            <AppContextProvider>
               <NotificationsContextProvider>
                 {children}
               </NotificationsContextProvider>
-            </OscarAppContextProvider>
+            </AppContextProvider>
           </QueryClientProvider>
         </ThemeProvider>
       </RouteParser>

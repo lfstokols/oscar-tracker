@@ -46,21 +46,19 @@ export default function UserButton(): React.ReactElement {
     // }
     return (
       <div style={{display: 'flex', alignItems: 'center'}}>
-        <>
-          {isMobile ? (
-            <IconButton onClick={openProfile} color="secondary">
-              {avatar}
-            </IconButton>
-          ) : (
-            <Chip
-              onClick={openProfile}
-              color="secondary"
-              avatar={avatar}
-              label={activeUsername}
-            />
-          )}
-          <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
-        </>
+        {isMobile ? (
+          <IconButton onClick={openProfile} color="secondary">
+            {avatar}
+          </IconButton>
+        ) : (
+          <Chip
+            onClick={openProfile}
+            color="secondary"
+            avatar={avatar}
+            label={activeUsername}
+          />
+        )}
+        <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
       </div>
     );
   }

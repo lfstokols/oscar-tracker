@@ -15,7 +15,7 @@ export default function TableControls({
   return (
     <ToggleButtonGroup
       value={value}
-      onChange={(_, newValue) => setter(newValue)}
+      onChange={(_, newValue: Hypotheticality) => setter(newValue)}
       exclusive
       color="primary"
       size="small">

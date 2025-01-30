@@ -25,7 +25,7 @@ export default function TableControls({
   const isMobile = useIsMobile();
   const handleRefresh = async () => {
     await fetch(`${API_BASE_URL}/force-refresh`);
-    queryClient.invalidateQueries({
+    await queryClient.invalidateQueries({
       queryKey: watchlistOptions(year).queryKey,
     });
   };
@@ -40,7 +40,10 @@ export default function TableControls({
       }}>
       <Stack direction="row" width="100%" justifyContent="space-between">
         <NoAccountBlocker hasAccess={canRefresh}>
-          <RefreshWidget handleRefresh={handleRefresh} isMobile={isMobile} />
+          <RefreshWidget
+            handleRefresh={() => void handleRefresh()}
+            isMobile={isMobile}
+          />
         </NoAccountBlocker>
         <HideColumnsWidget isMobile={isMobile} />
         <FilterRowsWidget

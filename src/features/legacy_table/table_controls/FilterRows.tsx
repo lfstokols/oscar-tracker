@@ -18,11 +18,12 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {FilterAlt} from '@mui/icons-material';
 import {Grouping, WatchStatus} from '../../../types/Enums';
-import {DisplayedSettingsButton, CenteredMenu, useMenuState} from './Common';
+import {DisplayedSettingsButton, CenteredMenu} from './Common';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {grouping_display_names} from '../../../types/Enums';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
+import useMenuState from './useMenuState';
 
 export default function FilterRowsWidget({
   isMobile,

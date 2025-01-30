@@ -13,10 +13,10 @@ export function NoAccountBlocker({
   hasAccess: boolean;
 }) {
   if (hasAccess) {
-    return <>{children}</>;
+    return children;
   }
   return (
-    <ClickableTooltip popup={'You must be logged in to do that'} arrow={true}>
+    <ClickableTooltip popup="You must be logged in to do that" arrow={true}>
       <div
         style={{
           cursor: 'not-allowed',

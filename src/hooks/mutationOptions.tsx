@@ -75,11 +75,15 @@ export function addUserOnSuccess(
   setActiveUserId: (userId: UserId) => void,
 ) {
   return async (response: Response) => {
-    const data = (await response.json()) as unknown;
-    const newId = UserIdSchema.parse(data.userId);
-    const newState = UserListSchema.parse(data.users);
-    setActiveUserId(newId);
-    queryClient.setQueryData(userOptions().queryKey, newState);
+    const typedData = z
+      .object({
+        userId: UserIdSchema,
+        users: UserListSchema,
+      })
+      .parse(await response.json());
+
+    setActiveUserId(typedData.userId);
+    queryClient.setQueryData(userOptions().queryKey, typedData.users);
   };
 }
 

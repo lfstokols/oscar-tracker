@@ -22,9 +22,9 @@ export default function YearSelector() {
         size="small"
         color="primary"
         onChange={handleYearSelect}>
-        {AVAILABLE_YEARS.map(year => (
-          <MenuItem key={year} value={year}>
-            {year}
+        {AVAILABLE_YEARS.map(aYear => (
+          <MenuItem key={aYear} value={aYear}>
+            {aYear}
           </MenuItem>
         ))}
       </Select>

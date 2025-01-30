@@ -12,7 +12,7 @@ export default function OurWordmark({
     <Box display="flex" flexDirection="row" alignItems="center">
       <img
         src={oscarIcon}
-        alt={'Oscar Icon, from https://www.flaticon.com/free-icons/oscar'}
+        alt="Oscar Icon, from https://www.flaticon.com/free-icons/oscar"
         style={{width: '32px', height: '32px', marginRight: '8px'}}
       />
       <Text mini={mini} folded={folded} />

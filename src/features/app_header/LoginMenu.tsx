@@ -73,4 +73,6 @@ function LoginMenuUserItems(props: {
   ));
 }
 
-const LoadingSpinner = () => <CircularProgress color="inherit" />;
+function LoadingSpinner() {
+  return <CircularProgress color="inherit" />;
+}

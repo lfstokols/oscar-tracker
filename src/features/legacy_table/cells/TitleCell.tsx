@@ -80,7 +80,7 @@ function FancyMovieTitle({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      {isBestPicNominee && (
+      {!!isBestPicNominee && (
         <GoldSparkle textWidth={textWidth} textHeight={textHeight} />
       )}
       <MovieTitle
@@ -141,7 +141,7 @@ function GoldSparkle({
         boxSizing: 'border-box',
       }}
       viewBox={`0 0 ${boxWidth} ${boxHeight}`}>
-      {angles.map((angle, i) => {
+      {angles.map(angle => {
         const inner = [0, 1].map(i => center[i] + radius[i] * cis(angle)[i]);
         const outer = [0, 1].map(
           i => center[i] + (radius[i] + diff) * cis(angle)[i],
@@ -149,7 +149,7 @@ function GoldSparkle({
 
         return (
           <line
-            key={i}
+            key={angle}
             x1={inner[0]}
             y1={inner[1]}
             x2={outer[0]}
@@ -208,7 +208,7 @@ const MovieTitle = forwardRef(function MovieTitle(
         }}>
         <b>{movie.mainTitle}</b>
       </Typography>
-      {movie.subtitle && (
+      {!!movie.subtitle && (
         <Typography
           key={`subtitle-${movie.id}`}
           variant="subtitle2"

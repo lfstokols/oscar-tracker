@@ -3,7 +3,6 @@ import {getNominees} from '../../utils/dataSelectors';
 import {
   CategoryId,
   UserId,
-  MovieId,
   NomList,
   WatchList,
   MovieList,
@@ -16,9 +15,7 @@ export default function makeCategoryTooltip(
   watchlist: WatchList,
   movies: MovieList,
 ): React.ReactNode {
-  const categoryMovies = getNominees(catId, nominations).filter(
-    (movieId): movieId is MovieId => movieId !== null,
-  );
+  const categoryMovies = getNominees(catId, nominations);
   const getIds = (actual: boolean) =>
     watchlist
       .filter(

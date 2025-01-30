@@ -132,7 +132,9 @@ function qFunction<T>(
         throw new LockError('Data was locked.');
       }
       throw new Error(
-        `Data fetch returned error code ${response.status}: ${response.json()}`,
+        `Data fetch returned error code ${
+          response.status
+        }: ${await response.json()}`,
       );
     }
     try {

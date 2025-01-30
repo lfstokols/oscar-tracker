@@ -1,4 +1,3 @@
-
 // Default year in year selector
 export const DEFAULT_YEAR = 2024; // ? How ought this be set?
 export const AVAILABLE_YEARS = [2023, 2024];
@@ -17,7 +16,7 @@ export const NUM_SHORT_CATEGORIES = 3;
 export const NUM_SHORT_FILMS_PER_CATEGORY = 5;
 
 //* How to get tmdb posters
-export const MovieDb_POSTER_URL = "https://image.tmdb.org/t/p/w185";
+export const MovieDb_POSTER_URL = 'https://image.tmdb.org/t/p/w185';
 
 //* Default preferences
 export const DEFAULT_PREFERENCES = {
@@ -38,7 +37,6 @@ export const FEATURE_REQUEST_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog';
 export const REPORT_BUG_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog';
-
 
 //* Route URLs
 export const LEGACY_URL = 'home';

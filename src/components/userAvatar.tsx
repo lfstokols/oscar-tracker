@@ -23,9 +23,9 @@ export default function UserAvatarWrapper({
   );
 }
 
-const FallbackAvatar = ({username}: {username: string}) => (
-  <Avatar>{username?.charAt(0).toUpperCase()}</Avatar>
-);
+function FallbackAvatar({username}: {username: string}) {
+  return <Avatar>{username.charAt(0).toUpperCase()}</Avatar>;
+}
 
 export function UserAvatar({
   userId,
@@ -35,9 +35,9 @@ export function UserAvatar({
   username: string;
 }) {
   const response = useSuspenseQuery(myUserDataOptions(userId));
-  const propic = response.data?.propic;
+  const propic = response.data.propic;
   if (!propic) {
-    return <Avatar>{username?.charAt(0).toUpperCase()}</Avatar>;
+    return <Avatar>{username.charAt(0).toUpperCase()}</Avatar>;
   }
   return <Avatar src={propic} />;
 }

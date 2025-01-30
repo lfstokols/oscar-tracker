@@ -104,8 +104,8 @@ export default function UserProfile({closer}: Props) {
         <DefaultCatcher>
           <UserDataField
             label="Username"
-            remoteValue={myUserData.username ?? 'Not Set'}
-            localValue={myUserData.username ?? 'Not Set'}
+            remoteValue={myUserData.username}
+            localValue={myUserData.username}
             editableComponent={placeholderEditableComponent}
             editableComponentProps={{}}
           />

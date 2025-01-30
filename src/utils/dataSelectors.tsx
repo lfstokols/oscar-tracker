@@ -11,10 +11,7 @@ export function getMovieWatchStatusForUser(
   const watchNotice = watchlist
     .slice()
     .reverse()
-    .find(
-      watchNotice =>
-        watchNotice.movieId === movieId && watchNotice.userId === userId,
-    );
+    .find(notice => notice.movieId === movieId && notice.userId === userId);
 
   return watchNotice?.status ?? WatchStatus.blank;
 }

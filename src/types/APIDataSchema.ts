@@ -57,7 +57,7 @@ export const CategorySchema = z.object({
   fullName: z.string(),
   hasNote: z.boolean(),
   isShort: z.boolean(),
-  grouping: z.string(), // TODO - enum
+  grouping: GroupingSchema,
   maxNoms: z.number().refine(n => n === 5 || n === 10, {
     message: 'Number must be 5 or 10',
   }),

@@ -8,6 +8,7 @@ import {
   AVAILABLE_YEARS,
 } from '../config/GlobalConstants';
 import {logToConsole} from '../utils/Logger';
+import {UrlParams, UrlParamsContext} from './UrlParamsContext';
 
 const ROUTES = {
   FULL: '/:tab/:year',
@@ -16,12 +17,6 @@ const ROUTES = {
 };
 
 const VALID_TABS = [LEGACY_URL, BY_USER_URL, BY_CATEGORY_URL];
-
-type UrlParams = {
-  year: number;
-};
-
-export const UrlParamsContext = React.createContext<UrlParams | null>(null);
 
 export default function RouteParser({children}: {children: React.ReactNode}) {
   const location = useLocation();

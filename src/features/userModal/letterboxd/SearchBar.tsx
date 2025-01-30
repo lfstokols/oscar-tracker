@@ -32,7 +32,7 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
       setOptions(value ? [value] : []);
       return;
     }
-    fetchSearch({input: inputValue});
+    void fetchSearch({input: inputValue});
   }, [value, inputValue, fetchSearch]);
 
   return (

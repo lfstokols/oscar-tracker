@@ -22,7 +22,7 @@ import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
 import {WatchStatus} from '../../types/Enums';
 
-export const columnList = ['title', 'nominations', 'runtime'];
+// export const columnList = ['title', 'nominations', 'runtime'];
 
 export default function LegacyTable({
   filterState,

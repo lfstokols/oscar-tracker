@@ -80,7 +80,7 @@ function getFlag(country: string): React.ReactNode {
 
 function getSong(song: string): React.ReactNode {
   const url = songUrls.find(s => s.title === song)?.url;
-  if (!url) return <>{song}</>;
+  if (!url) return song;
   return (
     <a
       href={url}
@@ -133,16 +133,16 @@ function Entry({
 }): React.ReactElement {
   const isMobile = useIsMobile();
 
-  const cat = categories.find(cat => cat.id === nom.categoryId);
-  if (!cat) {
+  const category = categories.find(cat => cat.id === nom.categoryId);
+  if (!category) {
     return <Text>???</Text>;
   }
   const formattedNote =
-    cat.id === 'cat_frgn' ? (
+    category.id === 'cat_frgn' ? (
       <em>
         {getFlag(nom.note ?? '')} {nom.note ?? ''}
       </em>
-    ) : cat.id === 'cat_song' ? (
+    ) : category.id === 'cat_song' ? (
       <>{getSong(nom.note ?? '')}</>
     ) : (
       <i>{nom.note}</i>
@@ -150,8 +150,8 @@ function Entry({
 
   return (
     <>
-      {getGroupingMarker(Grouping[cat.grouping as keyof typeof Grouping])}
-      {cat.fullName + (!isMobile && cat.hasNote ? ': ' : '')}
+      {getGroupingMarker(Grouping[category.grouping])}
+      {category.fullName + (!isMobile && category.hasNote ? ': ' : '')}
       {!isMobile ? formattedNote : ''}
       <br />
     </>
@@ -175,7 +175,7 @@ function LineClampText({
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [setIsTruncated]);
 
   return (
     <Text

@@ -45,7 +45,9 @@ export default function AppHeader({
             edge="start"
             color="inherit"
             aria-label="menu"
-            onClick={() => setIsDrawerOpen(isDrawerOpen => !isDrawerOpen)}>
+            onClick={() =>
+              setIsDrawerOpen(prevIsDrawerOpen => !prevIsDrawerOpen)
+            }>
             {isDrawerPersistent && isDrawerOpen ? (
               <MenuOpenIcon />
             ) : (

@@ -14,7 +14,8 @@ import {
 } from '@mui/icons-material';
 import {useOscarAppContext} from '../../../providers/AppContext';
 // import {columnList} from '../LegacyTable';
-import {DisplayedSettingsButton, useMenuState, CenteredMenu} from './Common';
+import {DisplayedSettingsButton, CenteredMenu} from './Common';
+import useMenuState from './useMenuState';
 
 export default function HideColumnsWidget({
   isMobile,
@@ -28,7 +29,7 @@ export default function HideColumnsWidget({
   return (
     <Paper>
       <DisplayedButton onClick={handleClick} isMobile={isMobile} />
-      {isOpen && (
+      {!!isOpen && (
         <PlaceholderMenu
           menuPosition={menuPosition}
           isOpen={isOpen}

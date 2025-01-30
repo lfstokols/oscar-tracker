@@ -22,6 +22,6 @@ export const boxStyle = {
   gap: 2,
 };
 
-export const Divider = () => {
+export function Divider(): React.ReactElement {
   return <MuiDivider />;
-};
+}
