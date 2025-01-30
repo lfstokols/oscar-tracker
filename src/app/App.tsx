@@ -36,13 +36,13 @@ export default function App(): React.ReactElement {
             }}>
             <AppHeader
               isDrawerOpen={isDrawerOpen}
-              setIsDrawerOpen={setIsDrawerOpen}
               isDrawerPersistent={isDrawerPersistent}
+              setIsDrawerOpen={setIsDrawerOpen}
             />
             <AppNavDrawer
-              open={isDrawerOpen}
-              onClose={() => setIsDrawerOpen(false)}
               isDrawerPersistent={isDrawerPersistent}
+              onClose={() => setIsDrawerOpen(false)}
+              open={isDrawerOpen}
             />
             <AppContent
               isDrawerOpen={isDrawerOpen}

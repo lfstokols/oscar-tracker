@@ -26,7 +26,7 @@ export default function UserButton(): React.ReactElement {
   if (!isLoggedIn) {
     return (
       <>
-        <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}}>
+        <Button onClick={handleDropdown} sx={{mr: 1}} variant="contained">
           Login
         </Button>
         <LoginMenu
@@ -34,7 +34,7 @@ export default function UserButton(): React.ReactElement {
           setAnchorEl={setAnchorEl}
           signupOpener={openProfile}
         />
-        <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
+        <ProfileScreen closeModal={closeProfile} open={isProfileOpen} />
       </>
     );
   } else {
@@ -47,18 +47,18 @@ export default function UserButton(): React.ReactElement {
     return (
       <div style={{display: 'flex', alignItems: 'center'}}>
         {isMobile ? (
-          <IconButton onClick={openProfile} color="secondary">
+          <IconButton color="secondary" onClick={openProfile}>
             {avatar}
           </IconButton>
         ) : (
           <Chip
-            onClick={openProfile}
-            color="secondary"
             avatar={avatar}
+            color="secondary"
             label={activeUsername}
+            onClick={openProfile}
           />
         )}
-        <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
+        <ProfileScreen closeModal={closeProfile} open={isProfileOpen} />
       </div>
     );
   }

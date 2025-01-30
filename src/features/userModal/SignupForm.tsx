@@ -84,34 +84,34 @@ export default function SignUp({closer}: Props) {
   return (
     <>
       <TitleLine title="Create an Account" />
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={boxStyle}>
+      <Box component="form" noValidate onSubmit={handleSubmit} sx={boxStyle}>
         {/* <Tooltip title="Username must consist of only letters, numbers, and underscores."> */}
         <TextEntry
           display_name="Username"
-          label="username"
-          placeholder="username"
           error={usernameError}
           errorMessage={usernameErrorMessage}
+          label="username"
+          placeholder="username"
         />
         {/* </Tooltip> */}
         {/* <Tooltip title="This is optional, I included it to look more professional."> */}
         <TextEntry
           display_name="Email (optional)"
-          label="email"
-          placeholder="your@email.com"
           error={emailError}
           errorMessage={emailErrorMessage}
+          label="email"
+          placeholder="your@email.com"
         />
         {/* </Tooltip> */}
         <Button
-          type="submit"
-          fullWidth
-          variant="contained"
           color="primary"
+          fullWidth
           onClick={() => {
             validateEmail();
             validateUsername();
-          }}>
+          }}
+          type="submit"
+          variant="contained">
           Sign Up
         </Button>
       </Box>

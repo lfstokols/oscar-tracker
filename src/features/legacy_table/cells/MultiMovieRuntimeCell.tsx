@@ -26,9 +26,9 @@ export default function MultiMovieRuntimeCell({
 
   return (
     <RuntimeCell
-      runtimeMinutes={totalRuntimeMinutes}
-      runtimeHours={totalRuntimeHours}
       isRuntimeFormatted={isRuntimeFormatted}
+      runtimeHours={totalRuntimeHours}
+      runtimeMinutes={totalRuntimeMinutes}
     />
   );
 }

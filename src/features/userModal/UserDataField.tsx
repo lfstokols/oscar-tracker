@@ -49,13 +49,13 @@ export default function UserDataField<T>({
     );
   }
   return (
-    <Stack direction="row" alignItems="fill">
+    <Stack alignItems="fill" direction="row">
       <Typography
-        variant="h6"
-        sx={{width: '250px', position: 'relative', bottom: '6px'}}>
+        sx={{width: '250px', position: 'relative', bottom: '6px'}}
+        variant="h6">
         {label}:
       </Typography>
-      <Typography variant="body1" sx={{width: '200px'}}>
+      <Typography sx={{width: '200px'}} variant="body1">
         {localValue ? localValue : 'Not Set'}
       </Typography>
       <span style={{flexGrow: 1}} />

@@ -37,9 +37,9 @@ export default function ShortsMovieRows(
       }>
       <MultiMovieTitleCell filteredMovies={filteredMovies} />
       <NominationsCell
+        categories={categories}
         movieId={filteredMovies[0].id}
         nominations={nominations}
-        categories={categories}
       />
       <MultiMovieRuntimeCell
         filteredMovies={filteredMovies}
@@ -48,8 +48,8 @@ export default function ShortsMovieRows(
       {sortedUsers.map(user => (
         <WatchlistCell
           key={user.id}
-          userId={user.id}
           movieId={filteredMovies.map(movie => movie.id)}
+          userId={user.id}
         />
       ))}
     </TableRow>

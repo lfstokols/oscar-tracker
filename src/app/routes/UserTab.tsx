@@ -12,7 +12,7 @@ export default function UserTab(): React.ReactElement {
   return (
     <DefaultCatcher>
       <DefaultTabContainer>
-        <TableControls value={hypotheticality} setter={setHypotheticality} />
+        <TableControls setter={setHypotheticality} value={hypotheticality} />
         <UserStatsTable hypotheticality={hypotheticality} />
         <div
           style={{

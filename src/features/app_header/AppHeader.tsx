@@ -40,11 +40,11 @@ export default function AppHeader({
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <Stack direction="row" alignItems="center">
+        <Stack alignItems="center" direction="row">
           <IconButton
-            edge="start"
-            color="inherit"
             aria-label="menu"
+            color="inherit"
+            edge="start"
             onClick={() =>
               setIsDrawerOpen(prevIsDrawerOpen => !prevIsDrawerOpen)
             }>
@@ -56,7 +56,7 @@ export default function AppHeader({
           </IconButton>
           <OurWordmark mini={isMobile} />
         </Stack>
-        <Stack direction="row" alignItems="center" gap="12px">
+        <Stack alignItems="center" direction="row" gap="12px">
           {!isMobile && <YearSelector />}
           <Suspense
             fallback={

@@ -17,9 +17,9 @@ export default function AppErrorScreen({
         alignItems: 'center',
       }}>
       <img
-        src={ErrorPage}
         alt="Error"
         height={Math.min(window.innerHeight, window.innerWidth) * 0.8}
+        src={ErrorPage}
         width={Math.min(window.innerHeight, window.innerWidth) * 0.8}
       />
     </Container>

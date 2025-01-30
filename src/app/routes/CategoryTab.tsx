@@ -11,7 +11,7 @@ export default function HomeTab(): React.ReactElement {
   return (
     <DefaultCatcher>
       <DefaultTabContainer>
-        <TableControls value={hypotheticality} setter={setHypotheticality} />
+        <TableControls setter={setHypotheticality} value={hypotheticality} />
         <CategoryTable hypotheticality={hypotheticality} />
       </DefaultTabContainer>
       {/* <div style={{display: 'flex', justifyContent: 'center'}}>

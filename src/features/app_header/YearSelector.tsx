@@ -15,13 +15,13 @@ export default function YearSelector() {
         Year
       </InputLabel>
       <Select
-        labelId="select-year"
-        id="select-year"
-        value={year.toString()}
-        label="Year"
-        size="small"
         color="primary"
-        onChange={handleYearSelect}>
+        id="select-year"
+        label="Year"
+        labelId="select-year"
+        onChange={handleYearSelect}
+        size="small"
+        value={year.toString()}>
         {AVAILABLE_YEARS.map(aYear => (
           <MenuItem key={aYear} value={aYear}>
             {aYear}

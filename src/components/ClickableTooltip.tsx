@@ -24,11 +24,12 @@ export function ClickableTooltip({
   return (
     <ClickAwayListener onClickAway={handleTooltipClose}>
       <Tooltip
-        open={open}
+        arrow={arrow}
+        disableFocusListener
+        followCursor={followCursor}
         onClose={handleTooltipClose}
         onOpen={handleTooltipOpen}
-        disableFocusListener
-        arrow={arrow}
+        open={open}
         slotProps={{
           popper: {
             disablePortal: true,
@@ -42,8 +43,7 @@ export function ClickableTooltip({
             },
           },
         }}
-        title={popup}
-        followCursor={followCursor}>
+        title={popup}>
         <span style={{width: 'fit-content', display: 'inline-block'}}>
           <Box onClick={handleTooltipOpen} sx={{width: 'fit-content'}}>
             {children}

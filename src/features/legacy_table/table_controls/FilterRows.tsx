@@ -74,20 +74,20 @@ export default function FilterRowsWidget({
   return (
     <>
       <DisplayedSettingsButton
-        onClick={handleClick}
-        isMobile={isMobile}
         icon={<FilterAlt />}
+        isMobile={isMobile}
+        onClick={handleClick}
         text="Filter Rows"
       />
       {!!isOpen && (
         <SelectionMenu
-          menuPosition={menuPosition}
-          isOpen={isOpen}
-          onClose={handleClose}
           filterState={filterState}
-          toggleWatchStatusFilter={toggleWatchStatusFilter}
+          isOpen={isOpen}
+          menuPosition={menuPosition}
+          onClose={handleClose}
           toggleCategoryFilter={toggleCategoryFilter}
           toggleGroupingFilter={toggleGroupingFilter}
+          toggleWatchStatusFilter={toggleWatchStatusFilter}
         />
       )}
     </>
@@ -122,8 +122,8 @@ function SelectionMenu({
     categoryMessage = 'Filtered: only show selected categories';
   }
   return (
-    <CenteredMenu isOpen={isOpen} onClose={onClose} menuPosition={menuPosition}>
-      <Typography sx={{px: 2, py: 1}} color="text.information">
+    <CenteredMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
+      <Typography color="text.information" sx={{px: 2, py: 1}}>
         {watchStatusMessage}
       </Typography>
       <NoAccountBlocker hasAccess={isLoggedIn}>
@@ -168,9 +168,9 @@ function SelectionMenu({
       {Object.values(Grouping).map(grouping => (
         <GroupingAccordion
           key={grouping}
-          grouping={grouping}
           categories={categories}
           filterState={filterState.categories}
+          grouping={grouping}
           toggleCategoryFilter={toggleCategoryFilter}
           toggleGroupingFilter={toggleGroupingFilter}
         />
@@ -208,14 +208,14 @@ function GroupingAccordion({
     <Accordion key={grouping} disableGutters sx={{width: '100%'}}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Stack
-          direction="row"
           alignItems="center"
-          width="100%"
-          justifyContent="space-between">
+          direction="row"
+          justifyContent="space-between"
+          width="100%">
           <FormControlLabel
-            onClick={e => e.stopPropagation()}
             control={<Checkbox checked={isSelected} onChange={toggleAll} />}
             label={<Typography>{grouping_display_names[grouping]}</Typography>}
+            onClick={e => e.stopPropagation()}
           />
           <Typography color="text.disabled" sx={{paddingRight: '16px'}}>
             {`${numSelected} / ${totalNumCategories}`}

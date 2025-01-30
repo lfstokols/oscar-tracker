@@ -34,15 +34,15 @@ export default memo(function NotificationToast({
 
   return (
     <Snackbar
-      autoHideDuration={activeNotification?.autoHideDurationMs}
       key={activeNotification?.key}
+      autoHideDuration={activeNotification?.autoHideDurationMs}
       onClose={handleClose}
       open={activeNotification != null}>
       <Alert
         onClose={handleClose}
         severity={activeNotification?.type}
-        variant="filled"
-        sx={{width: '100%'}}>
+        sx={{width: '100%'}}
+        variant="filled">
         {activeNotification?.message}
       </Alert>
     </Snackbar>

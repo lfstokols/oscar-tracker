@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import {
   Table,
@@ -49,11 +49,10 @@ export default function CategoryCompletionTable({
   const groupingDict = catssByGrouping(categories);
   const groupingList = Object.values(Grouping);
 
-  const [areOpen, setAreOpen] = React.useState<Record<Grouping, boolean>>(
+  const [areOpen, setAreOpen] = useState<Record<Grouping, boolean>>(
     Object.values(Grouping).reduce((acc, grouping) => {
       acc[grouping] = false;
       return acc;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     }, {} as Record<Grouping, boolean>),
   );
 
@@ -67,8 +66,8 @@ export default function CategoryCompletionTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell width="50px" text="" />
-            <TableHeaderCell width="300px" text="Category" />
+            <TableHeaderCell text="" width="50px" />
+            <TableHeaderCell text="Category" width="300px" />
             {userList.map(user => (
               <TableHeaderCell key={user.id} text={user.username} />
             ))}
@@ -80,26 +79,26 @@ export default function CategoryCompletionTable({
             return (
               <React.Fragment key={grouping}>
                 <GroupingRow
+                  data={data}
                   grouping={grouping}
-                  isExpanded={isExpanded}
                   handleToggle={() =>
                     setAreOpen(prev => toggleOpenness(prev, grouping))
                   }
-                  data={data}
                   hypotheticality={hypotheticality}
+                  isExpanded={isExpanded}
                   userList={userList.map(user => user.id)}
                 />
                 {groupingDict[grouping].map(cat => (
                   <CategoryRow
                     key={cat.id}
                     category={cat}
-                    isOpen={isExpanded}
                     data={data}
                     hypotheticality={hypotheticality}
-                    userList={userList.map(user => user.id)}
-                    nominations={nominations}
-                    watchlist={watchlist}
+                    isOpen={isExpanded}
                     movies={movies}
+                    nominations={nominations}
+                    userList={userList.map(user => user.id)}
+                    watchlist={watchlist}
                   />
                 ))}
               </React.Fragment>

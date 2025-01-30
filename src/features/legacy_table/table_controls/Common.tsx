@@ -43,12 +43,12 @@ export function CenteredMenu({
   return (
     <Menu
       anchorEl={menuPosition}
-      open={isOpen}
-      onClose={onClose}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'center',
       }}
+      onClose={onClose}
+      open={isOpen}
       transformOrigin={{
         vertical: 'top',
         horizontal: 'center',

@@ -94,15 +94,15 @@ export default function LegacyTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell key="film" text="Film" colSpan={2} />
+            <TableHeaderCell key="film" colSpan={2} text="Film" />
             <TableHeaderCell key="nominations" text="Nominations" />
             <TableHeaderCell
               key="runtime"
-              text="Runtime"
+              icon={<SwapHoriz />}
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
               style={{cursor: 'pointer'}}
+              text="Runtime"
               title="Click to toggle runtime format"
-              icon={<SwapHoriz />}
             />
             {sortedUsers.map(user => (
               <TableHeaderCell key={user.id} text={user.username} />

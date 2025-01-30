@@ -11,32 +11,32 @@ export default function MoviePosterCell({movie}: Props): React.ReactElement {
   const [hasLoaded, setHasLoaded] = useState(false);
   return (
     <TableCell
-      sx={{className: 'runtime-column'}}
+      key={`poster-${movie.id}`}
       align="center"
-      key={`poster-${movie.id}`}>
+      sx={{className: 'runtime-column'}}>
       <ErrorBoundary fallback={<ErrorIcon />}>
         <Suspense
-          fallback={<Skeleton variant="rectangular" height={100} width={66} />}>
+          fallback={<Skeleton height={100} variant="rectangular" width={66} />}>
           {hasError ? (
             <ErrorIcon color="error" />
           ) : (
             <>
               {!hasLoaded && (
-                <Skeleton variant="rectangular" height={100} width={66} />
+                <Skeleton height={100} variant="rectangular" width={66} />
               )}
               <img
-                src={MovieDb_POSTER_URL + movie.posterPath}
                 alt={movie.mainTitle}
-                style={{
-                  maxHeight: '100px',
-                  borderRadius: '4px',
-                  display: hasLoaded ? 'block' : 'none',
-                }}
                 onError={() => {
                   setHasError(true);
                 }}
                 onLoad={() => {
                   setHasLoaded(true);
+                }}
+                src={MovieDb_POSTER_URL + movie.posterPath}
+                style={{
+                  maxHeight: '100px',
+                  borderRadius: '4px',
+                  display: hasLoaded ? 'block' : 'none',
                 }}
               />
             </>

@@ -11,7 +11,7 @@ export default function RuntimeCell({
   isRuntimeFormatted: boolean;
 }): React.ReactElement {
   return (
-    <TableCell sx={{className: 'runtime-column'}} align="center">
+    <TableCell align="center" sx={{className: 'runtime-column'}}>
       <Typography variant="body1">
         {isRuntimeFormatted ? runtimeHours : runtimeMinutes}
       </Typography>

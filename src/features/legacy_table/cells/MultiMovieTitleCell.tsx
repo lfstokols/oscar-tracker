@@ -9,7 +9,7 @@ export default function MultiMovieTitleCell({
   filteredMovies,
 }: Props): React.ReactElement {
   return (
-    <TableCell sx={{padding: 0}} colSpan={2}>
+    <TableCell colSpan={2} sx={{padding: 0}}>
       <Table>
         <TableBody>
           {filteredMovies.map((movie, index) => (

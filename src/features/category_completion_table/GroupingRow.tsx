@@ -46,13 +46,13 @@ export default function GroupingRow({
   return (
     <TableRow
       key={grouping}
+      onClick={handleClick}
       sx={{
         cursor: 'pointer',
         '&:hover': {
           backgroundColor: 'rgba(0, 0, 0, 0.1)',
         },
-      }}
-      onClick={handleClick}>
+      }}>
       <TableCell>
         {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
       </TableCell>

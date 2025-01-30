@@ -37,20 +37,14 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
 
   return (
     <Autocomplete
-      sx={{width: 300}}
+      autoComplete
+      filterOptions={x => x}
+      filterSelectedOptions
       getOptionLabel={option =>
         typeof option === 'string' ? option : option.username
       }
-      filterOptions={x => x}
-      options={options}
-      autoComplete
       includeInputInList
-      filterSelectedOptions
-      value={value}
       noOptionsText="No profiles"
-      onSubmit={_event => {
-        setter(value?.username ?? null);
-      }}
       onChange={(_event, newValue: LProfile | null) => {
         setOptions(newValue ? [newValue, ...options] : options);
         setValue(newValue);
@@ -59,11 +53,15 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
       onInputChange={(_event, newInputValue) => {
         setInputValue(newInputValue);
       }}
+      onSubmit={_event => {
+        setter(value?.username ?? null);
+      }}
+      options={options}
       renderInput={params => (
         <TextField
           {...params}
-          label="Enter your Letterboxd username"
           fullWidth
+          label="Enter your Letterboxd username"
         />
       )}
       renderOption={(
@@ -78,10 +76,10 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
                 <Avatar src={option.avatar} />
               </Grid>
               <Grid sx={{width: 'calc(100% - 44px)', wordWrap: 'break-word'}}>
-                <Typography variant="body2" sx={{color: 'text.primary'}}>
+                <Typography sx={{color: 'text.primary'}} variant="body2">
                   {option.username}
                 </Typography>
-                <Typography variant="body2" sx={{color: 'text.secondary'}}>
+                <Typography sx={{color: 'text.secondary'}} variant="body2">
                   {option.fullName}
                 </Typography>
               </Grid>
@@ -89,6 +87,8 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
           </li>
         );
       }}
+      sx={{width: 300}}
+      value={value}
     />
   );
 }

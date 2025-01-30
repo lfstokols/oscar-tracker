@@ -14,11 +14,11 @@ export default function TableControls({
 }) {
   return (
     <ToggleButtonGroup
-      value={value}
-      onChange={(_, newValue: Hypotheticality) => setter(newValue)}
-      exclusive
       color="primary"
-      size="small">
+      exclusive
+      onChange={(_, newValue: Hypotheticality) => setter(newValue)}
+      size="small"
+      value={value}>
       <ToggleButton value={Hypotheticality.SEEN}>
         <TaskAltIcon sx={{mr: 1}} />
         Completed

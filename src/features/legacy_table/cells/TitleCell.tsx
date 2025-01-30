@@ -34,11 +34,11 @@ export default function TitleCell({
 
   return (
     <TableCell
-      title={movie.id}
       sx={{
         className: 'title-column',
         ...sxProps,
       }}
+      title={movie.id}
       {...props}>
       <div
         style={{
@@ -48,10 +48,10 @@ export default function TitleCell({
           maxWidth: '230px',
         }}>
         <FancyMovieTitle
-          movie={movie}
           highlightAnimated={preferences?.highlightAnimated}
-          isBestPicNominee={isBestPicNominee}
           isBestAnimatedNominee={isBestAnimatedNominee}
+          isBestPicNominee={isBestPicNominee}
+          movie={movie}
         />
       </div>
     </TableCell>
@@ -81,14 +81,14 @@ function FancyMovieTitle({
         justifyContent: 'center',
       }}>
       {!!isBestPicNominee && (
-        <GoldSparkle textWidth={textWidth} textHeight={textHeight} />
+        <GoldSparkle textHeight={textHeight} textWidth={textWidth} />
       )}
       <MovieTitle
         ref={ref}
-        movie={movie}
         highlightAnimated={highlightAnimated}
-        isBestPicNominee={isBestPicNominee}
         isBestAnimatedNominee={isBestAnimatedNominee}
+        isBestPicNominee={isBestPicNominee}
+        movie={movie}
       />
     </div>
   );
@@ -150,12 +150,12 @@ function GoldSparkle({
         return (
           <line
             key={angle}
-            x1={inner[0]}
-            y1={inner[1]}
-            x2={outer[0]}
-            y2={outer[1]}
             stroke={BEST_PICTURE_COLOR}
             strokeWidth="1.5"
+            x1={inner[0]}
+            x2={outer[0]}
+            y1={inner[1]}
+            y2={outer[1]}
           />
         );
       })}
@@ -185,8 +185,8 @@ const MovieTitle = forwardRef(function MovieTitle(
 
   return (
     <Stack
-      direction="column"
       alignItems="center"
+      direction="column"
       style={
         highlightAnimated && isBestAnimatedNominee
           ? {
@@ -199,24 +199,24 @@ const MovieTitle = forwardRef(function MovieTitle(
       <Typography
         key={`title-${movie.id}`}
         ref={ref}
-        variant="body1"
-        textAlign="center"
         style={{
           fontSize: '1.3em',
           zIndex: 1,
           color: textColor,
-        }}>
+        }}
+        textAlign="center"
+        variant="body1">
         <b>{movie.mainTitle}</b>
       </Typography>
       {!!movie.subtitle && (
         <Typography
           key={`subtitle-${movie.id}`}
-          variant="subtitle2"
-          textAlign="center"
           style={{
             zIndex: 1,
             color: textColor,
-          }}>
+          }}
+          textAlign="center"
+          variant="subtitle2">
           <i>{movie.subtitle}</i>
         </Typography>
       )}

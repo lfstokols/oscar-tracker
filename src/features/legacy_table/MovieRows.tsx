@@ -40,20 +40,20 @@ export default function MovieRows({
               preferences={preferences}
             />
             <NominationsCell
+              categories={categories}
               movieId={movie.id}
               nominations={nominations}
-              categories={categories}
             />
             <RuntimeCell
-              runtimeMinutes={movie['runtime_minutes']}
-              runtimeHours={movie['runtime_hours']}
               isRuntimeFormatted={isRuntimeFormatted}
+              runtimeHours={movie['runtime_hours']}
+              runtimeMinutes={movie['runtime_minutes']}
             />
             {sortedUsers.map(user => (
               <WatchlistCell
                 key={user.id}
-                userId={user.id}
                 movieId={movie.id}
+                userId={user.id}
               />
             ))}
           </TableRow>

@@ -9,13 +9,13 @@ export default function OurWordmark({
   folded?: boolean;
 }) {
   return (
-    <Box display="flex" flexDirection="row" alignItems="center">
+    <Box alignItems="center" display="flex" flexDirection="row">
       <img
-        src={oscarIcon}
         alt="Oscar Icon, from https://www.flaticon.com/free-icons/oscar"
+        src={oscarIcon}
         style={{width: '32px', height: '32px', marginRight: '8px'}}
       />
-      <Text mini={mini} folded={folded} />
+      <Text folded={folded} mini={mini} />
     </Box>
   );
 }

@@ -94,7 +94,7 @@ export default function UserProfile({closer}: Props) {
 
   return (
     <>
-      <Stack direction="row" justifyContent="center" gap={1}>
+      <Stack direction="row" gap={1} justifyContent="center">
         <div style={{marginTop: '2px'}}>
           <UserAvatar userId={activeUserId} username={activeUsername} />
         </div>
@@ -103,18 +103,18 @@ export default function UserProfile({closer}: Props) {
       <Box component="menu" sx={boxStyle}>
         <DefaultCatcher>
           <UserDataField
-            label="Username"
-            remoteValue={myUserData.username}
-            localValue={myUserData.username}
             editableComponent={placeholderEditableComponent}
             editableComponentProps={{}}
+            label="Username"
+            localValue={myUserData.username}
+            remoteValue={myUserData.username}
           />
           <UserDataField
-            label="Email"
-            remoteValue={myUserData.email ?? 'Not Set'}
-            localValue={myUserData.email ?? 'Not Set'}
             editableComponent={placeholderEditableComponent}
             editableComponentProps={{}}
+            label="Email"
+            localValue={myUserData.email ?? 'Not Set'}
+            remoteValue={myUserData.email ?? 'Not Set'}
           />
           <LetterboxdField />
         </DefaultCatcher>
@@ -140,25 +140,25 @@ export default function UserProfile({closer}: Props) {
       <Divider />
       <Stack spacing={2}>
         <Button
-          variant="outlined"
+          color="warning"
+          onClick={handleLogout}
           size="small"
           sx={{width: '100%'}}
-          color="warning"
-          onClick={handleLogout}>
+          variant="outlined">
           Logout
         </Button>
         <Button
-          variant="outlined"
-          size="small"
           color="error"
+          onClick={handleDelete}
+          size="small"
           sx={{width: '100%'}}
-          onClick={handleDelete}>
+          variant="outlined">
           <DeleteForever sx={{marginRight: 1}} />
           Delete Account
           <DeleteForever sx={{marginLeft: 1}} />
         </Button>
       </Stack>
-      <Dialog open={deleteDialogIsOpen} onClose={handleCloseDeleteDialog}>
+      <Dialog onClose={handleCloseDeleteDialog} open={deleteDialogIsOpen}>
         <DialogTitle>Delete Account</DialogTitle>
         <DialogContent>
           <DialogContentText>
@@ -201,14 +201,14 @@ function Preference({
 
   return (
     <ListItem key={whichPref} disablePadding>
-      <ListItemButton role={undefined} onClick={handleToggle} dense>
+      <ListItemButton dense onClick={handleToggle} role={undefined}>
         <ListItemIcon>
           <Checkbox
-            edge="end"
             checked={prefState}
-            tabIndex={-1}
             disableRipple
+            edge="end"
             inputProps={{'aria-labelledby': whichPref}}
+            tabIndex={-1}
           />
         </ListItemIcon>
         <ListItemText id={whichPref} primary={text} />

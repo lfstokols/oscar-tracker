@@ -38,7 +38,7 @@ export default function TableControls({
         // position: 'sticky',
         // top: '-40px',
       }}>
-      <Stack direction="row" width="100%" justifyContent="space-between">
+      <Stack direction="row" justifyContent="space-between" width="100%">
         <NoAccountBlocker hasAccess={canRefresh}>
           <RefreshWidget
             handleRefresh={() => void handleRefresh()}
@@ -47,8 +47,8 @@ export default function TableControls({
         </NoAccountBlocker>
         <HideColumnsWidget isMobile={isMobile} />
         <FilterRowsWidget
-          isMobile={isMobile}
           filterState={filterState}
+          isMobile={isMobile}
           setFilterState={setFilterState}
         />
       </Stack>
@@ -65,9 +65,9 @@ function RefreshWidget({
 }): React.ReactElement {
   return (
     <DisplayedSettingsButton
-      onClick={handleRefresh}
-      isMobile={isMobile}
       icon={<RefreshIcon />}
+      isMobile={isMobile}
+      onClick={handleRefresh}
       text="Fetch Updates"
     />
   );

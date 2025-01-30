@@ -71,8 +71,8 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
 
   return (
     <ClickableTooltip
-      popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}
-      arrow={true}>
+      arrow={true}
+      popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}>
       <div
         style={{
           display: 'flex',
@@ -80,13 +80,13 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
           justifyContent: 'center',
         }}>
         <MyFill
-          watchstate={localWatchState}
+          disabled={isEditingDisabled}
           handleInteract={() => {
             if (!isEditingDisabled) {
               mutation.mutate(nextStatus(localWatchState));
             }
           }}
-          disabled={isEditingDisabled}
+          watchstate={localWatchState}
         />
       </div>
     </ClickableTooltip>
@@ -129,7 +129,6 @@ export function MyFill({
 }: FillProps): React.ReactElement {
   return (
     <Typography
-      variant="body2"
       onClick={handleInteract}
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -148,7 +147,8 @@ export function MyFill({
         alignItems: 'center',
         justifyContent: 'center',
         userSelect: 'none',
-      }}>
+      }}
+      variant="body2">
       {display(watchstate)}
     </Typography>
   );
@@ -161,8 +161,8 @@ export default function WatchlistCellWrapper(props: Props): React.ReactElement {
     <Suspense fallback={<LinearProgress />}>
       <TableCell
         key={userId}
-        sx={{display: 'fill', className: 'watchlist-column'}}
-        align="center">
+        align="center"
+        sx={{display: 'fill', className: 'watchlist-column'}}>
         <WatchlistCell {...props} />
       </TableCell>
     </Suspense>

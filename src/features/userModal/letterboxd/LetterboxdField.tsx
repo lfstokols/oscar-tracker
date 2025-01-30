@@ -42,15 +42,15 @@ export default function LetterboxdField() {
 
   return (
     <UserDataField
-      label="Letterboxd"
-      remoteValue={data.letterboxd}
-      localValue={
-        mutation.isPending ? mutation.variables.letterboxd : data.letterboxd
-      }
       editableComponent={EditableLetterboxdField}
       editableComponentProps={{
         mutation: mutation,
       }}
+      label="Letterboxd"
+      localValue={
+        mutation.isPending ? mutation.variables.letterboxd : data.letterboxd
+      }
+      remoteValue={data.letterboxd}
     />
   );
 }
@@ -132,14 +132,14 @@ function EditableLetterboxdField({
         <LetterboxdSearchBar setter={setLetterboxdId} />
         <Stack direction="row" spacing={2}>
           <Button
-            variant="contained"
             onClick={() => {
               mutation.mutate({letterboxd: letterboxdId});
               onCancel();
-            }}>
+            }}
+            variant="contained">
             Submit
           </Button>
-          <Button variant="outlined" onClick={onCancel}>
+          <Button onClick={onCancel} variant="outlined">
             Cancel
           </Button>
         </Stack>

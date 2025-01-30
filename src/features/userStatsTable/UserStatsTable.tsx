@@ -169,13 +169,12 @@ export default function UserStatsTable({
             {statsColumns.map((column, index) =>
               checkDisabledCombination(column.label, hypotheticality) ? null : (
                 <TableHeaderCell
-                  text={column.title}
                   key={column.label}
                   icon={
                     <TableSortLabel
-                      onClick={() => setSortByIndex(index)}
-                      direction="asc"
                       active={sortByIndex === index}
+                      direction="asc"
+                      onClick={() => setSortByIndex(index)}
                       sx={{
                         padding: 0,
                         position: 'absolute',
@@ -184,6 +183,7 @@ export default function UserStatsTable({
                       // hideSortIcon={true}
                     />
                   }
+                  text={column.title}
                 />
               ),
             )}

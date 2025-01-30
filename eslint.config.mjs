@@ -151,9 +151,9 @@ export default [
       "react/no-array-index-key": 'warn',
       "react-refresh/only-export-components": "warn",
       "react/jsx-no-constructed-context-values": "error",
-      // "react/jsx-sort-props": ["warn",
-      //   { "reservedFirst": true }
-      // ]
+      "react/jsx-sort-props": ["warn",
+        { "reservedFirst": true }
+      ]
 
       // "no-restricted-imports": [
       //   "error",

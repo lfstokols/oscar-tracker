@@ -28,13 +28,13 @@ export default function HideColumnsWidget({
 
   return (
     <Paper>
-      <DisplayedButton onClick={handleClick} isMobile={isMobile} />
+      <DisplayedButton isMobile={isMobile} onClick={handleClick} />
       {!!isOpen && (
         <PlaceholderMenu
-          menuPosition={menuPosition}
-          isOpen={isOpen}
-          onClose={handleClose}
           hiddenColumns={hiddenColumns}
+          isOpen={isOpen}
+          menuPosition={menuPosition}
+          onClose={handleClose}
         />
       )}
     </Paper>
@@ -53,8 +53,8 @@ function PlaceholderMenu({
   hiddenColumns: string[];
 }): React.ReactElement {
   return (
-    <CenteredMenu menuPosition={menuPosition} isOpen={isOpen} onClose={onClose}>
-      <Typography variant="h6" color="textDisabled" sx={{p: 2}}>
+    <CenteredMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
+      <Typography color="textDisabled" sx={{p: 2}} variant="h6">
         This feature is coming soon!
       </Typography>
     </CenteredMenu>
@@ -93,9 +93,9 @@ function DisplayedButton({
 }): React.ReactElement {
   return (
     <DisplayedSettingsButton
-      onClick={onClick}
-      isMobile={isMobile}
       icon={<ColumnsIcon />}
+      isMobile={isMobile}
+      onClick={onClick}
       text="Hide Columns"
     />
   );

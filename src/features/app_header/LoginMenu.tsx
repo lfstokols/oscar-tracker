@@ -24,14 +24,14 @@ export default function LoginMenu({
   };
   return (
     <Menu
-      sx={{display: 'flex'}}
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
-      onClose={handleMenuClose}
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'left',
-      }}>
+      }}
+      onClose={handleMenuClose}
+      open={Boolean(anchorEl)}
+      sx={{display: 'flex'}}>
       <ErrorBoundary fallback={<Error />}>
         <Suspense fallback={<LoadingSpinner />}>
           <LoginMenuUserItems onMenuClose={handleMenuClose} />
@@ -43,10 +43,10 @@ export default function LoginMenu({
           signupOpener();
         }}>
         <Button
-          variant="outlined"
           // onClick={signupOpener}
           size="small"
-          sx={{mr: 1}}>
+          sx={{mr: 1}}
+          variant="outlined">
           Sign Up
         </Button>
       </MenuItem>

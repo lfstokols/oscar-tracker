@@ -24,11 +24,11 @@ export function TableHeaderCell({
         gap: 1,
         padding: 1,
       }}>
-      <Stack direction="column" alignItems="center" gap={0}>
+      <Stack alignItems="center" direction="column" gap={0}>
         <Stack
+          alignItems="center"
           direction="row"
           gap="4px"
-          alignItems="center"
           justifyContent="center"
           sx={{position: 'relative'}}>
           {text === undefined ? null : (
@@ -38,8 +38,8 @@ export function TableHeaderCell({
         </Stack>
         {!!subtext && (
           <Typography
-            variant="subtitle2"
-            sx={{height: '4px', overflow: 'visible'}}>
+            sx={{height: '4px', overflow: 'visible'}}
+            variant="subtitle2">
             <i> ({subtext}) </i>
           </Typography>
         )}

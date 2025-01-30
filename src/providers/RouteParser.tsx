@@ -53,7 +53,7 @@ export default function RouteParser({children}: {children: React.ReactNode}) {
       {isValidLocation(location.pathname) ? (
         children
       ) : (
-        <Navigate to={makeUrl(getValidParams(location.pathname))} replace />
+        <Navigate replace to={makeUrl(getValidParams(location.pathname))} />
       )}
     </UrlParamsContext.Provider>
   );

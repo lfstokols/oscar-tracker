@@ -90,10 +90,9 @@ export default function AppNavDrawer({
 
   return (
     <Drawer
-      open={open}
-      variant={isDrawerPersistent ? 'persistent' : 'temporary'}
       onClick={isDrawerPersistent ? undefined : onClose}
       onClose={onClose}
+      open={open}
       sx={{
         width: DRAWER_WIDTH,
         flexShrink: 0,
@@ -101,7 +100,8 @@ export default function AppNavDrawer({
           width: DRAWER_WIDTH,
           boxSizing: 'border-box',
         },
-      }}>
+      }}
+      variant={isDrawerPersistent ? 'persistent' : 'temporary'}>
       <Toolbar />
       {/* <Box
         sx={{width: 250}}

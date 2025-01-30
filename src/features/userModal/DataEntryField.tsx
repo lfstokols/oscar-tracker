@@ -18,17 +18,17 @@ export default function TextEntry({
     <FormControl>
       <FormLabel htmlFor={label}>{display_name}</FormLabel>
       <TextField
+        autoFocus
+        color={error ? 'error' : 'primary'}
         error={error}
+        fullWidth
         helperText={errorMessage}
         id={label}
-        type="text"
         name={label}
         placeholder={placeholder}
-        autoFocus
         required
-        fullWidth
+        type="text"
         variant="outlined"
-        color={error ? 'error' : 'primary'}
       />
     </FormControl>
   );

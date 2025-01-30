@@ -50,9 +50,9 @@ export default function AppContent({
           element={<YearlessRedirect />}
         /> */}
         {/* Actual paths */}
-        <Route path={`/${LEGACY_URL}/:year`} element={<HomeTab />} />
-        <Route path={`/${BY_USER_URL}/:year`} element={<UserTab />} />
-        <Route path={`/${BY_CATEGORY_URL}/:year`} element={<CategoryTab />} />
+        <Route element={<HomeTab />} path={`/${LEGACY_URL}/:year`} />
+        <Route element={<UserTab />} path={`/${BY_USER_URL}/:year`} />
+        <Route element={<CategoryTab />} path={`/${BY_CATEGORY_URL}/:year`} />
       </Routes>
     </Box>
   );

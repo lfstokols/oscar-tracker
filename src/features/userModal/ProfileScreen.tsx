@@ -70,8 +70,8 @@ function ProfileScreenContents({closeModal}: {closeModal: () => void}) {
 export default function ProfileScreen({open, closeModal}: Props) {
   return (
     <Dialog
-      open={open}
       onClose={closeModal}
+      open={open}
       sx={{
         '& .MuiDialog-paper': {
           backgroundColor: 'background',
@@ -96,14 +96,14 @@ export default function ProfileScreen({open, closeModal}: Props) {
       // }}
     >
       <Card
-        variant="outlined"
         color="primary"
         sx={{
           // backgroundColor: 'primary.main',
           // opacity: 1,
           borderRadius: '2ch',
           padding: '12px',
-        }}>
+        }}
+        variant="outlined">
         <Stack>
           <Stack direction="row" justifyContent="space-between">
             <OurWordmark folded />

@@ -33,9 +33,9 @@ export default function makeCategoryTooltip(
   );
   return (
     <Stack
-      spacing={2}
       direction="row"
       justifyContent="space-between"
+      spacing={2}
       sx={{
         maxWidth: '7500px',
         '& > div': {
@@ -45,7 +45,7 @@ export default function makeCategoryTooltip(
       }}>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6" noWrap>
+          <Typography noWrap variant="h6">
             <u>Seen</u>
           </Typography>
         </div>
@@ -54,7 +54,7 @@ export default function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
+                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
                   {movie ? movie.mainTitle : '??? '}
                 </Typography>
               </div>
@@ -64,7 +64,7 @@ export default function makeCategoryTooltip(
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6" noWrap>
+          <Typography noWrap variant="h6">
             <u>Planned</u>
           </Typography>
         </div>
@@ -73,7 +73,7 @@ export default function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
+                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
                   {movie ? movie.mainTitle : '??? '}
                 </Typography>
               </div>
@@ -83,7 +83,7 @@ export default function makeCategoryTooltip(
       </div>
       <div>
         <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography variant="h6" noWrap>
+          <Typography noWrap variant="h6">
             <u>Missing</u>
           </Typography>
         </div>
@@ -92,7 +92,7 @@ export default function makeCategoryTooltip(
             const movie = movies.find(m => m.id === id);
             return (
               <div key={id}>
-                <Typography variant="body1" sx={{lineHeight: 1.1}} noWrap>
+                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
                   {movie ? movie.mainTitle : '???'}
                 </Typography>
               </div>

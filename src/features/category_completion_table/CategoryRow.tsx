@@ -70,14 +70,14 @@ export default function makeCategoryRow({
       {userList.map(user => (
         <TableCell key={user} align="center">
           <ClickableTooltip
+            followCursor
             popup={makeCategoryTooltip(
               category.id,
               user,
               nominations,
               watchlist,
               movies,
-            )}
-            followCursor>
+            )}>
             <Typography variant="h6">
               {make_fraction_display(
                 get_num(user, category.id, hypotheticality, data),
