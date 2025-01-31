@@ -5,11 +5,11 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import Cookies from 'js-cookie';
 import {Dispatch, SetStateAction, Suspense} from 'react';
 import OurWordmark from '../../components/OurWordmark';
 import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import {useIsMobile} from '../../hooks/useIsMobile';
+import {getUserIdFromCookie} from '../../utils/CookieManager';
 import UserButton from './UserButton';
 import YearSelector from './YearSelector';
 
@@ -61,7 +61,7 @@ export default function AppHeader({
           <Suspense
             fallback={
               <Avatar>
-                {Cookies.get('activeUserId')?.charAt(0).toUpperCase()}
+                {getUserIdFromCookie()?.charAt(0).toUpperCase()}
               </Avatar>
             }>
             <UserButton />

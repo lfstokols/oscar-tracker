@@ -1,15 +1,8 @@
 import Box from '@mui/material/Box';
 import * as React from 'react';
-import {Route, Routes} from 'react-router-dom';
-import {
-  BY_CATEGORY_URL,
-  BY_USER_URL,
-  LEGACY_URL,
-} from '../config/GlobalConstants';
+import {Outlet} from 'react-router-dom';
 import {DRAWER_WIDTH} from './AppNavDrawer';
-import CategoryTab from './routes/CategoryTab';
-import HomeTab from './routes/HomeTab';
-import UserTab from './routes/UserTab';
+
 type Props = {isDrawerOpen: boolean; isDrawerPersistent: boolean};
 
 export default function AppContent({
@@ -37,23 +30,7 @@ export default function AppContent({
         flexGrow: 1,
         display: 'flex',
       })}>
-      <Routes>
-        {/* <Route
-          path="/"
-          element={<Navigate to={`/${LEGACY_URL}/${DEFAULT_YEAR}`} replace />}
-        /> */}
-        {/* Redirect for year with no tab */}
-        {/* <Route path="/:year" element={<TablessRedirect />} /> */}
-        {/* Redirect for tab with no year */}
-        {/* <Route
-          path={`/:tab(${LEGACY_URL}|${BY_USER_URL}|${BY_CATEGORY_URL})`}
-          element={<YearlessRedirect />}
-        /> */}
-        {/* Actual paths */}
-        <Route element={<HomeTab />} path={`/${LEGACY_URL}/:year`} />
-        <Route element={<UserTab />} path={`/${BY_USER_URL}/:year`} />
-        <Route element={<CategoryTab />} path={`/${BY_CATEGORY_URL}/:year`} />
-      </Routes>
+      <Outlet />
     </Box>
   );
 }

@@ -25,11 +25,11 @@ export default function HypotheticalityToggleGroup({
       </ToggleButton>
       <ToggleButton value={Hypotheticality.BOTH}>
         <FollowTheSignsIcon sx={{mr: 1}} />
-        Planned
+        Projected
       </ToggleButton>
       <ToggleButton value={Hypotheticality.TODO}>
         <HourglassTopIcon sx={{mr: 1}} />
-        Remaining
+        To-Do
       </ToggleButton>
     </ToggleButtonGroup>
   );

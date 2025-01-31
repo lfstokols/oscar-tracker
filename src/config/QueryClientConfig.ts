@@ -4,7 +4,7 @@ export default {
     defaultOptions: {
             queries: {
             experimental_prefetchInRender: true,
-            // staleTime: 1000 * 30, //* 30 seconds
+            staleTime: 1000 * 10, //* 10 seconds
             // staleTime: 100
         },
     },

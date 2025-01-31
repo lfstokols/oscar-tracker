@@ -11,7 +11,9 @@ import {
   UserStatsListSchema,
   WatchListSchema,
 } from '../types/APIDataSchema';
-import {API_BASE_URL} from '../config/GlobalConstants';
+import {Endpoints} from '../types/Enums';
+import LockError from '../types/LockErorr';
+import {logToConsole} from '../utils/Logger';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -133,7 +135,9 @@ function qFunction<T>(
         throw new LockError('Data was locked.');
       }
       throw new Error(
-        `Data fetch returned error code ${response.status}: ${response.json()}`,
+        `Data fetch returned error code ${response.status}: ${JSON.stringify(
+          await response.json(),
+        )}`,
       );
     }
     try {

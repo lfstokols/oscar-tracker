@@ -1,14 +1,13 @@
-import {useContext, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
 import { AVAILABLE_YEARS,DEFAULT_YEAR} from '../config/GlobalConstants';
-import {UrlParamsContext} from './../providers/UrlParamsContext';
 
 export default function useYearState(): [number, (year: number) => void] {
   const navigate = useNavigate();
-  const urlParams = useContext(UrlParamsContext);
+  const urlParams = useParams();
 
   const [year, setYear] = useState<number>(() => {
-    const urlYear = urlParams?.year ?? null;
+    const urlYear = parseInt(urlParams.year ?? '');
     if (urlYear && AVAILABLE_YEARS.includes(urlYear)) {
       return urlYear;
     }
@@ -19,13 +18,13 @@ export default function useYearState(): [number, (year: number) => void] {
   const newSetYear = upgradeSetYear(setYear, navigate);
 
   useEffect(() => {
-    if (urlParams?.year) {
-      const parsedYear = urlParams.year;
+    if (urlParams.year) {
+      const parsedYear = parseInt(urlParams.year);
       if (AVAILABLE_YEARS.includes(parsedYear)) {
         setYear(parsedYear);
       }
     }
-  }, [urlParams?.year]);
+  }, [urlParams.year]);
 
   return [year, newSetYear];
 }

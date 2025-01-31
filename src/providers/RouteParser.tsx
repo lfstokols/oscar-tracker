@@ -1,5 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {useLocation, useNavigate, matchPath, Navigate} from 'react-router-dom';
+import * as React from 'react';
+import {useEffect, useState} from 'react';
+import {matchPath,useLocation, useNavigate} from 'react-router-dom';
 import {
   AVAILABLE_YEARS,
   BY_CATEGORY_URL,
@@ -41,15 +42,11 @@ export default function RouteParser({children}: {children: React.ReactNode}) {
       );
       void navigate(makeUrl({year: validYear, tab: validTab}), {replace: true});
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return (
     <UrlParamsContext.Provider value={urlParams}>
-      {isValidLocation(location.pathname) ? (
-        children
-      ) : (
-        <Navigate to={makeUrl(getValidParams(location.pathname))} replace />
-      )}
+      {isValidLocation(location.pathname) ? children : null}
     </UrlParamsContext.Provider>
   );
 }

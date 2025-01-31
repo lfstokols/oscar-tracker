@@ -44,3 +44,7 @@ export const LEGACY_URL = 'home';
 export const BY_USER_URL = 'leaderboard';
 export const BY_CATEGORY_URL = 'categories';
 export const API_BASE_URL = '/api';
+
+
+//* What to set the cookie as if logged out
+export const COOKIE_NULL_VALUE= 'null';

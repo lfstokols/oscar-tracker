@@ -193,7 +193,7 @@ function Preference({
     errorToConsole(
       `Preference ${whichPref} is not a boolean, it can't be set with a checkbox`,
     );
-    throw new Error(`Preference ${whichPref} is not a boolean: ${prefState}`);
+    throw new Error(`Preference ${whichPref} is not a boolean: ${JSON.stringify(prefState)}`);
   }
   const handleToggle = () => {
     setPrefState(!prefState);

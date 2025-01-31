@@ -4,6 +4,7 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import OurWordmark from '../../components/OurWordmark';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import {useOscarAppContext} from '../../providers/AppContext';
 import SignUp from './SignupForm';
 import UserProfile from './UserProfile';
@@ -68,14 +69,16 @@ function ProfileScreenContents({closeModal}: {closeModal: () => void}) {
 }
 
 export default function ProfileScreen({open, closeModal}: Props) {
+  const isMobile = useIsMobile();
   return (
     <Dialog
+      fullScreen={isMobile}
       onClose={closeModal}
       open={open}
       sx={{
         '& .MuiDialog-paper': {
           backgroundColor: 'background',
-          borderRadius: '2ch',
+          borderRadius: isMobile ? '0' : '2ch',
         },
       }}
       // slots={{
@@ -100,8 +103,9 @@ export default function ProfileScreen({open, closeModal}: Props) {
         sx={{
           // backgroundColor: 'primary.main',
           // opacity: 1,
-          borderRadius: '2ch',
+          borderRadius: isMobile ? '0' : '2ch',
           padding: '12px',
+          height: '100%',
         }}
         variant="outlined">
         <Stack>

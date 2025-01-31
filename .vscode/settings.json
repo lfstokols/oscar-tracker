@@ -1,11 +1,14 @@
 {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "explicit"
+      "source.fixAll.eslint":"always"
     },
     "eslint.useFlatConfig": true,
     "eslint.codeActionsOnSave.rules": [
         "import/order",
         "react/jsx-sort-props",
         "react/jsx-curly-brace-presence",
-    ]
+    ],
+    "eslint.enable": true,
+    "eslint.format.enable": false,
+    "eslint.lintTask.enable": true
 }

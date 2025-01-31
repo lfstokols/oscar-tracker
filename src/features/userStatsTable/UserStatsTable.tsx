@@ -74,29 +74,6 @@ export default function UserStatsTable({
   }
   const {includeSeen, includeTodo} = enumToBool(hypotheticality);
 
-  function makeFraction(
-    numFeature: number,
-    numShort: number,
-    shortsAreOneFilm: boolean,
-    onlyCountMultinom: boolean,
-  ) {
-    if (onlyCountMultinom) {
-      return makeFraction_display(numFeature, numMultinomTotal);
-    }
-    const ratio = shortsAreOneFilm ? NUM_SHORT_FILMS_PER_CATEGORY : 1;
-    const numerator = numFeature + numShort / ratio;
-    const denominator = numMoviesFeature + numMoviesShort / ratio;
-    return makeFraction_display(numerator, denominator);
-  }
-
-  function makeFraction_categories(numerator: number) {
-    return makeFraction_display(numerator, totalNumberOfCategories);
-  }
-
-  function makeFraction_display(numerator: number, denominator: number) {
-    return {number: numerator, display: `${numerator}/${denominator}`};
-  }
-
   function numFeature(user: UserStats) {
     return (
       (includeSeen ? user.numSeenFeature ?? 0 : 0) +
@@ -137,13 +114,25 @@ export default function UserStatsTable({
       title: 'Total Movies',
       label: ColumnLabels.TOTAL_MOVIES,
       getValue: (user: UserStats) =>
-        makeFraction(numFeature(user), numShort(user), shortsAreOneFilm, false),
+        makeFraction(
+          numFeature(user),
+          numShort(user),
+          shortsAreOneFilm,
+          false,
+          fractionValues,
+        ),
     },
     {
       title: 'Multi-Nom Movies',
       label: ColumnLabels.MULTINOM,
       getValue: (user: UserStats) =>
-        makeFraction(numMultinom(user), 0, shortsAreOneFilm, true),
+        makeFraction(
+          numMultinom(user),
+          0,
+          shortsAreOneFilm,
+          true,
+          fractionValues,
+        ),
     },
     {
       title: 'Complete Categories',

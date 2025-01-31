@@ -1,13 +1,13 @@
 import {QueryClient, useQueryClient} from '@tanstack/react-query';
 import Cookies from 'js-cookie';
-import {useState} from 'react';
-import {EXPIRATION_DAYS} from '../config/GlobalConstants';
+import {useEffect, useState} from 'react';
+import {COOKIE_NULL_VALUE, EXPIRATION_DAYS} from '../config/GlobalConstants';
 import {
   NotificationsDispatch,
   useNotifications,
 } from '../providers/NotificationContext';
 import {UserIdSchema} from '../types/APIDataSchema';
-import {warnToConsole} from '../utils/Logger';
+import {errorToConsole, warnToConsole} from '../utils/Logger';
 import {getUsernameFromId} from '../utils/dataSelectors';
 import {userOptions} from './dataOptions';
 
@@ -40,25 +40,29 @@ export default function useActiveUserState(): [
     defaultUsername,
   );
   //* Set a promise to check the username and userId are consistent with each other
-  const timeStamp = Date.now();
-  const TIME_LIMIT = 1000;
+  const TIME_LIMIT = 1000; // TODO - Make this a config variable
   const notifications = useNotifications();
-
-  // TODO: This promise needs a catch statement.
-  queryClient
-    .fetchQuery(userOptions())
-    .then(
-      getCallbackForArrivedUserList(
-        defaultUserId,
-        defaultUsername,
-        setActiveUsername,
-        EXPIRATION_DAYS,
-        notifications,
-        timeStamp,
-        TIME_LIMIT,
-      ),
-    );
-
+  
+  useEffect(() => {
+    const timeStamp = Date.now();
+    queryClient
+      .fetchQuery(userOptions())
+      .then(
+        getCallbackForArrivedUserList(
+          defaultUserId,
+          defaultUsername,
+          setActiveUsername,
+          EXPIRATION_DAYS,
+          notifications,
+          timeStamp,
+          TIME_LIMIT,
+        ),
+      )
+      .catch(error => {
+        errorToConsole(error);
+      });
+  }, [defaultUserId, defaultUsername, notifications, queryClient]);
+  
   //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
   const newSetActiveUserId = useUpgradeSetActiveUserId(
     setActiveUserId,
@@ -85,7 +89,7 @@ function useUpgradeSetActiveUserId(
   return (id: UserId | null) => {
     const timeStamp = Date.now();
     setActiveUserId(id);
-    Cookies.set('activeUserId', id as string, {
+    Cookies.set('activeUserId', id ?? COOKIE_NULL_VALUE, {
       expires: EXPIRATION_DAYS,
     });
 
@@ -93,7 +97,6 @@ function useUpgradeSetActiveUserId(
     //* Adjust as needed, this is the allowable delay between setting
     //* the userId and the username without showing an error
 
-    // TODO: This promise needs a catch statement.
     queryClient
       .ensureQueryData(userOptions())
       .then(
@@ -106,7 +109,10 @@ function useUpgradeSetActiveUserId(
           timeStamp,
           TIME_LIMIT,
         ),
-      );
+      )
+      .catch(error => {
+        errorToConsole(error);
+      });
   };
 }
 
@@ -121,26 +127,27 @@ function getCallbackForArrivedUserList(
 ): (data: UserList) => void {
   return (data: UserList) => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
-    if (
-      activeUsername !== suggestedUsername &&
-      timeLimit &&
-      Date.now() - timeStamp > timeLimit
-    ) {
-      warnToConsole(
-        `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
-          'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
-          'Attempting to fix...`,
-      );
-      notifications.show({
-        type: 'error',
-        message:
-          'The username was incorrectly set. If it remains incorrect, reload the page.',
-        //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+    if (suggestedUsername != activeUsername) {
+      if (
+        timeLimit &&
+        Date.now() - timeStamp > timeLimit
+      ) {
+        warnToConsole(
+          `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
+            'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+
+            'Attempting to fix...`,
+        );
+        notifications.show({
+          type: 'error',
+          message:
+            'The username was incorrectly set. If it remains incorrect, reload the page.',
+          //* Note to self: It's also possible that the userId is invalid, but that seems less likely
+        });
+      }
+      setUsername(suggestedUsername);
+      Cookies.set('activeUsername', suggestedUsername ?? COOKIE_NULL_VALUE, {
+        expires: expirationDays,
       });
     }
-    setUsername(suggestedUsername);
-    Cookies.set('activeUsername', suggestedUsername as string, {
-      expires: expirationDays,
-    });
   };
 }
