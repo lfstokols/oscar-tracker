@@ -1,12 +1,12 @@
 /// <reference types="vite/client" />
-import OscarAppContextProvider from '../providers/AppContext';
-import NotificationsContextProvider from '../providers/NotificationContext';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {ThemeProvider, createTheme} from '@mui/material/styles';
 import {CssBaseline} from '@mui/material';
-import ThemeConfig from '../config/ThemeConfig';
-import QueryClientConfig from '../config/QueryClientConfig';
+import {ThemeProvider, createTheme} from '@mui/material/styles';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {BrowserRouter} from 'react-router-dom';
+import QueryClientConfig from '../config/QueryClientConfig';
+import ThemeConfig from '../config/ThemeConfig';
+import AppContextProvider from '../providers/AppContextProvider';
+import NotificationsContextProvider from '../providers/NotificationContextProvider';
 import RouteParser from '../providers/RouteParser';
 
 const ROUTE_BASENAME = import.meta.env.VITE_ROUTE_BASENAME;
@@ -21,18 +21,18 @@ export default function AppProvider({
 }): React.ReactElement {
   return (
     <BrowserRouter basename={ROUTE_BASENAME}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <RouteParser>
-            <OscarAppContextProvider>
+      <RouteParser>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <QueryClientProvider client={queryClient}>
+            <AppContextProvider>
               <NotificationsContextProvider>
                 {children}
               </NotificationsContextProvider>
-            </OscarAppContextProvider>
-          </RouteParser>
-        </QueryClientProvider>
-      </ThemeProvider>
+            </AppContextProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </RouteParser>
     </BrowserRouter>
   );
 }

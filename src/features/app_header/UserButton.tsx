@@ -1,10 +1,11 @@
-import React, {useCallback, useState} from 'react';
-import {Chip, Button, IconButton} from '@mui/material';
-import {useOscarAppContext} from '../../providers/AppContext';
-import LoginMenu from './LoginMenu';
-import ProfileScreen from '../userModal/ProfileScreen';
+import {Button, Chip, IconButton} from '@mui/material';
+import * as React from 'react';
+import {useCallback, useState} from 'react';
 import UserAvatar from '../../components/userAvatar';
 import {useIsMobile} from '../../hooks/useIsMobile';
+import {useOscarAppContext} from '../../providers/AppContext';
+import ProfileScreen from '../userModal/ProfileScreen';
+import LoginMenu from './LoginMenu';
 
 export default function UserButton(): React.ReactElement {
   // hooks
@@ -26,7 +27,7 @@ export default function UserButton(): React.ReactElement {
   if (!isLoggedIn) {
     return (
       <>
-        <Button variant="contained" onClick={handleDropdown} sx={{mr: 1}}>
+        <Button onClick={handleDropdown} sx={{mr: 1}} variant="contained">
           Login
         </Button>
         <LoginMenu
@@ -34,7 +35,7 @@ export default function UserButton(): React.ReactElement {
           setAnchorEl={setAnchorEl}
           signupOpener={openProfile}
         />
-        <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
+        <ProfileScreen closeModal={closeProfile} open={isProfileOpen} />
       </>
     );
   } else {
@@ -46,21 +47,19 @@ export default function UserButton(): React.ReactElement {
     // }
     return (
       <div style={{display: 'flex', alignItems: 'center'}}>
-        <>
-          {isMobile ? (
-            <IconButton onClick={openProfile} color="secondary">
-              {avatar}
-            </IconButton>
-          ) : (
-            <Chip
-              onClick={openProfile}
-              color="secondary"
-              avatar={avatar}
-              label={activeUsername}
-            />
-          )}
-          <ProfileScreen open={isProfileOpen} closeModal={closeProfile} />
-        </>
+        {isMobile ? (
+          <IconButton color="secondary" onClick={openProfile}>
+            {avatar}
+          </IconButton>
+        ) : (
+          <Chip
+            avatar={avatar}
+            color="secondary"
+            label={activeUsername}
+            onClick={openProfile}
+          />
+        )}
+        <ProfileScreen closeModal={closeProfile} open={isProfileOpen} />
       </div>
     );
   }

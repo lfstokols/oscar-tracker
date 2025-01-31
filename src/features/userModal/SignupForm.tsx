@@ -1,14 +1,17 @@
-import React from 'react';
-import TitleLine, {boxStyle} from './Common';
-import TextEntry from './DataEntryField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import {useNotifications} from '../../providers/NotificationContext';
-import {addUserOnSuccess, onMutateError} from '../../hooks/mutationOptions';
 import {useMutation, useQueryClient} from '@tanstack/react-query';
-import {addUserMutationFn} from '../../hooks/mutationOptions';
-import {useOscarAppContext} from '../../providers/AppContext';
+import * as React from 'react';
 import {useState} from 'react';
+import {
+  addUserMutationFn,
+  addUserOnSuccess,
+  onMutateError,
+} from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
+import TitleLine, {boxStyle} from './Common';
+import TextEntry from './DataEntryField';
 
 type Props = {
   closer: () => void;
@@ -84,34 +87,34 @@ export default function SignUp({closer}: Props) {
   return (
     <>
       <TitleLine title="Create an Account" />
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={boxStyle}>
+      <Box component="form" noValidate onSubmit={handleSubmit} sx={boxStyle}>
         {/* <Tooltip title="Username must consist of only letters, numbers, and underscores."> */}
         <TextEntry
           display_name="Username"
-          label="username"
-          placeholder="username"
           error={usernameError}
           errorMessage={usernameErrorMessage}
+          label="username"
+          placeholder="username"
         />
         {/* </Tooltip> */}
         {/* <Tooltip title="This is optional, I included it to look more professional."> */}
         <TextEntry
           display_name="Email (optional)"
-          label="email"
-          placeholder="your@email.com"
           error={emailError}
           errorMessage={emailErrorMessage}
+          label="email"
+          placeholder="your@email.com"
         />
         {/* </Tooltip> */}
         <Button
-          type="submit"
-          fullWidth
-          variant="contained"
           color="primary"
+          fullWidth
           onClick={() => {
             validateEmail();
             validateUsername();
-          }}>
+          }}
+          type="submit"
+          variant="contained">
           Sign Up
         </Button>
       </Box>

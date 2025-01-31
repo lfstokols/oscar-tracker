@@ -1,24 +1,24 @@
-import * as React from 'react';
-import {z} from 'zod';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
 import {
   useMutation,
-  useSuspenseQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from '@tanstack/react-query';
+import * as React from 'react';
+import {z} from 'zod';
 import {myUserDataOptions} from '../../../hooks/dataOptions';
-import {useOscarAppContext} from '../../../providers/AppContext';
-import Stack from '@mui/material/Stack';
-import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
-import LetterboxdSearchBar from './SearchBar';
 import {
+  onMutateError,
   updateCacheOnSuccess,
   updateUserMutationFn,
-  onMutateError,
 } from '../../../hooks/mutationOptions';
-import {MyUserDataSchema} from '../../../types/APIDataSchema';
+import {useOscarAppContext} from '../../../providers/AppContext';
 import {useNotifications} from '../../../providers/NotificationContext';
+import {MyUserDataSchema} from '../../../types/APIDataSchema';
 import UserDataField from '../UserDataField';
+import LetterboxdSearchBar from './SearchBar';
 
 export default function LetterboxdField() {
   const queryClient = useQueryClient();
@@ -42,15 +42,15 @@ export default function LetterboxdField() {
 
   return (
     <UserDataField
-      label="Letterboxd"
-      remoteValue={data.letterboxd}
-      localValue={
-        mutation.isPending ? mutation.variables.letterboxd : data.letterboxd
-      }
       editableComponent={EditableLetterboxdField}
       editableComponentProps={{
         mutation: mutation,
       }}
+      label="Letterboxd"
+      localValue={
+        mutation.isPending ? mutation.variables.letterboxd : data.letterboxd
+      }
+      remoteValue={data.letterboxd}
     />
   );
 }
@@ -132,14 +132,14 @@ function EditableLetterboxdField({
         <LetterboxdSearchBar setter={setLetterboxdId} />
         <Stack direction="row" spacing={2}>
           <Button
-            variant="contained"
             onClick={() => {
               mutation.mutate({letterboxd: letterboxdId});
               onCancel();
-            }}>
+            }}
+            variant="contained">
             Submit
           </Button>
-          <Button variant="outlined" onClick={onCancel}>
+          <Button onClick={onCancel} variant="outlined">
             Cancel
           </Button>
         </Stack>

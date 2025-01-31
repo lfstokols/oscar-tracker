@@ -1,5 +1,4 @@
-import {Button, IconButton, Typography, Menu} from '@mui/material';
-import {useState} from 'react';
+import {Button, IconButton, Menu, Typography} from '@mui/material';
 
 export function DisplayedSettingsButton({
   onClick,
@@ -44,12 +43,12 @@ export function CenteredMenu({
   return (
     <Menu
       anchorEl={menuPosition}
-      open={isOpen}
-      onClose={onClose}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'center',
       }}
+      onClose={onClose}
+      open={isOpen}
       transformOrigin={{
         vertical: 'top',
         horizontal: 'center',
@@ -57,32 +56,4 @@ export function CenteredMenu({
       {children}
     </Menu>
   );
-}
-
-//* Hook to manage menu state
-//* Returns:
-//* - isOpen: state of menu
-//* - handleClick: (event: React.MouseEvent<HTMLElement>) => void
-//* - handleClose: () => void
-export function useMenuState(): [
-  boolean,
-  HTMLElement | null,
-  (event: React.MouseEvent<HTMLElement>) => void,
-  () => void,
-] {
-  const [isOpen, setIsOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const menuPosition = anchorEl;
-
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-    setIsOpen(true);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-    setIsOpen(false);
-  };
-  return [isOpen, menuPosition, handleClick, handleClose];
 }

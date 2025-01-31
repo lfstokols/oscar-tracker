@@ -1,13 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {useLocation, useNavigate, matchPath} from 'react-router-dom';
+import {useLocation, useNavigate, matchPath, Navigate} from 'react-router-dom';
 import {
-  LEGACY_URL,
-  BY_USER_URL,
-  BY_CATEGORY_URL,
-  DEFAULT_YEAR,
   AVAILABLE_YEARS,
+  BY_CATEGORY_URL,
+  BY_USER_URL,
+  DEFAULT_YEAR,
+  LEGACY_URL,
 } from '../config/GlobalConstants';
 import {logToConsole} from '../utils/Logger';
+import {UrlParams, UrlParamsContext} from './UrlParamsContext';
 
 const ROUTES = {
   FULL: '/:tab/:year',
@@ -16,12 +17,6 @@ const ROUTES = {
 };
 
 const VALID_TABS = [LEGACY_URL, BY_USER_URL, BY_CATEGORY_URL];
-
-type UrlParams = {
-  year: number;
-};
-
-export const UrlParamsContext = React.createContext<UrlParams | null>(null);
 
 export default function RouteParser({children}: {children: React.ReactNode}) {
   const location = useLocation();
@@ -50,7 +45,11 @@ export default function RouteParser({children}: {children: React.ReactNode}) {
 
   return (
     <UrlParamsContext.Provider value={urlParams}>
-      {isValidLocation(location.pathname) ? children : null}
+      {isValidLocation(location.pathname) ? (
+        children
+      ) : (
+        <Navigate to={makeUrl(getValidParams(location.pathname))} replace />
+      )}
     </UrlParamsContext.Provider>
   );
 }

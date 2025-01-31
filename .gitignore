@@ -1,5 +1,4 @@
 .stfolder/
-.vscode/
 !.vscode/launch.json
 __pycache__/
 node_modules/

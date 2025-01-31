@@ -1,15 +1,15 @@
-import React from 'react';
-import {useQueryClient} from '@tanstack/react-query';
-import {watchlistOptions} from '../../../hooks/dataOptions';
-import {Paper, Stack} from '@mui/material';
 import {Sync as RefreshIcon} from '@mui/icons-material';
-import {useOscarAppContext} from '../../../providers/AppContext';
-import {useIsMobile} from '../../../hooks/useIsMobile';
-import HideColumnsWidget from './HideColumns';
-import FilterRowsWidget from './FilterRows';
+import {Paper, Stack} from '@mui/material';
+import {useQueryClient} from '@tanstack/react-query';
+import * as React from 'react';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
-import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
 import {API_BASE_URL} from '../../../config/GlobalConstants';
+import {watchlistOptions} from '../../../hooks/dataOptions';
+import {useIsMobile} from '../../../hooks/useIsMobile';
+import {useOscarAppContext} from '../../../providers/AppContext';
+import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
+import FilterRowsWidget from './FilterRows';
+import HideColumnsWidget from './HideColumns';
 export default function TableControls({
   filterState,
   setFilterState,
@@ -25,7 +25,7 @@ export default function TableControls({
   const isMobile = useIsMobile();
   const handleRefresh = async () => {
     await fetch(`${API_BASE_URL}/force-refresh`);
-    queryClient.invalidateQueries({
+    await queryClient.invalidateQueries({
       queryKey: watchlistOptions(year).queryKey,
     });
   };
@@ -38,14 +38,17 @@ export default function TableControls({
         // position: 'sticky',
         // top: '-40px',
       }}>
-      <Stack direction="row" width="100%" justifyContent="space-between">
+      <Stack direction="row" justifyContent="space-between" width="100%">
         <NoAccountBlocker hasAccess={canRefresh}>
-          <RefreshWidget handleRefresh={handleRefresh} isMobile={isMobile} />
+          <RefreshWidget
+            handleRefresh={() => void handleRefresh()}
+            isMobile={isMobile}
+          />
         </NoAccountBlocker>
         <HideColumnsWidget isMobile={isMobile} />
         <FilterRowsWidget
-          isMobile={isMobile}
           filterState={filterState}
+          isMobile={isMobile}
           setFilterState={setFilterState}
         />
       </Stack>
@@ -62,9 +65,9 @@ function RefreshWidget({
 }): React.ReactElement {
   return (
     <DisplayedSettingsButton
-      onClick={handleRefresh}
-      isMobile={isMobile}
       icon={<RefreshIcon />}
+      isMobile={isMobile}
+      onClick={handleRefresh}
       text="Fetch Updates"
     />
   );

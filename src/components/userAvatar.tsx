@@ -1,9 +1,9 @@
 import Avatar from '@mui/material/Avatar';
 import {useSuspenseQuery} from '@tanstack/react-query';
-import {myUserDataOptions} from '../hooks/dataOptions';
 import {Suspense} from 'react';
 
 import {ErrorBoundary} from 'react-error-boundary';
+import {myUserDataOptions} from '../hooks/dataOptions';
 
 export default function UserAvatarWrapper({
   userId,
@@ -23,9 +23,9 @@ export default function UserAvatarWrapper({
   );
 }
 
-const FallbackAvatar = ({username}: {username: string}) => (
-  <Avatar>{username?.charAt(0).toUpperCase()}</Avatar>
-);
+function FallbackAvatar({username}: {username: string}) {
+  return <Avatar>{username.charAt(0).toUpperCase()}</Avatar>;
+}
 
 export function UserAvatar({
   userId,
@@ -35,9 +35,9 @@ export function UserAvatar({
   username: string;
 }) {
   const response = useSuspenseQuery(myUserDataOptions(userId));
-  const propic = response.data?.propic;
+  const propic = response.data.propic;
   if (!propic) {
-    return <Avatar>{username?.charAt(0).toUpperCase()}</Avatar>;
+    return <Avatar>{username.charAt(0).toUpperCase()}</Avatar>;
   }
   return <Avatar src={propic} />;
 }

@@ -1,4 +1,4 @@
-import {TableCell, Table, TableBody, TableRow} from '@mui/material';
+import { Table, TableBody,TableCell, TableRow} from '@mui/material';
 import TitleCell from './TitleCell';
 
 type Props = {
@@ -9,7 +9,7 @@ export default function MultiMovieTitleCell({
   filteredMovies,
 }: Props): React.ReactElement {
   return (
-    <TableCell sx={{padding: 0}} colSpan={2}>
+    <TableCell colSpan={2} sx={{padding: 0}}>
       <Table>
         <TableBody>
           {filteredMovies.map((movie, index) => (

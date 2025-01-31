@@ -1,12 +1,12 @@
-import React, {Suspense} from 'react';
-import {CircularProgress, Menu, MenuItem} from '@mui/material';
-import {useOscarAppContext} from '../../providers/AppContext';
-import {Button} from '@mui/material';
-// import {useMyUsers} from '../hooks/useMyQuery';
 import {Error} from '@mui/icons-material';
-import {userOptions} from '../../hooks/dataOptions';
-import {ErrorBoundary} from 'react-error-boundary';
+import {Button, CircularProgress, Menu, MenuItem} from '@mui/material';
 import {useSuspenseQuery} from '@tanstack/react-query';
+import {Suspense} from 'react';
+import * as React from 'react';
+import {ErrorBoundary} from 'react-error-boundary';
+import {userOptions} from '../../hooks/dataOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+// import {useMyUsers} from '../hooks/useMyQuery';
 
 type Props = {
   anchorEl: HTMLElement | null;
@@ -24,14 +24,14 @@ export default function LoginMenu({
   };
   return (
     <Menu
-      sx={{display: 'flex'}}
       anchorEl={anchorEl}
-      open={Boolean(anchorEl)}
-      onClose={handleMenuClose}
       anchorOrigin={{
         vertical: 'top',
         horizontal: 'left',
-      }}>
+      }}
+      onClose={handleMenuClose}
+      open={Boolean(anchorEl)}
+      sx={{display: 'flex'}}>
       <ErrorBoundary fallback={<Error />}>
         <Suspense fallback={<LoadingSpinner />}>
           <LoginMenuUserItems onMenuClose={handleMenuClose} />
@@ -43,10 +43,10 @@ export default function LoginMenu({
           signupOpener();
         }}>
         <Button
-          variant="outlined"
           // onClick={signupOpener}
           size="small"
-          sx={{mr: 1}}>
+          sx={{mr: 1}}
+          variant="outlined">
           Sign Up
         </Button>
       </MenuItem>
@@ -73,4 +73,6 @@ function LoginMenuUserItems(props: {
   ));
 }
 
-const LoadingSpinner = () => <CircularProgress color="inherit" />;
+function LoadingSpinner() {
+  return <CircularProgress color="inherit" />;
+}

@@ -1,5 +1,4 @@
-import React, {useState} from 'react';
-import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
+import {SwapHoriz} from '@mui/icons-material';
 import {
   Table,
   TableBody,
@@ -7,10 +6,10 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import {SwapHoriz} from '@mui/icons-material';
-import {TableHeaderCell} from '../../components/TableHeader';
 import {useSuspenseQueries} from '@tanstack/react-query';
-import {useOscarAppContext} from '../../providers/AppContext';
+import * as React from 'react';
+import {useState} from 'react';
+import {TableHeaderCell} from '../../components/TableHeader';
 import {
   categoryOptions,
   movieOptions,
@@ -18,11 +17,13 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {WatchStatus} from '../../types/Enums';
+import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
-import {WatchStatus} from '../../types/Enums';
 
-export const columnList = ['title', 'nominations', 'runtime'];
+// export const columnList = ['title', 'nominations', 'runtime'];
 
 export default function LegacyTable({
   filterState,
@@ -94,15 +95,15 @@ export default function LegacyTable({
       <Table stickyHeader>
         <TableHead>
           <TableRow>
-            <TableHeaderCell key="film" text="Film" colSpan={2} />
+            <TableHeaderCell key="film" colSpan={2} text="Film" />
             <TableHeaderCell key="nominations" text="Nominations" />
             <TableHeaderCell
               key="runtime"
-              text="Runtime"
+              icon={<SwapHoriz />}
               onClick={() => setIsRuntimeFormatted(!isRuntimeFormatted)}
               style={{cursor: 'pointer'}}
+              text="Runtime"
               title="Click to toggle runtime format"
-              icon={<SwapHoriz />}
             />
             {sortedUsers.map(user => (
               <TableHeaderCell key={user.id} text={user.username} />

@@ -1,4 +1,4 @@
-import {useState, useEffect} from 'react';
+import { useEffect,useState} from 'react';
 
 export default function Countdown(): React.ReactElement {
   const [now, setNow] = useState(new Date());
@@ -46,10 +46,10 @@ function Clock({now}: {now: number}): React.ReactElement {
           gap: '20px',
           textAlign: 'center',
         }}>
-        <TimeUnit value={diffDays} unit="Days" />
-        <TimeUnit value={diffHours} unit="Hours" />
-        <TimeUnit value={diffMinutes} unit="Minutes" />
-        <TimeUnit value={diffSeconds} unit="Seconds" />
+        <TimeUnit unit="Days" value={diffDays} />
+        <TimeUnit unit="Hours" value={diffHours} />
+        <TimeUnit unit="Minutes" value={diffMinutes} />
+        <TimeUnit unit="Seconds" value={diffSeconds} />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
-import {IconButton} from '@mui/material';
 import {ArrowUpward} from '@mui/icons-material';
+import {IconButton} from '@mui/material';
 import {useState} from 'react';
 
 export default function ClickableSortIcon({
@@ -13,10 +13,10 @@ export default function ClickableSortIcon({
   // const isHidden = !(isSelected || isHovered);
   return (
     <IconButton
-      onClick={onSelect}
-      onMouseOver={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       disabled={isSelected}
+      onClick={onSelect}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseOver={() => setIsHovered(true)}
       //   style={{visibility: isHidden ? 'hidden' : 'visible'}}
     >
       <ArrowUpward color={isSelected || isHovered ? 'primary' : 'disabled'} />

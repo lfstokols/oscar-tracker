@@ -1,14 +1,21 @@
-import {useSuspenseQueries} from '@tanstack/react-query';
-import React, {useState} from 'react';
 import {
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
   Typography,
-  TableContainer,
 } from '@mui/material';
+import TableSortLabel from '@mui/material/TableSortLabel';
+import {useSuspenseQueries} from '@tanstack/react-query';
+import * as React from 'react';
+import {useState} from 'react';
+import {TableHeaderCell} from '../../components/TableHeader';
+import {
+  NUM_SHORT_CATEGORIES,
+  NUM_SHORT_FILMS_PER_CATEGORY,
+} from '../../config/GlobalConstants';
 import {
   movieOptions,
   userOptions,
@@ -16,16 +23,11 @@ import {
 } from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {UserStats} from '../../types/APIDataSchema';
-import {
-  NUM_SHORT_CATEGORIES,
-  NUM_SHORT_FILMS_PER_CATEGORY,
-} from '../../config/GlobalConstants';
 import {getUsernameFromId} from '../../utils/dataSelectors';
-import {TableHeaderCell} from '../../components/TableHeader';
 // import {TODO_COLOR} from '../../config/StyleChoices';
-import {totalNumberOfCategories} from '../../utils/hardcodedFunctions';
-import TableSortLabel from '@mui/material/TableSortLabel';
-import {Hypotheticality, ColumnLabels} from './Enums';
+import {TOTAL_CATEGORY_COUNT} from '../../utils/hardcodedFunctions';
+import {enumToBool} from '../category_completion_table/utils';
+import {ColumnLabels, Hypotheticality} from './Enums';
 // import {useIsMobile} from '../../hooks/useIsMobile';
 
 const disabledCombinations: {
@@ -73,16 +75,16 @@ export default function UserStatsTable({
   const {includeSeen, includeTodo} = enumToBool(hypotheticality);
 
   function makeFraction(
-    howManyFeatures: number,
-    howManyShorts: number,
-    // shortsAreOneFilm: boolean,
+    numFeature: number,
+    numShort: number,
+    shortsAreOneFilm: boolean,
     onlyCountMultinom: boolean,
   ) {
     if (onlyCountMultinom) {
-      return makeFraction_display(howManyFeatures, numMultinomTotal);
+      return makeFraction_display(numFeature, numMultinomTotal);
     }
     const ratio = shortsAreOneFilm ? NUM_SHORT_FILMS_PER_CATEGORY : 1;
-    const numerator = howManyFeatures + howManyShorts / ratio;
+    const numerator = numFeature + numShort / ratio;
     const denominator = numMoviesFeature + numMoviesShort / ratio;
     return makeFraction_display(numerator, denominator);
   }
@@ -115,23 +117,15 @@ export default function UserStatsTable({
       (includeTodo ? user.numTodoMultinom ?? 0 : 0)
     );
   }
-  function numCats(user: UserStats) {
-    const normalizedSeen = user.numCatsSeen ?? 0;
-    const normalizedTodo = user.numCatsTodo ?? 0;
-    if (hypotheticality === Hypotheticality.SEEN) {
-      return normalizedSeen;
-    }
-    if (hypotheticality === Hypotheticality.BOTH) {
-      return normalizedTodo;
-    }
-    return 0;
-  }
+
   function watchtime(user: UserStats) {
     return (
       (includeSeen ? user.seenWatchtime ?? 0 : 0) +
       (includeTodo ? user.todoWatchtime ?? 0 : 0)
     );
   }
+
+  const fractionValues = {numMultinomTotal, numMoviesFeature, numMoviesShort};
 
   // Define the stats columns configuration
   const statsColumns: {
@@ -143,17 +137,19 @@ export default function UserStatsTable({
       title: 'Total Movies',
       label: ColumnLabels.TOTAL_MOVIES,
       getValue: (user: UserStats) =>
-        makeFraction(numFeature(user), numShort(user), false),
+        makeFraction(numFeature(user), numShort(user), shortsAreOneFilm, false),
     },
     {
       title: 'Multi-Nom Movies',
       label: ColumnLabels.MULTINOM,
-      getValue: (user: UserStats) => makeFraction(numMultinom(user), 0, true),
+      getValue: (user: UserStats) =>
+        makeFraction(numMultinom(user), 0, shortsAreOneFilm, true),
     },
     {
       title: 'Complete Categories',
       label: ColumnLabels.COMPLETE_CATEGORIES,
-      getValue: (user: UserStats) => makeFraction_categories(numCats(user)),
+      getValue: (user: UserStats) =>
+        makeFraction_categories(numCats(user, hypotheticality)),
     },
     {
       title: 'Total Watchtime',
@@ -173,13 +169,6 @@ export default function UserStatsTable({
   });
 
   return (
-    // <Stack
-    //   direction="column"
-    //   spacing={3}
-    //   sx={{
-    //     height: '100%',
-    //   }}
-    //   alignItems="center">
     <TableContainer
       sx={{
         backgroundImage: 'var(--mui-overlays-1)',
@@ -194,13 +183,12 @@ export default function UserStatsTable({
             {statsColumns.map((column, index) =>
               checkDisabledCombination(column.label, hypotheticality) ? null : (
                 <TableHeaderCell
-                  text={column.title}
                   key={column.label}
                   icon={
                     <TableSortLabel
-                      onClick={() => setSortByIndex(index)}
-                      direction="asc"
                       active={sortByIndex === index}
+                      direction="asc"
+                      onClick={() => setSortByIndex(index)}
                       sx={{
                         padding: 0,
                         position: 'absolute',
@@ -209,6 +197,7 @@ export default function UserStatsTable({
                       // hideSortIcon={true}
                     />
                   }
+                  text={column.title}
                 />
               ),
             )}
@@ -243,6 +232,50 @@ export default function UserStatsTable({
       </Table>
     </TableContainer>
   );
+}
+
+function numCats(user: UserStats, hypotheticality: Hypotheticality) {
+  const normalizedSeen = user.numCatsSeen ?? 0;
+  const normalizedTodo = user.numCatsTodo ?? 0;
+  if (hypotheticality === Hypotheticality.SEEN) {
+    return normalizedSeen;
+  }
+  if (hypotheticality === Hypotheticality.BOTH) {
+    return normalizedTodo;
+  }
+  return 0;
+}
+
+function makeFraction(
+  numFeature: number,
+  numShort: number,
+  shortsAreOneFilm: boolean,
+  onlyCountMultinom: boolean,
+  {
+    numMultinomTotal,
+    numMoviesFeature,
+    numMoviesShort,
+  }: {
+    numMultinomTotal: number;
+    numMoviesFeature: number;
+    numMoviesShort: number;
+  },
+) {
+  if (onlyCountMultinom) {
+    return makeFraction_display(numFeature, numMultinomTotal);
+  }
+  const ratio = shortsAreOneFilm ? NUM_SHORT_FILMS_PER_CATEGORY : 1;
+  const numerator = numFeature + numShort / ratio;
+  const denominator = numMoviesFeature + numMoviesShort / ratio;
+  return makeFraction_display(numerator, denominator);
+}
+
+function makeFraction_categories(numerator: number) {
+  return makeFraction_display(numerator, TOTAL_CATEGORY_COUNT);
+}
+
+function makeFraction_display(numerator: number, denominator: number) {
+  return {number: numerator, display: `${numerator}/${denominator}`};
 }
 
 function minutesToHours(minutes: number | null): string {
@@ -294,19 +327,6 @@ function sortUsers(users: User[], userStats: UserStats[]): User[] {
     const bStats = userStats.find(user => user.id === b.id);
     return (bStats?.numSeenFeature ?? 0) - (aStats?.numSeenFeature ?? 0);
   });
-}
-
-export function enumToBool(value: Hypotheticality): {
-  includeSeen: boolean;
-  includeTodo: boolean;
-} {
-  if (value === Hypotheticality.SEEN) {
-    return {includeSeen: true, includeTodo: false};
-  }
-  if (value === Hypotheticality.TODO) {
-    return {includeSeen: false, includeTodo: true};
-  }
-  return {includeSeen: true, includeTodo: true};
 }
 
 function checkDisabledCombination(

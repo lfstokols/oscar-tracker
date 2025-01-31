@@ -1,13 +1,12 @@
-import * as React from 'react';
-import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import Avatar from '@mui/material/Avatar';
 import Grid from '@mui/material/Grid2';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import {debounce} from '@mui/material/utils';
-import {LProfile} from './SearchProfileDatabase';
-import SearchProfileDatabase from './SearchProfileDatabase';
+import * as React from 'react';
 import {MIN_SEARCH_LENGTH} from '../../../config/GlobalConstants';
+import SearchProfileDatabase, {LProfile} from './SearchProfileDatabase';
 
 type Props = {
   setter: (newValue: string | null) => void;
@@ -32,25 +31,19 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
       setOptions(value ? [value] : []);
       return;
     }
-    fetchSearch({input: inputValue});
+    void fetchSearch({input: inputValue});
   }, [value, inputValue, fetchSearch]);
 
   return (
     <Autocomplete
-      sx={{width: 300}}
+      autoComplete
+      filterOptions={x => x}
+      filterSelectedOptions
       getOptionLabel={option =>
         typeof option === 'string' ? option : option.username
       }
-      filterOptions={x => x}
-      options={options}
-      autoComplete
       includeInputInList
-      filterSelectedOptions
-      value={value}
       noOptionsText="No profiles"
-      onSubmit={_event => {
-        setter(value?.username ?? null);
-      }}
       onChange={(_event, newValue: LProfile | null) => {
         setOptions(newValue ? [newValue, ...options] : options);
         setValue(newValue);
@@ -59,11 +52,15 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
       onInputChange={(_event, newInputValue) => {
         setInputValue(newInputValue);
       }}
+      onSubmit={_event => {
+        setter(value?.username ?? null);
+      }}
+      options={options}
       renderInput={params => (
         <TextField
           {...params}
-          label="Enter your Letterboxd username"
           fullWidth
+          label="Enter your Letterboxd username"
         />
       )}
       renderOption={(
@@ -78,10 +75,10 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
                 <Avatar src={option.avatar} />
               </Grid>
               <Grid sx={{width: 'calc(100% - 44px)', wordWrap: 'break-word'}}>
-                <Typography variant="body2" sx={{color: 'text.primary'}}>
+                <Typography sx={{color: 'text.primary'}} variant="body2">
                   {option.username}
                 </Typography>
-                <Typography variant="body2" sx={{color: 'text.secondary'}}>
+                <Typography sx={{color: 'text.secondary'}} variant="body2">
                   {option.fullName}
                 </Typography>
               </Grid>
@@ -89,6 +86,8 @@ export default function LetterboxdSearchBar({setter}: Props): React.ReactNode {
           </li>
         );
       }}
+      sx={{width: 300}}
+      value={value}
     />
   );
 }

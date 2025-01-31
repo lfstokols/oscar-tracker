@@ -1,7 +1,8 @@
-import React, {memo, useCallback} from 'react';
-// import { useNotifications } from './NotificationContext';
-import Snackbar, {SnackbarCloseReason} from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Snackbar, {SnackbarCloseReason} from '@mui/material/Snackbar';
+import * as React from 'react';
+import {memo, useCallback} from 'react';
+// import { useNotifications } from './NotificationContext';
 
 export type Notification = {
   key: string;
@@ -34,15 +35,15 @@ export default memo(function NotificationToast({
 
   return (
     <Snackbar
-      autoHideDuration={activeNotification?.autoHideDurationMs}
       key={activeNotification?.key}
+      autoHideDuration={activeNotification?.autoHideDurationMs}
       onClose={handleClose}
       open={activeNotification != null}>
       <Alert
         onClose={handleClose}
         severity={activeNotification?.type}
-        variant="filled"
-        sx={{width: '100%'}}>
+        sx={{width: '100%'}}
+        variant="filled">
         {activeNotification?.message}
       </Alert>
     </Snackbar>

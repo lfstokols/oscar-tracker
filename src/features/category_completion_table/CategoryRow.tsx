@@ -1,18 +1,19 @@
+import {TableCell, TableRow, Typography} from '@mui/material';
+import {ClickableTooltip} from '../../components/ClickableTooltip';
+import {TABLE_ROW_MINOR_COLOR} from '../../config/StyleChoices';
 import {
   Category,
   CategoryCompletionData,
+  MovieList,
+  NomList,
   UserId,
+  WatchList,
 } from '../../types/APIDataSchema';
-import {get_total} from './utils';
-import {make_fraction_display, get_num} from './utils';
 import {Hypotheticality} from '../userStatsTable/Enums';
-import {ClickableTooltip} from '../../components/ClickableTooltip';
-import {Typography, TableCell, TableRow} from '@mui/material';
-import {TABLE_ROW_MINOR_COLOR} from '../../config/StyleChoices';
-import {NomList, WatchList, MovieList} from '../../types/APIDataSchema';
 import makeCategoryTooltip from './CategoryTooltip';
+import {get_num, get_total, make_fraction_display} from './utils';
 
-export default function makeCategoryRow({
+export default function CategoryRow({
   category,
   isOpen,
   data,
@@ -63,21 +64,21 @@ export default function makeCategoryRow({
       }}>
       <TableCell />
       <TableCell sx={{paddingLeft: '50px'}}>
-        <Typography variant="h6">
+        <Typography variant="body1">
           <i>{category.fullName}</i>
         </Typography>
       </TableCell>
       {userList.map(user => (
         <TableCell key={user} align="center">
           <ClickableTooltip
+            followCursor
             popup={makeCategoryTooltip(
               category.id,
               user,
               nominations,
               watchlist,
               movies,
-            )}
-            followCursor>
+            )}>
             <Typography variant="h6">
               {make_fraction_display(
                 get_num(user, category.id, hypotheticality, data),

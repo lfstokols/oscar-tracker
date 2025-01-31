@@ -1,11 +1,10 @@
-import {Stack, TableCell, Typography} from '@mui/material';
-import {SxProps, Theme} from '@mui/material';
+import {Stack,SxProps, TableCell, Theme, Typography} from '@mui/material';
+import {forwardRef, useEffect, useRef, useState} from 'react';
 import {
-  HIGHLIGHT_ANIMATED_COLOR,
   BEST_PICTURE_COLOR,
+  HIGHLIGHT_ANIMATED_COLOR,
 } from '../../../config/StyleChoices';
 import {CategoryIdSchema} from '../../../types/APIDataSchema';
-import {forwardRef, useEffect, useRef, useState} from 'react';
 
 export default function TitleCell({
   movie,
@@ -34,11 +33,11 @@ export default function TitleCell({
 
   return (
     <TableCell
-      title={movie.id}
       sx={{
         className: 'title-column',
         ...sxProps,
       }}
+      title={movie.id}
       {...props}>
       <div
         style={{
@@ -48,10 +47,10 @@ export default function TitleCell({
           maxWidth: '230px',
         }}>
         <FancyMovieTitle
-          movie={movie}
           highlightAnimated={preferences?.highlightAnimated}
-          isBestPicNominee={isBestPicNominee}
           isBestAnimatedNominee={isBestAnimatedNominee}
+          isBestPicNominee={isBestPicNominee}
+          movie={movie}
         />
       </div>
     </TableCell>
@@ -80,15 +79,15 @@ function FancyMovieTitle({
         alignItems: 'center',
         justifyContent: 'center',
       }}>
-      {isBestPicNominee && (
-        <GoldSparkle textWidth={textWidth} textHeight={textHeight} />
+      {!!isBestPicNominee && (
+        <GoldSparkle textHeight={textHeight} textWidth={textWidth} />
       )}
       <MovieTitle
         ref={ref}
-        movie={movie}
         highlightAnimated={highlightAnimated}
-        isBestPicNominee={isBestPicNominee}
         isBestAnimatedNominee={isBestAnimatedNominee}
+        isBestPicNominee={isBestPicNominee}
+        movie={movie}
       />
     </div>
   );
@@ -141,7 +140,7 @@ function GoldSparkle({
         boxSizing: 'border-box',
       }}
       viewBox={`0 0 ${boxWidth} ${boxHeight}`}>
-      {angles.map((angle, i) => {
+      {angles.map(angle => {
         const inner = [0, 1].map(i => center[i] + radius[i] * cis(angle)[i]);
         const outer = [0, 1].map(
           i => center[i] + (radius[i] + diff) * cis(angle)[i],
@@ -149,13 +148,13 @@ function GoldSparkle({
 
         return (
           <line
-            key={i}
-            x1={inner[0]}
-            y1={inner[1]}
-            x2={outer[0]}
-            y2={outer[1]}
+            key={angle}
             stroke={BEST_PICTURE_COLOR}
             strokeWidth="1.5"
+            x1={inner[0]}
+            x2={outer[0]}
+            y1={inner[1]}
+            y2={outer[1]}
           />
         );
       })}
@@ -185,8 +184,8 @@ const MovieTitle = forwardRef(function MovieTitle(
 
   return (
     <Stack
-      direction="column"
       alignItems="center"
+      direction="column"
       style={
         highlightAnimated && isBestAnimatedNominee
           ? {
@@ -199,24 +198,24 @@ const MovieTitle = forwardRef(function MovieTitle(
       <Typography
         key={`title-${movie.id}`}
         ref={ref}
-        variant="body1"
-        textAlign="center"
         style={{
           fontSize: '1.3em',
           zIndex: 1,
           color: textColor,
-        }}>
+        }}
+        textAlign="center"
+        variant="body1">
         <b>{movie.mainTitle}</b>
       </Typography>
-      {movie.subtitle && (
+      {!!movie.subtitle && (
         <Typography
           key={`subtitle-${movie.id}`}
-          variant="subtitle2"
-          textAlign="center"
           style={{
             zIndex: 1,
             color: textColor,
-          }}>
+          }}
+          textAlign="center"
+          variant="subtitle2">
           <i>{movie.subtitle}</i>
         </Typography>
       )}

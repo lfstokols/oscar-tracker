@@ -1,17 +1,17 @@
-import React, {Dispatch, SetStateAction, Suspense} from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Stack from '@mui/material/Stack';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
-import UserButton from './UserButton';
-import OurWordmark from '../../components/OurWordmark';
+import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
-import YearSelector from './YearSelector';
-import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
+import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
 import Cookies from 'js-cookie';
+import {Dispatch, SetStateAction, Suspense} from 'react';
+import OurWordmark from '../../components/OurWordmark';
+import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import {useIsMobile} from '../../hooks/useIsMobile';
+import UserButton from './UserButton';
+import YearSelector from './YearSelector';
 
 type Props = {
   isDrawerPersistent: boolean;
@@ -40,12 +40,14 @@ export default function AppHeader({
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-        <Stack direction="row" alignItems="center">
+        <Stack alignItems="center" direction="row">
           <IconButton
-            edge="start"
-            color="inherit"
             aria-label="menu"
-            onClick={() => setIsDrawerOpen(isDrawerOpen => !isDrawerOpen)}>
+            color="inherit"
+            edge="start"
+            onClick={() =>
+              setIsDrawerOpen(prevIsDrawerOpen => !prevIsDrawerOpen)
+            }>
             {isDrawerPersistent && isDrawerOpen ? (
               <MenuOpenIcon />
             ) : (
@@ -54,7 +56,7 @@ export default function AppHeader({
           </IconButton>
           <OurWordmark mini={isMobile} />
         </Stack>
-        <Stack direction="row" alignItems="center" gap="12px">
+        <Stack alignItems="center" direction="row" gap="12px">
           {!isMobile && <YearSelector />}
           <Suspense
             fallback={

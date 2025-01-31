@@ -3,7 +3,11 @@ import { FlatCompat } from "@eslint/eslintrc";
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginReact from 'eslint-plugin-react';
-import reactRefresh from "eslint-plugin-react-refresh";
+import reactRefresh from 'eslint-plugin-react-refresh';
+import importPlugin from 'eslint-plugin-import';
+import {
+  createTypeScriptImportResolver,
+} from 'eslint-import-resolver-typescript';
 
 const compat = new FlatCompat();
 
@@ -32,7 +36,19 @@ export default [
         linkComponents: [
           { "name": "Link", "linkAttribute": "href" },
         ]
-      }
+      },
+      "import/resolver": {
+        // You will also need to install and configure the TypeScript resolver
+        // See also https://github.com/import-js/eslint-import-resolver-typescript#configuration
+        "typescript": true,
+        "node": true,
+      },
+      "import/resolver-next": [
+        createTypeScriptImportResolver(),
+      ],
+      // "import/ignore": [
+      //   "^react$",
+      // ],
     }
   },
   pluginJs.configs.recommended,
@@ -41,9 +57,20 @@ export default [
   pluginReact.configs.flat['jsx-runtime'],
   ...compat.extends('plugin:react-hooks/recommended'),
   reactRefresh.configs.vite,
+  importPlugin.flatConfigs.recommended,
+  ...compat.extends('plugin:import/typescript'),
   {
     rules: {
       semi: ['error', 'always'],
+
+      // Import Rules
+      'import/order': ['warn', {
+        "named": true,
+        "alphabetize": {
+          "order": "asc",
+        }
+      }],
+      "import/no-named-as-default": "off",
 
       // Extra Typescript rules
       '@typescript-eslint/prefer-find': 'warn',
@@ -67,47 +94,6 @@ export default [
 
       // Disabling for now until we understand the implications
       "@typescript-eslint/unbound-method": "off",
-
-      // Naming conventions
-      // "@typescript-eslint/naming-convention": [
-      //   "warn",
-      //   {
-      //     selector: "default",
-      //     format: ["camelCase"],
-      //     leadingUnderscore: "allow",
-      //   },
-      //   {
-      //     selector: "variable",
-      //     // Specify PascalCase for React components
-      //     format: ["PascalCase", "camelCase", "UPPER_CASE"],
-      //     leadingUnderscore: "allow",
-      //   },
-      //   // {
-      //   //   "selector": "variable",
-      //   //   "types": ["boolean"],
-      //   //   "format": ["PascalCase"],
-      //   //   "prefix": ["is", "should", "has", "can", "did", "will", "are"]
-      //   // },
-      //   {
-      //     selector: "parameter",
-      //     format: ["camelCase"],
-      //     leadingUnderscore: "allow",
-      //   },
-      //   {
-      //     selector: "property",
-      //     format: null,
-      //     leadingUnderscore: "allow",
-      //   },
-      //   {
-      //     selector: "typeLike",
-      //     format: ["PascalCase"],
-      //   },
-      //   {
-      //     "selector": "variable",
-      //     "modifiers": ["destructured"],
-      //     "format": null,
-      //   },
-      // ],
 
       // React rules
       "react/prefer-stateless-function": "error",
@@ -151,16 +137,51 @@ export default [
       "react/no-array-index-key": 'warn',
       "react-refresh/only-export-components": "warn",
       "react/jsx-no-constructed-context-values": "error",
-      // "react/jsx-sort-props": ["warn",
-      //   { "reservedFirst": true }
-      // ]
-
-      // "no-restricted-imports": [
-      //   "error",
-      //   {
-      //     // "patterns": ["@mui/*/*/*"]
-      //   }
-      // ]
+      "react/jsx-sort-props": ["warn",
+        { "reservedFirst": true }
+      ]
     },
   },
 ];
+
+
+// Naming conventions
+// "@typescript-eslint/naming-convention": [
+//   "warn",
+//   {
+//     selector: "default",
+//     format: ["camelCase"],
+//     leadingUnderscore: "allow",
+//   },
+//   {
+//     selector: "variable",
+//     // Specify PascalCase for React components
+//     format: ["PascalCase", "camelCase", "UPPER_CASE"],
+//     leadingUnderscore: "allow",
+//   },
+//   // {
+//   //   "selector": "variable",
+//   //   "types": ["boolean"],
+//   //   "format": ["PascalCase"],
+//   //   "prefix": ["is", "should", "has", "can", "did", "will", "are"]
+//   // },
+//   {
+//     selector: "parameter",
+//     format: ["camelCase"],
+//     leadingUnderscore: "allow",
+//   },
+//   {
+//     selector: "property",
+//     format: null,
+//     leadingUnderscore: "allow",
+//   },
+//   {
+//     selector: "typeLike",
+//     format: ["PascalCase"],
+//   },
+//   {
+//     "selector": "variable",
+//     "modifiers": ["destructured"],
+//     "format": null,
+//   },
+// ],

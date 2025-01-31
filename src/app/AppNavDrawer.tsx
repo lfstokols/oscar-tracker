@@ -1,25 +1,24 @@
+import { BugReport, Comment, Home, Hub,Leaderboard} from '@mui/icons-material';
 import {
+  Divider,
   Drawer,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Divider,
   Toolbar,
 } from '@mui/material';
-import {useNavigate, useLocation, Location} from 'react-router-dom';
-import {Leaderboard, Home, Hub, BugReport, Comment} from '@mui/icons-material';
-import {AppTabType} from '../types/Enums';
-import {FEATURE_REQUEST_URL, REPORT_BUG_URL} from '../config/GlobalConstants';
+import { Location, useLocation,useNavigate} from 'react-router-dom';
+import {
+  BY_CATEGORY_URL,
+  BY_USER_URL,FEATURE_REQUEST_URL,
+  LEGACY_URL, REPORT_BUG_URL,
+} from '../config/GlobalConstants';
 import YearSelector from '../features/app_header/YearSelector';
 import {useIsMobile} from '../hooks/useIsMobile';
-import {
-  LEGACY_URL,
-  BY_USER_URL,
-  BY_CATEGORY_URL,
-} from '../config/GlobalConstants';
 import {useOscarAppContext} from '../providers/AppContext';
+import {AppTabType} from '../types/Enums';
 export const DRAWER_WIDTH = 256;
 
 function mapLocationToAppTab(location: Location) {
@@ -90,10 +89,9 @@ export default function AppNavDrawer({
 
   return (
     <Drawer
-      open={open}
-      variant={isDrawerPersistent ? 'persistent' : 'temporary'}
       onClick={isDrawerPersistent ? undefined : onClose}
       onClose={onClose}
+      open={open}
       sx={{
         width: DRAWER_WIDTH,
         flexShrink: 0,
@@ -101,7 +99,8 @@ export default function AppNavDrawer({
           width: DRAWER_WIDTH,
           boxSizing: 'border-box',
         },
-      }}>
+      }}
+      variant={isDrawerPersistent ? 'persistent' : 'temporary'}>
       <Toolbar />
       {/* <Box
         sx={{width: 250}}

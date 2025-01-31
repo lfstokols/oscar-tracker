@@ -1,5 +1,5 @@
-import {Box, Typography, Stack} from '@mui/material';
-import oscarIcon from '/src/assets/Trophy_Icon_Outlined_512.png';
+import {Box, Stack, Typography} from '@mui/material';
+import oscarIcon from './../assets/Trophy_Icon_Outlined_512.png';
 
 export default function OurWordmark({
   mini,
@@ -9,13 +9,13 @@ export default function OurWordmark({
   folded?: boolean;
 }) {
   return (
-    <Box display="flex" flexDirection="row" alignItems="center">
+    <Box alignItems="center" display="flex" flexDirection="row">
       <img
+        alt="Oscar Icon, from https://www.flaticon.com/free-icons/oscar"
         src={oscarIcon}
-        alt={'Oscar Icon, from https://www.flaticon.com/free-icons/oscar'}
         style={{width: '32px', height: '32px', marginRight: '8px'}}
       />
-      <Text mini={mini} folded={folded} />
+      <Text folded={folded} mini={mini} />
     </Box>
   );
 }

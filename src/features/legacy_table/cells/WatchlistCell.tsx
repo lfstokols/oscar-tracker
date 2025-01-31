@@ -1,11 +1,18 @@
-import React, {Suspense} from 'react';
+import {Error as ErrorIcon} from '@mui/icons-material';
+import {LinearProgress, TableCell, Typography} from '@mui/material';
 import {
   useMutation,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query';
-import {LinearProgress, TableCell} from '@mui/material';
-import {Error as ErrorIcon} from '@mui/icons-material';
+import * as React from 'react';
+import {Suspense} from 'react';
+import {ClickableTooltip} from '../../../components/ClickableTooltip';
+import {
+  NO_STATUS_COLOR,
+  SEEN_COLOR,
+  TODO_COLOR,
+} from '../../../config/StyleChoices';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {
   onMutateError,
@@ -15,13 +22,6 @@ import {
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {useNotifications} from '../../../providers/NotificationContext';
 import {WatchListSchema} from '../../../types/APIDataSchema';
-import {Typography} from '@mui/material';
-import {ClickableTooltip} from '../../../components/ClickableTooltip';
-import {
-  TODO_COLOR,
-  SEEN_COLOR,
-  NO_STATUS_COLOR,
-} from '../../../config/StyleChoices';
 import {WatchStatus} from '../../../types/Enums';
 
 type Props =
@@ -71,8 +71,8 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
 
   return (
     <ClickableTooltip
-      popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}
-      arrow={true}>
+      arrow={true}
+      popup={isEditingDisabled ? 'You can only edit your own watchlist' : ''}>
       <div
         style={{
           display: 'flex',
@@ -80,13 +80,13 @@ function WatchlistCell({movieId, userId}: Props): React.ReactElement {
           justifyContent: 'center',
         }}>
         <MyFill
-          watchstate={localWatchState}
+          disabled={isEditingDisabled}
           handleInteract={() => {
             if (!isEditingDisabled) {
               mutation.mutate(nextStatus(localWatchState));
             }
           }}
-          disabled={isEditingDisabled}
+          watchstate={localWatchState}
         />
       </div>
     </ClickableTooltip>
@@ -129,7 +129,6 @@ export function MyFill({
 }: FillProps): React.ReactElement {
   return (
     <Typography
-      variant="body2"
       onClick={handleInteract}
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
@@ -148,7 +147,8 @@ export function MyFill({
         alignItems: 'center',
         justifyContent: 'center',
         userSelect: 'none',
-      }}>
+      }}
+      variant="body2">
       {display(watchstate)}
     </Typography>
   );
@@ -161,8 +161,8 @@ export default function WatchlistCellWrapper(props: Props): React.ReactElement {
     <Suspense fallback={<LinearProgress />}>
       <TableCell
         key={userId}
-        sx={{display: 'fill', className: 'watchlist-column'}}
-        align="center">
+        align="center"
+        sx={{display: 'fill', className: 'watchlist-column'}}>
         <WatchlistCell {...props} />
       </TableCell>
     </Suspense>

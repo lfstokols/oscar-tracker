@@ -2,8 +2,8 @@
 //* Accepts a boollean, and if you have access to the feature, this component just wraps its children in a React.Fragment
 //* If you don't have access, it shows the tooltip and then the children
 
+import * as React from 'react';
 import {ClickableTooltip} from './ClickableTooltip';
-import React from 'react';
 
 export function NoAccountBlocker({
   children,
@@ -13,10 +13,10 @@ export function NoAccountBlocker({
   hasAccess: boolean;
 }) {
   if (hasAccess) {
-    return <>{children}</>;
+    return children;
   }
   return (
-    <ClickableTooltip popup={'You must be logged in to do that'} arrow={true}>
+    <ClickableTooltip arrow={true} popup="You must be logged in to do that">
       <div
         style={{
           cursor: 'not-allowed',

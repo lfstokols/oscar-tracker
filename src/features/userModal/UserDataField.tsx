@@ -1,12 +1,12 @@
-import * as React from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import ErrorIcon from '@mui/icons-material/Error';
+import ButtonIcon from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import {useSuspenseQuery} from '@tanstack/react-query';
+import * as React from 'react';
 import {myUserDataOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
-import Stack from '@mui/material/Stack';
-import ButtonIcon from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import ErrorIcon from '@mui/icons-material/Error';
-import EditIcon from '@mui/icons-material/Edit';
 
 type Props<T> = {
   label: string;
@@ -49,13 +49,13 @@ export default function UserDataField<T>({
     );
   }
   return (
-    <Stack direction="row" alignItems="fill">
+    <Stack alignItems="fill" direction="row">
       <Typography
-        variant="h6"
-        sx={{width: '250px', position: 'relative', bottom: '6px'}}>
+        sx={{width: '250px', position: 'relative', bottom: '6px'}}
+        variant="h6">
         {label}:
       </Typography>
-      <Typography variant="body1" sx={{width: '200px'}}>
+      <Typography sx={{width: '200px'}} variant="body1">
         {localValue ? localValue : 'Not Set'}
       </Typography>
       <span style={{flexGrow: 1}} />

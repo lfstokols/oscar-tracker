@@ -1,47 +1,17 @@
-import React, {useState, useMemo, useCallback, useContext} from 'react';
-import NotificationToast, {
-  Notification,
-  NotificationType,
-} from '../components/NotificationToast';
+import * as React from 'react';
+import {useCallback, useContext} from 'react';
+import {Notification, NotificationType} from '../components/NotificationToast';
 import {DEFAULT_HIDE_DURATION_MS} from '../config/GlobalConstants';
 
-export type NotificationContextValue = Readonly<{
+type NotificationContextValue = {
   setActiveNotification: (notif: Notification | null) => void;
-}>;
+};
 
 // NotificationContext should not be exported
 const NotificationContext: React.Context<NotificationContextValue> =
   React.createContext({
     setActiveNotification: _notif => {},
   });
-
-type Props = {
-  children: React.ReactNode;
-};
-
-export default function NotificationContextProvider({
-  children,
-}: Props): React.ReactElement {
-  const [activeNotification, setActiveNotification] =
-    useState<Notification | null>(null);
-
-  const contextValue = useMemo(
-    () => ({
-      setActiveNotification,
-    }),
-    [],
-  );
-
-  return (
-    <NotificationContext.Provider value={contextValue}>
-      {children}
-      <NotificationToast
-        activeNotification={activeNotification}
-        setActiveNotification={setActiveNotification}
-      />
-    </NotificationContext.Provider>
-  );
-}
 
 interface NotificationDispatchArgs {
   type: NotificationType;
@@ -84,3 +54,5 @@ export function useNotifications(): NotificationsDispatch {
 
   return {show};
 }
+
+export default NotificationContext;
