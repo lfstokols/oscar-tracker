@@ -66,9 +66,11 @@ function RefreshWidget({
 }): React.ReactElement {
   return (
     <DisplayedSettingsButton
+      hasActive={false}
       icon={<RefreshIcon />}
       isMobile={isMobile}
       onClick={handleRefresh}
+      reset={() => {}}
       text="Fetch Updates"
     />
   );

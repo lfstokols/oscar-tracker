@@ -21,7 +21,7 @@ import {categoryOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
 
 import {Grouping, WatchStatus,grouping_display_names} from '../../../types/Enums';
-import {CenteredMenu, DisplayedSettingsButton} from './Common';
+import { DisplayedSettingsButton,FlexibleMenu} from './Common';
 import useMenuState from './useMenuState';
 
 export default function FilterRowsWidget({
@@ -73,9 +73,13 @@ export default function FilterRowsWidget({
   return (
     <>
       <DisplayedSettingsButton
+        hasActive={filterState.watchstatus.length !== 0 || filterState.categories.length !== 0}
         icon={<FilterAlt />}
         isMobile={isMobile}
         onClick={handleClick}
+        reset={() => {
+          setFilterState({watchstatus: [], categories: []});
+        }}
         text="Filter Rows"
       />
       {!!isOpen && (
@@ -121,7 +125,7 @@ function SelectionMenu({
     categoryMessage = 'Filtered: only show selected categories';
   }
   return (
-    <CenteredMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
+    <FlexibleMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
       <Typography color="text.information" sx={{px: 2, py: 1}}>
         {watchStatusMessage}
       </Typography>
@@ -174,7 +178,7 @@ function SelectionMenu({
           toggleGroupingFilter={toggleGroupingFilter}
         />
       ))}
-    </CenteredMenu>
+    </FlexibleMenu>
   );
 }
 

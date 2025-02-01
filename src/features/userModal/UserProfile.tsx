@@ -31,18 +31,21 @@ import {
   onMutateError,
   updateCacheOnSuccess,
 } from '../../hooks/mutationOptions';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {useNotifications} from '../../providers/NotificationContext';
 import {UserListSchema} from '../../types/APIDataSchema';
 import {errorToConsole} from '../../utils/Logger';
-import TitleLine, {Divider, boxStyle} from './Common';
+import TitleLine, {Divider, boxStyle, boxStyleMobile} from './Common';
 import UserDataField from './UserDataField';
 import LetterboxdField from './letterboxd/LetterboxdField';
+
 type Props = {
   closer: () => void;
 };
 
 export default function UserProfile({closer}: Props) {
+  const isMobile = useIsMobile();
   const {setActiveUserId, activeUserId, activeUsername} = useOscarAppContext();
   if (!activeUserId || !activeUsername) {
     throw new Error(
@@ -93,14 +96,14 @@ export default function UserProfile({closer}: Props) {
   };
 
   return (
-    <>
+    <Stack direction="column" justifyContent="space-around">
       <Stack direction="row" gap={1} justifyContent="center">
         <div style={{marginTop: '2px'}}>
           <UserAvatar userId={activeUserId} username={activeUsername} />
         </div>
         <TitleLine title={activeUsername} />
       </Stack>
-      <Box component="menu" sx={boxStyle}>
+      <Box component="menu" sx={isMobile ? boxStyleMobile : boxStyle}>
         <DefaultCatcher>
           <UserDataField
             editableComponent={placeholderEditableComponent}
@@ -138,7 +141,7 @@ export default function UserProfile({closer}: Props) {
         </List>
       </Box>
       <Divider />
-      <Stack spacing={2}>
+      <Stack spacing={4}>
         <Button
           color="warning"
           onClick={handleLogout}
@@ -171,7 +174,7 @@ export default function UserProfile({closer}: Props) {
           <Button onClick={handleDeleteConfirmed}>Delete</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Stack>
   );
 }
 

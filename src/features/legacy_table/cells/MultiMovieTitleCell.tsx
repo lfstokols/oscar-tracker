@@ -1,4 +1,5 @@
 import { Table, TableBody,TableCell, TableRow} from '@mui/material';
+import MoviePosterCell from './MoviePosterCell';
 import TitleCell from './TitleCell';
 
 type Props = {
@@ -14,6 +15,7 @@ export default function MultiMovieTitleCell({
         <TableBody>
           {filteredMovies.map((movie, index) => (
             <TableRow key={movie.id + 'mini'}>
+              <MoviePosterCell movie={movie} />
               <TitleCell
                 movie={movie}
                 sx={{

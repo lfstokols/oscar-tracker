@@ -15,11 +15,13 @@ export default function HomeTab(): React.ReactElement {
 
   // Reset filterState when activeUserId changes
   useEffect(() => {
-    setFilterState({
-      watchstatus: [],
-      categories: [],
-    });
-  }, [activeUserId]);
+    if (activeUserId == null) {
+      setFilterState((prev) => ({
+        ...prev,
+        watchstatus: [],
+      }));
+    }
+  }, [activeUserId, setFilterState]);
 
   return (
     <ErrorBoundary fallback={<AppErrorScreen isFullScreen={false} />}>

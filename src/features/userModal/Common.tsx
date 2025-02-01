@@ -15,11 +15,22 @@ export default function TitleLine({title}: {title: string}) {
   );
 }
 
-export const boxStyle = {
+
+
+const boxStyleCommon = {
   display: 'flex',
   flexDirection: 'column',
-  width: '100%',
   gap: 2,
+};
+
+export const boxStyle = {
+  ...boxStyleCommon,
+  maxWidth: '500px',
+};
+
+export const boxStyleMobile = {
+  ...boxStyleCommon,
+  width: '95vw',
 };
 
 export function Divider(): React.ReactElement {

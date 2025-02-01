@@ -1,6 +1,8 @@
-import {TableCell, TableRow, Typography} from '@mui/material';
+import LaunchIcon from '@mui/icons-material/Launch';
+import {IconButton, Stack, TableCell, TableRow, Typography} from '@mui/material';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {TABLE_ROW_MINOR_COLOR} from '../../config/StyleChoices';
+import { useNavigateToFilterState } from '../../hooks/useFilterState';
 import {
   Category,
   CategoryCompletionData,
@@ -10,7 +12,7 @@ import {
   WatchList,
 } from '../../types/APIDataSchema';
 import {Hypotheticality} from '../userStatsTable/Enums';
-import makeCategoryTooltip from './CategoryTooltip';
+import CategoryTooltip from './CategoryTooltip';
 import {get_num, get_total, make_fraction_display} from './utils';
 
 export default function CategoryRow({
@@ -33,6 +35,7 @@ export default function CategoryRow({
   movies: MovieList;
 }): React.ReactElement {
   const denominator = get_total(category.id, data);
+  const navigateToFilterState = useNavigateToFilterState();
   return (
     <TableRow
       key={category.id}
@@ -64,21 +67,33 @@ export default function CategoryRow({
       }}>
       <TableCell />
       <TableCell sx={{paddingLeft: '50px'}}>
-        <Typography variant="body1">
-          <i>{category.fullName}</i>
-        </Typography>
+        <Stack alignItems="center" direction="row" spacing={1}>
+          <Typography variant="h6">
+            {category.fullName}
+          </Typography>
+          <IconButton onClick={() => {
+            navigateToFilterState({
+              categories: [category.id],
+              watchstatus: [],
+            });
+          }}>
+            <LaunchIcon fontSize="small" />
+          </IconButton>
+        </Stack>
       </TableCell>
       {userList.map(user => (
         <TableCell key={user} align="center">
           <ClickableTooltip
             followCursor
-            popup={makeCategoryTooltip(
-              category.id,
-              user,
-              nominations,
-              watchlist,
-              movies,
-            )}>
+            isOpaque
+            popup={<CategoryTooltip
+              catId={category.id}
+              movies={movies}
+              nominations={nominations}
+              userId={user}
+              watchlist={watchlist}
+            />}
+            >
             <Typography variant="h6">
               {make_fraction_display(
                 get_num(user, category.id, hypotheticality, data),

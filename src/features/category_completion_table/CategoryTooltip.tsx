@@ -1,4 +1,14 @@
-import {Stack, Typography} from '@mui/material';
+import {
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemText,
+  Stack,
+  Typography,
+} from '@mui/material';
+import XButton from '../../components/XButton';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import {
   CategoryId,
   MovieList,
@@ -8,13 +18,20 @@ import {
 } from '../../types/APIDataSchema';
 import {getNominees} from '../../utils/dataSelectors';
 
-export default function makeCategoryTooltip(
-  catId: CategoryId,
-  userId: UserId,
-  nominations: NomList,
-  watchlist: WatchList,
-  movies: MovieList,
-): React.ReactNode {
+export default function CategoryTooltip({
+  catId,
+  userId,
+  nominations,
+  watchlist,
+  movies,
+}: {
+  catId: CategoryId;
+  userId: UserId;
+  nominations: NomList;
+  watchlist: WatchList;
+  movies: MovieList;
+}): React.ReactNode {
+  const isMobile = useIsMobile();
   const categoryMovies = getNominees(catId, nominations);
   const getIds = (actual: boolean) =>
     watchlist
@@ -33,73 +50,70 @@ export default function makeCategoryTooltip(
   );
   return (
     <Stack
-      direction="row"
+      direction="column"
       justifyContent="space-between"
-      spacing={2}
+      onClick={(event) => {
+        event.stopPropagation();
+        event.preventDefault();
+      }}
+      spacing={0}
       sx={{
-        maxWidth: '7500px',
-        '& > div': {
-          flex: 1,
-          minWidth: '75px', // This prevents flex items from overflowing
-        },
-      }}>
-      <div>
-        <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography noWrap variant="h6">
-            <u>Seen</u>
-          </Typography>
-        </div>
-        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
-          {myMovieIds.map(id => {
-            const movie = movies.find(m => m.id === id);
-            return (
-              <div key={id}>
-                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
-                  {movie ? movie.mainTitle : '??? '}
-                </Typography>
-              </div>
-            );
-          })}
-        </Stack>
+        pointerEvents: 'auto',
+      }}
+    >
+      {isMobile ? <XButton onClick={() => {}} /> : null}
+      {MakeColumn({title: 'Seen', idList: myMovieIds, allMovies: movies})}
+      {MakeColumn({
+        title: 'Planned',
+        idList: myPlannedMovieIds,
+        allMovies: movies,
+      })}
+      {MakeColumn({
+        title: 'Missing',
+        idList: myMissingMovieIds,
+        allMovies: movies,
+      })}
+    </Stack>
+  );
+}
+
+function MakeColumn({
+  title,
+  idList,
+  allMovies,
+}: {
+  title: string;
+  idList: MovieId[];
+  allMovies: MovieList;
+}): React.ReactElement {
+  const movieList = idList.map(
+    id => allMovies.find(m => m.id === id) ?? {id: id, mainTitle: '??? '},
+  );
+  return (
+    <Stack direction="column" spacing={0}>
+      <div style={{width: '100%', textAlign: 'center'}}>
+        <Typography noWrap variant="h6">
+          <b>{title}</b>
+        </Typography>
       </div>
-      <div>
-        <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography noWrap variant="h6">
-            <u>Planned</u>
-          </Typography>
-        </div>
-        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
-          {myPlannedMovieIds.map(id => {
-            const movie = movies.find(m => m.id === id);
-            return (
-              <div key={id}>
-                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
-                  {movie ? movie.mainTitle : '??? '}
-                </Typography>
-              </div>
-            );
-          })}
-        </Stack>
-      </div>
-      <div>
-        <div style={{width: '100%', textAlign: 'center'}}>
-          <Typography noWrap variant="h6">
-            <u>Missing</u>
-          </Typography>
-        </div>
-        <Stack gap={1.5} style={{paddingLeft: '12px', marginTop: '0px'}}>
-          {myMissingMovieIds.map(id => {
-            const movie = movies.find(m => m.id === id);
-            return (
-              <div key={id}>
-                <Typography noWrap sx={{lineHeight: 1.1}} variant="body1">
-                  {movie ? movie.mainTitle : '???'}
-                </Typography>
-              </div>
-            );
-          })}
-        </Stack>
-      </div>
+      <Card>
+        <CardContent>
+          <List dense sx={{minWidth: '100px'}}>
+            {movieList.map(movie => (
+              <ListItem key={movie.id} disablePadding>
+                <ListItemText
+                  primary={movie.mainTitle}
+                  sx={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </CardContent>
+      </Card>
     </Stack>
   );
 }
