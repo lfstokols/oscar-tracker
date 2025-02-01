@@ -4,17 +4,12 @@ import DefaultCatcher from '../../components/LoadScreen';
 import CategoryTable from '../../features/category_completion_table/CategoryCompletionTable';
 import TableControls from '../../features/category_completion_table/TableControls';
 import {Hypotheticality} from '../../features/userStatsTable/Enums';
-import {Grouping} from '../../types/Enums';
-import {objectFromEntries, objectValues} from '../../utils/objectUtils';
+import { useCategoryOpenState } from '../../hooks/useCategoryOpenState';
 
 export default function CategoryTab(): React.ReactElement {
   const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);
 
-  const [areOpen, setAreOpen] = useState<Record<Grouping, boolean>>(
-    objectFromEntries(
-      objectValues(Grouping).map(grouping => [grouping, false]),
-    ),
-  );
+  const [areOpen, setAreOpen] = useCategoryOpenState();
 
   return (
     <DefaultCatcher>

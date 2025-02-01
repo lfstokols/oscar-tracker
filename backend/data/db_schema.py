@@ -14,6 +14,7 @@ from backend.types.api_validators import (
     PosterPathValidator,
 )
 import backend.utils.env_reader as env
+from sqlalchemy import Index
 
 DB_PATH = env.DATABASE_PATH / env.SQLITE_FILE_NAME
 
@@ -177,13 +178,13 @@ class User(Base):
 class Movie(Base):
     __tablename__ = "movies"
     movie_id: sa.Column[MovieID] = sa.Column(MovieID_SQL, primary_key=True)
-    year: sa.Column[int] = sa.Column(sa.Integer)
-    title: sa.Column[str] = sa.Column(sa.String)
-    imdb_id: sa.Column[str] = sa.Column(sa.String)
-    movie_db_id: sa.Column[str] = sa.Column(sa.String)
-    runtime: sa.Column[int] = sa.Column(sa.Integer)
-    poster_path: sa.Column[str] = sa.Column(sa.String)
-    subtitle_position: sa.Column[int] = sa.Column(sa.Integer)
+    year: sa.Column[int] = sa.Column(sa.Integer, nullable=False)
+    title: sa.Column[str] = sa.Column(sa.String, nullable=False)
+    imdb_id: sa.Column[str] = sa.Column(sa.String, nullable=True)
+    movie_db_id: sa.Column[str] = sa.Column(sa.String, nullable=True)
+    runtime: sa.Column[int] = sa.Column(sa.Integer, nullable=True)
+    poster_path: sa.Column[str] = sa.Column(sa.String, nullable=True)
+    subtitle_position: sa.Column[int] = sa.Column(sa.Integer, nullable=True)
 
     nominations = orm.relationship("Nomination", back_populates="movie", viewonly=True)
     watchnotices = orm.relationship(
@@ -194,16 +195,31 @@ class Movie(Base):
         "Category", secondary="nominations", back_populates="nominees", viewonly=True
     )
 
+    # is_short = sa.orm.column_property(
+    #     sa.select(1)
+    #     .select_from(sa.table("movies"))
+    #     .join(sa.table("nominations"), sa.table("movies").c.movie_id == sa.table("nominations").c.movie_id)
+    #     .join(sa.table("categories"), sa.table("nominations").c.category_id == sa.table("categories").c.category_id)
+    #     .where(sa.table("categories").c.is_short)
+    #     .exists()
+    #     .select()
+    # )
+
+    # Add index on year column
+    __table_args__ = (
+        Index('idx_movies_year', 'year'),
+    )
+
 
 class Category(Base):
     __tablename__ = "categories"
     category_id: sa.Column[CategoryID] = sa.Column(CategoryID_SQL, primary_key=True)
-    short_name: sa.Column[str] = sa.Column(sa.String)
-    full_name: sa.Column[str] = sa.Column(sa.String)
+    short_name: sa.Column[str] = sa.Column(sa.String, nullable=False)
+    full_name: sa.Column[str] = sa.Column(sa.String, nullable=False)
     max_nominations: sa.Column[int] = sa.Column(sa.Integer)
-    is_short: sa.Column[bool] = sa.Column(sa.Boolean)
-    has_note: sa.Column[bool] = sa.Column(sa.Boolean)
-    grouping: sa.Column[str] = sa.Column(sa.String)
+    is_short: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
+    has_note: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
+    grouping: sa.Column[str] = sa.Column(sa.String,)
 
     nominations = orm.relationship(
         "Nomination", back_populates="category", viewonly=True
@@ -231,17 +247,27 @@ class Nomination(Base):
     movie = orm.relationship("Movie", back_populates="nominations", viewonly=True)
     category = orm.relationship("Category", back_populates="nominations", viewonly=True)
 
+    # Add index on year column
+    __table_args__ = (
+        Index('idx_nominations_year', 'year'),
+    )
+
 
 class Watchnotice(Base):
     __tablename__ = "watchlist"
-    year: sa.Column[int] = sa.Column(sa.Integer)
+    year: sa.Column[int] = sa.Column(sa.Integer, nullable=False)
     user_id: sa.Column[UserID] = sa.Column(
         UserID_SQL, sa.ForeignKey("users.user_id"), primary_key=True
     )
     movie_id: sa.Column[MovieID] = sa.Column(
         MovieID_SQL, sa.ForeignKey("movies.movie_id"), primary_key=True
     )
-    status: sa.Column[str] = sa.Column(sa.String)
+    status: sa.Column[str] = sa.Column(sa.String, nullable=False)
 
     user = orm.relationship("User", back_populates="watchnotices", viewonly=True)
     movie = orm.relationship("Movie", back_populates="watchnotices", viewonly=True)
+
+    # Add index on user_id column
+    __table_args__ = (
+        Index('idx_watchlist_user', 'user_id'),
+    )

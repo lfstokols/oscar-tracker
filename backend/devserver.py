@@ -72,16 +72,16 @@ def serve_joke():
     return "<h1>It's a joke!</h1>"
 
 
-@app.route("/force-refresh")
-def force_refresh():
-    logging.debug("got a force refresh")
-    try:
-        user_id = AnnotatedValidator(user=session.get("activeUserId")).user
-        assert user_id is not None
-        update_user_watchlist(user_id)
-        return "bsnsns", 200
-    except Exception as e:
-        return abort(400)
+# @app.route("/force-refresh")
+# def force_refresh():
+#     logging.debug("got a force refresh")
+#     try:
+#         user_id = AnnotatedValidator(user=session.get("activeUserId")).user
+#         assert user_id is not None
+#         update_user_watchlist(user_id)
+#         return "bsnsns", 200
+#     except Exception as e:
+#         return abort(400)
 
 
 @app.route("/favicon.ico")

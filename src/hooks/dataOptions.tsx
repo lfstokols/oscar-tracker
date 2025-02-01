@@ -13,7 +13,6 @@ import {
 } from '../types/APIDataSchema';
 import {Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
-import {logToConsole} from '../utils/Logger';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -29,9 +28,6 @@ export function nomOptions(year: number) {
 
 // * Users // *
 export function userOptions() {
-  const stack = new Error().stack;
-  const caller = stack?.split('\n')[2].match(/at\s+([^(\s]+)/)?.[1];
-  logToConsole(`userOptions called by ${caller}`);
   return queryOptions({
     queryKey: ['users'],
     queryFn: qFunction(Endpoints.users, {}, UserListSchema.parse),

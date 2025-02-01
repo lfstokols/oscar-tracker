@@ -1,4 +1,5 @@
 import logging
+import re
 from typing import Any
 from typing_extensions import Literal
 import requests
@@ -92,7 +93,11 @@ def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]
         query = query.where(Movie.movie_id.in_(idList))
     with Session() as session:
         result = session.execute(query)
-        return result_to_dict(result)
+        result = result_to_dict(result)
+    for movie in [m for m in result if m['subtitle'] != ""]:
+        match = re.search(r"(\w.*)$", movie['subtitle'])
+        movie['subtitle'] = match.group(0).strip() if match else ""
+    return result
 
 
 def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
@@ -311,52 +316,37 @@ def get_user_stats(year: int) -> list[dict[str, Any]]:
     shortness = dv.movie_is_short().subquery()
     multinom = dv.movie_is_multinom().subquery()
 
-    seen_watchlist = (
-        sa.select(User, Watchnotice)
-        .select_from(User)
-        .join(User.watchnotices)
-        .where(Watchnotice.year == year)
-        .where(Watchnotice.status == WatchStatus.SEEN.value)
-        .subquery()
-    )
-    todo_watchlist = (
-        sa.select(User, Watchnotice)
-        .select_from(User)
-        .join(Watchnotice)
-        .where(Watchnotice.year == year)
-        .where(Watchnotice.status == WatchStatus.TODO.value)
-        .subquery()
-    )
-
-    def query_by_status(status: WatchStatus):
-        start = seen_watchlist if status == WatchStatus.SEEN else todo_watchlist
-        num_cats = dv.num_categories_completed(status, year).subquery()
-        label = "Seen" if status == WatchStatus.SEEN else "Todo"
+    def query_by_status(status: Literal["seen", "todo"]):
+        watchlist = dv.get_filtered_watchlist(status, year)
+        num_cats = dv.num_categories_completed(('seen' if status == 'seen' else 'both'), year)
+        label = "Seen" if status == "seen" else "Todo"
         return (
             sa.select(
-                start.c.user_id.label("id"),
-                sa.func.count(Movie.movie_id)
-                .filter(shortness.c.is_short)
-                .label(f"num{label}Short"),
-                sa.func.count(Movie.movie_id)
-                .filter(~shortness.c.is_short)
-                .label(f"num{label}Feature"),
-                sa.func.count(Movie.movie_id)
-                .filter(multinom.c.is_multinom)
-                .label(f"num{label}Multinom"),
+                User.user_id.label("id"),
+                sa.func.count(watchlist.c.movie_id)
+                    .filter(shortness.c.is_short)
+                    .label(f"num{label}Short"),
+                sa.func.count(watchlist.c.movie_id)
+                    .filter(~shortness.c.is_short)
+                    .label(f"num{label}Feature"),
+                sa.func.count(watchlist.c.movie_id)
+                    .filter(multinom.c.is_multinom)
+                    .label(f"num{label}Multinom"),
                 num_cats.c.num_categories_completed.label(f"numCats{label}"),
                 sa.func.sum(Movie.runtime).label(f"{label.lower()}Watchtime"),
             )
-            .select_from(start)
-            .join(Movie, start.c.movie_id == Movie.movie_id)
-            .join(shortness, Movie.movie_id == shortness.c.movie_id)
-            .join(multinom, Movie.movie_id == multinom.c.movie_id)
-            .join(num_cats, start.c.user_id == num_cats.c.user_id)
-            .group_by(start.c.user_id)
+            .select_from(User)
+            .outerjoin(watchlist, User.user_id == watchlist.c.user_id)
+            .outerjoin(Movie, watchlist.c.movie_id == Movie.movie_id)
+            .outerjoin(shortness, watchlist.c.movie_id == shortness.c.movie_id)
+            .outerjoin(multinom, watchlist.c.movie_id == multinom.c.movie_id)
+            .outerjoin(num_cats, watchlist.c.user_id == num_cats.c.user_id)
+            .group_by(User.user_id)
+            .subquery()
         )
 
-    seen_query = query_by_status(WatchStatus.SEEN).subquery()
-    todo_query = query_by_status(WatchStatus.TODO).subquery()
+    seen_query = query_by_status("seen")
+    todo_query = query_by_status("todo")
     full_query = (
         sa.select(seen_query, todo_query)
         .select_from(seen_query)

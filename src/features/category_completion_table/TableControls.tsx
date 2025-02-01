@@ -1,5 +1,4 @@
 import {Stack} from '@mui/material';
-import {Dispatch, SetStateAction} from 'react';
 import HypotheticalityToggleGroup from '../../components/HypotheticalityToggleGroup';
 import {useIsMobile} from '../../hooks/useIsMobile';
 import {Grouping} from '../../types/Enums';
@@ -13,7 +12,7 @@ export default function TableControls({
   setOpenGroups,
 }: {
   openGroups: Record<Grouping, boolean>;
-  setOpenGroups: Dispatch<SetStateAction<Record<Grouping, boolean>>>;
+  setOpenGroups: (openGroups: Record<Grouping, boolean>) => void;
   value: Hypotheticality;
   setter: (value: Hypotheticality) => void;
 }) {

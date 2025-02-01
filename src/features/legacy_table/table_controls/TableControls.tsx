@@ -10,6 +10,7 @@ import {useOscarAppContext} from '../../../providers/AppContext';
 import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
 import FilterRowsWidget from './FilterRows';
 import HideColumnsWidget from './HideColumns';
+
 export default function TableControls({
   filterState,
   setFilterState,
@@ -24,7 +25,7 @@ export default function TableControls({
   const {year} = useOscarAppContext();
   const isMobile = useIsMobile();
   const handleRefresh = async () => {
-    await fetch(`${API_BASE_URL}/force-refresh`);
+    await fetch(`${API_BASE_URL}/hooks/force-refresh`);
     await queryClient.invalidateQueries({
       queryKey: watchlistOptions(year).queryKey,
     });

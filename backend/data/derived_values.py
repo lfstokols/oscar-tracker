@@ -1,4 +1,6 @@
 import logging
+import pandas as pd
+from typing_extensions import Literal
 import sqlalchemy as sa
 from backend.data.db_schema import (
     Movie,
@@ -17,39 +19,37 @@ from backend.types.api_schemas import (
 from backend.types.my_types import WatchStatus
 
 
-# def movie_is_short() -> sa.Select[tuple[MovieID, str, bool]]:
-#     return sa.select(
-#         Movie.movie_id,
-#         Movie.title,
-#         Movie.categories.any(Category.is_short).label("is_short"),
-#     )
 def movie_is_short() -> sa.Select[tuple[MovieID, bool]]:
-    return sa.select(
-        Movie.movie_id,
-        Movie.categories.any(Category.is_short).label("is_short"),
+    return (
+        sa.select(
+            Nomination.movie_id,
+            sa.func.max(Category.is_short).label("is_short"),
+        )
+        .select_from(Nomination)
+        .outerjoin(Category, Nomination.category_id == Category.category_id)
+        .group_by(Nomination.movie_id)
     )
 
 
 def movie_is_multinom() -> sa.Select[tuple[MovieID, bool]]:
     return (
         sa.select(
-            Movie.movie_id,
-            (sa.func.count(Nomination.nomination_id) > 1).label("is_multinom"),
+            Nomination.movie_id,
+            (sa.func.count() > 1).label("is_multinom"),
         )
-        .select_from(Movie)
-        .join(Nomination, Nomination.movie_id == Movie.movie_id, isouter=True)
-        .group_by(Movie.movie_id)
+        .select_from(Nomination)
+        .group_by(Nomination.movie_id)
     )
 
 
 def movie_num_noms() -> sa.Select[tuple[MovieID, int]]:
     return (
         sa.select(
-            Movie.movie_id,
-            sa.func.count(Nomination.nomination_id).label("num_noms"),
+            Nomination.movie_id,
+            sa.func.count().label("num_noms"),
         )
-        .join(Nomination, Nomination.movie_id == Movie.movie_id, isouter=True)
-        .group_by(Movie.movie_id)
+        .select_from(Nomination)
+        .group_by(Nomination.movie_id)
     )
 
 
@@ -156,13 +156,42 @@ def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
     )
 
 
+def get_filtered_watchlist(status: Literal["seen", "todo", "both"], year: int) -> sa.Subquery[tuple[UserID, MovieID]]:
+    """
+    Returns a subquery of the watchlist filtered by status and year.
+    No guarantees on a given user existing in the subquery.
+    Inputs:
+        status: "seen", "todo", or "both"
+        year: int
+    Returns:
+        Subquery, columns:
+            user_id: UserID
+            movie_id: MovieID
+    """
+    if status == "seen":
+        status_filter = Watchnotice.status == WatchStatus_pyd.SEEN.value
+    elif status == "todo":
+        status_filter = Watchnotice.status == WatchStatus_pyd.TODO.value
+    else:
+        status_filter = sa.or_(Watchnotice.status == WatchStatus_pyd.SEEN.value, Watchnotice.status == WatchStatus_pyd.TODO.value)
+    return (
+        sa.select(
+            Watchnotice.user_id,
+            Watchnotice.movie_id,
+        )
+        .select_from(Watchnotice)
+        .where(status_filter)
+        .where(Watchnotice.year == year)
+        .subquery()
+    )
+
 def num_categories_completed(
-    status: WatchStatus, year: int
-) -> sa.Select[tuple[UserID, int]]:
-    if status == WatchStatus_pyd.SEEN:
-        x = 0
-    elif status == WatchStatus_pyd.TODO:
-        x = 1
+    status: Literal["seen", "both"], year: int
+) -> sa.Subquery[tuple[UserID, int]]:
+    if status == "seen":
+        filtered_watchlist = get_filtered_watchlist("seen", year)
+    elif status == "both":
+        filtered_watchlist = get_filtered_watchlist("both", year)
     else:
         logging.error(
             f"Tried to use status.BLANK in num_categories_completed, most likely due to writing loop while distracted."
@@ -170,44 +199,47 @@ def num_categories_completed(
         raise ValueError(
             f"WatchStatus.BLANK is not a valid status for num_categories_completed."
         )
-    category_boolean_subquery = (
+    
+    #* Every entry corresponds to a user watching a movie nominated in that category
+    category_watchlist = (
         sa.select(
-            User.user_id,
-            Category.category_id,
-            sa.case(
-                (
-                    sa.func.count() == Category.max_nominations,
-                    1,
-                ),
-                else_=0,
-            ).label("is_categories_completed"),
+            filtered_watchlist.c.user_id,
+            Nomination.category_id,
         )
-        .select_from(User)
-        .join(User.watchnotices)
-        .where(Watchnotice.year == year)
-        .where(
-            sa.or_(
-                Watchnotice.status == status.value,
-                Watchnotice.status == WatchStatus_pyd.SEEN.value,
-            )
+        .select_from(filtered_watchlist)
+        .join(Nomination, filtered_watchlist.c.movie_id == Nomination.movie_id)
+        .subquery()
+    )
+    num_in_cat = (
+        sa.select(
+            category_watchlist.c.user_id,
+            category_watchlist.c.category_id,
+            sa.func.count().label("num"),
         )
-        .join(Watchnotice.movie)
-        .join(Movie.nominations)
-        .join(Nomination.category)
-        .group_by(User.user_id)
-        .group_by(Category.category_id)
+        .select_from(category_watchlist)
+        .group_by(category_watchlist.c.user_id, category_watchlist.c.category_id)
+        .subquery()
+    )
+    completed_categories = (
+        sa.select(
+            num_in_cat.c.user_id,
+            num_in_cat.c.category_id,
+        ).select_from(num_in_cat)
+        .join(Category, num_in_cat.c.category_id == Category.category_id)
+        .where(num_in_cat.c.num == Category.max_nominations)
         .subquery()
     )
     return (
         sa.select(
             User.user_id,
-            sa.func.sum(category_boolean_subquery.c.is_categories_completed).label(
+            sa.func.count(completed_categories.c.category_id).label(
                 "num_categories_completed"
             ),
         )
-        .join(
-            category_boolean_subquery,
-            category_boolean_subquery.c.user_id == User.user_id,
-        )
+        .select_from(User)
+        .outerjoin(completed_categories, User.user_id == completed_categories.c.user_id)
         .group_by(User.user_id)
+        .subquery()
     )
+
+
