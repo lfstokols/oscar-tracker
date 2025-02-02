@@ -16,7 +16,6 @@ sys.path.append(str(project_root))
 from backend.logic.storage_manager import StorageManager
 import backend.logic.Processing as pr
 import backend.logic.Mutations as mu
-import backend.routing_lib.utils as utils
 import backend.types.flavors as flv
 from backend.types.my_types import *
 
@@ -111,7 +110,6 @@ def main():
         "storage": storage,
         "pr": pr,
         "mu": mu,
-        "utils": utils,
         "flv": flv,
         "pd": pd,
         "Path": Path,

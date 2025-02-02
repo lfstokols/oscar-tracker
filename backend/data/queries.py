@@ -120,9 +120,9 @@ def get_my_user_data(userId: UserID) -> dict[str, Any]:
     with Session() as session:
         result = session.execute(query)
         data = result_to_dict(result)
-    assert (
-        data is not None and len(data) > 0
-    ), f"User with id {userId} not found <in get_my_user_data>"
+    if data is None or len(data) == 0:
+        logging.error(f"User with id {userId} not found @ qu.get_my_user_data({userId})")
+        raise Exception(f"User with id {userId} not found @ qu.get_my_user_data({userId})")
     data = data[0]
     data["propic"] = get_user_propic(data["letterboxd"])
     return data
@@ -177,7 +177,7 @@ def get_category_completion_dict(
             sa.and_(
                 User.user_id == Watchnotice.user_id,
                 Watchnotice.year == year,
-                Watchnotice.status == WatchStatus.SEEN.value,
+                Watchnotice.status == WatchStatus.SEEN,
             ),
         )
         .subquery()
@@ -190,14 +190,15 @@ def get_category_completion_dict(
             sa.and_(
                 User.user_id == Watchnotice.user_id,
                 Watchnotice.year == year,
-                Watchnotice.status == WatchStatus.TODO.value,
+                Watchnotice.status == WatchStatus.TODO,
             ),
         )
         .subquery()
     )
     all_movies = (
         sa.select(User.user_id.label("user_id"), Movie.movie_id.label("movie_id"))
-        .select_from(User, Movie)
+        .select_from(User)
+        .join(Movie, sa.true()) #* Cartesian product
         .where(Movie.year == year)
         .subquery()
     )

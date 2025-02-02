@@ -142,3 +142,8 @@ def validate_movie_id(
                 f"{call_location}\nvalidate_movie_id was called with an invalid input, value wass {id}\nMessage: {message}"
             )
         return response
+
+def validate_watchstatus(status: str) -> tuple[WatchStatus, int]:
+    if not status in WatchStatus._value2member_map_:
+        return WatchStatus.BLANK, 1
+    return WatchStatus(status), 0

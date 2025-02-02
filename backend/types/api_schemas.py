@@ -1,6 +1,8 @@
 from pydantic import (
     BaseModel,
+    ConfigDict,
     StringConstraints,
+    ConfigDict,
     Field,
     HttpUrl,
     EmailStr,
@@ -22,7 +24,7 @@ PosterPath = Annotated[str, StringConstraints(pattern=r"^/[0-9a-zA-Z]*\.jpg$")]
 #     SEEN = "seen"
 #     TODO = "todo"
 #     BLANK = "blank"
-WatchStatus_pyd = my_types.WatchStatus
+# WatchStatus_pyd = my_types.WatchStatus
 
 
 class Grouping_pyd(str, Enum):
@@ -93,8 +95,9 @@ class api_Category(BaseModel):
 class api_WatchNotice(BaseModel):
     userId: UserID
     movieId: MovieID
-    status: WatchStatus_pyd
-
+    status: my_types.WatchStatus
+    
+    model_config = ConfigDict(use_enum_values=True)
 
 class api_CategoryList(BaseModel):
     data: list[api_Category]

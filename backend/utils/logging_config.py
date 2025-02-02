@@ -51,6 +51,54 @@ class DebugLevelFilter(logging.Filter):
         return record.levelno == logging.DEBUG
 
 
+class SpecialEventFilter(logging.Filter):
+    """Filter that only allows logs with a specific category"""
+    def __init__(self, category):
+        super().__init__()
+        self.category = category
+
+    def filter(self, record):
+        return getattr(record, 'category', None) == self.category
+
+class HTTPHandler(logging.Handler):
+    """Custom handler that makes HTTP requests for error logs"""
+    def __init__(self, url, method='POST', headers=None):
+        super().__init__()
+        self.url = url
+        self.method = method
+        self.headers = headers or {}
+
+    def emit(self, record):
+        try:
+            import requests  # Import here to avoid loading unless needed
+
+            message = f"ERROR: {record.getMessage()}"
+            message = message.encode(encoding='utf-8', errors='replace')
+            
+            # Make the HTTP request
+            response = requests.request(
+                method=self.method,
+                url=self.url,
+                headers=self.headers,
+                data=message,
+            )
+            response.raise_for_status()
+        except Exception as e:
+            # Don't raise exceptions in handler
+            self.handleError(record)
+
+class NotificationFormatter(logging.Formatter):
+    """Custom Formatter that only shows the first line of the message"""
+    def __init__(self):
+        super().__init__(
+            "%(levelname)s: [%(name)s @ %(asctime)s] %(message)s",
+            datefmt="%D, %H:%M:%S",
+        )
+    
+    def format(self, record):
+        full_message = super().format(record)
+        return full_message.split('\n')[0]
+
 # class SafeRotatingFileHandler(RotatingFileHandler):
 #     def rotate(self, source, dest):
 #         if os.path.exists(dest):
@@ -76,6 +124,13 @@ def setup_file_handler(log_dir: Path, filename: str):
     return file_handler
 
 
+def setup_special_handler(log_dir: Path, category: str):
+    """Sets up a handler for custom event categories"""
+    file_handler = setup_file_handler(log_dir, f"{category}.log")
+    file_handler.addFilter(SpecialEventFilter(category))
+    return file_handler
+
+
 def setup_logging(log_dir: Path):
     # * Create /logs/ directory if it doesn't exist
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -89,14 +144,16 @@ def setup_logging(log_dir: Path):
 
     # * Convert to EST timezone
     def est_time(*args):
-        utc_dt = datetime.fromtimestamp(args[1], timezone.utc)
-        est_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
+        # utc_dt = datetime.fromtimestamp(args[1], timezone.utc)
+        # est_dt = utc_dt.astimezone(ZoneInfo("America/New_York"))
+        # return est_dt.timetuple()
+        est_dt = datetime.fromtimestamp(args[1], ZoneInfo("America/New_York"))
         return est_dt.timetuple()
 
     logging.Formatter.converter = est_time
 
     file_formatter = logging.Formatter(
-        "(%(asctime)s) [%(name)s] |%(levelname)s|>> %(message)s",
+        "<<(%(asctime)s) |%(levelname)s| [%(name)s]>> %(message)s",
         datefmt="%m/%d/%Y @ %H:%M (%z), %S sec",
     )
     console_formatter = ColorFormatter(
@@ -104,6 +161,7 @@ def setup_logging(log_dir: Path):
     )
 
     # * Create handlers
+    # * Main log files
     file_handler_main = setup_file_handler(log_dir, "app.log")
     file_handler_main.setFormatter(file_formatter)
     file_handler_main.setLevel(logging.INFO)
@@ -117,9 +175,24 @@ def setup_logging(log_dir: Path):
     file_handler_debug.setLevel(logging.DEBUG)
     file_handler_debug.addFilter(DebugLevelFilter())
 
+    # * Emits errors to console
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(console_formatter)
     console_handler.setLevel(logging.DEBUG if print_debug else logging.INFO)
+
+    # * Track external API calls (just letterboxd for now)
+    external_api_handler = setup_special_handler(log_dir, "letterboxd")
+    external_api_handler.setFormatter(file_formatter)
+    external_api_handler.setLevel(logging.INFO)
+
+    # * Emits errors to a tracking service
+    error_notification_handler = HTTPHandler(
+        url=env.LOG_ENDPOINT,
+        headers={},
+        method='POST',
+    )
+    error_notification_handler.setFormatter(NotificationFormatter())
+    error_notification_handler.setLevel(logging.ERROR)
 
     # * Configure root logger
     logging.basicConfig(
@@ -129,5 +202,7 @@ def setup_logging(log_dir: Path):
             file_handler_error,
             file_handler_debug,
             console_handler,
+            external_api_handler,
+            error_notification_handler,
         ],
     )

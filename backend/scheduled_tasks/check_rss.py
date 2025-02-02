@@ -35,7 +35,7 @@ def update_user_watchlist(user_id: UserID) -> bool:
 
 
 def fetch_rss(account: str) -> BeautifulSoup:
-    response = requests.get(f"https://letterboxd.com/{account}/rss")
+    response = requests.get(f"https://letterboxd.com/{account}/rss/")
     # * Uncomment for debugging
     # with open(
     #     pathlib.Path(__file__).parent.parent.parent / "fyi" / "rss_debug.xml",
@@ -51,13 +51,15 @@ def parse_rss(
     soup: BeautifulSoup, cutoff: pd.Timestamp = pd.Timestamp.min
 ) -> list[MovieDbID]:
     items = soup.find_all("item")
+    logging.debug(f"Found {len(items)} items in the RSS feed.")
     movie_ids = []
     for item in items:
-        pubDate = pd.Timestamp(item.find("pubDate").text).tz_convert("UTC")
+        # pubDate = pd.Timestamp(item.find("pubDate").text).tz_convert("UTC")
         # if pubDate < pd.Timestamp(cutoff):
         #     break
         movie_id_block = item.find("tmdb:movieId")
         if movie_id_block is None:
+            logging.warning(f"No movie ID found in item: {str(item)[:100]}")
             continue
         movie_id = movie_id_block.text
         movie_ids.append(int(movie_id))
@@ -75,17 +77,22 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     account = qu.get_my_user_data(user_id).get("letterboxd")
     if account is None:
         return []
-    with mu.get_and_set_rss_timestamp(user_id) as cutoff:
-        # * fetch the data
-        soup = fetch_rss(account)
-        mdb_id_list = parse_rss(soup, cutoff)
+    # * fetch the data
+    soup = fetch_rss(account)
+    mdb_id_list = parse_rss(soup)
+    logging.debug(f"While checking RSS for {user_id}, found {len(mdb_id_list)} movie IDs listed on the page."\
+                  f"For example: {mdb_id_list[:3]}")
     # * identify the movies
     movies = qu.get_movies(year)
+    sample_data = [[x[MovieColumns.ID.value], x[MovieColumns.MovieDB_ID.value]] for x in movies[:3]]
+    sample_strings = [f"{x[0]}: {type(x[1])} {x[1]}" for x in sample_data]
+    logging.debug(f"The movie data has tmdb ids like {', '.join(sample_strings)}")
     my_id_list = [
         row[MovieColumns.ID.value]
         for row in movies
-        if row[MovieColumns.MovieDB_ID.value] in mdb_id_list
+        if int(row[MovieColumns.MovieDB_ID.value]) in mdb_id_list
     ]
+    logging.debug(f"Of those {len(mdb_id_list)} movie IDs listed on the page, {len(my_id_list)} matched movies in my database.")
     validated_idlist = []
     for id in my_id_list:
         try:

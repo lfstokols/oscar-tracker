@@ -109,7 +109,7 @@ def add_watchlist_entry(
                     year=year,
                     user_id=userId,
                     movie_id=movieId,
-                    status=str(status),
+                    status=status,
                 )
             )
             logging.debug(f"Mutation: {mutation}")
@@ -146,8 +146,9 @@ def update_movie(
     movieId = movie
     try:
         MovieValidator(movie=movieId)
-    except:
-        raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?")
+    except Exception as e:
+        logging.error(f"update_movie() got invalid movie id '{movieId}'. {e}")
+        raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?" ) from e
     assert all(
         key in Movie.__table__.columns.keys() for key in new_data
     ), f"Invalid movie column(s): {[k for k in new_data if k not in Movie.__table__.columns.keys()]}"

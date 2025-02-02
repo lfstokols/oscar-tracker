@@ -5,34 +5,29 @@ from backend.data.db_schema import DB_PATH, Base
 import logging
 
 try:
-    assert DB_PATH is not None, "No database path provided"
+    if DB_PATH is None:
+        logging.error("No database path found in db_schema.py when importing db_connections")
+        raise Exception("No database path provided")
     if not DB_PATH.exists():
         logging.warning(f"Database file {DB_PATH} does not exist, creating it")
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         DB_PATH.touch()
     engine = sa.create_engine(f"sqlite:///{DB_PATH}")
 except Exception as e:
-    print(f"Error creating engine: {e}")
+    logging.error(f"Error creating engine: {e}")
     raise
 
 try:
     engine.connect()
     Base.metadata.create_all(engine)
 except Exception as e:
-    print(f"Error creating engine: {e}")
+    logging.error(f"Error creating engine: {e}")
     raise
 try:
     with engine.connect() as conn:
         conn.execute(sa.text("PRAGMA journal_mode=WAL"))
 except Exception as e:
     logging.error(f"Error setting journal mode: {e}")
-
-
-# @contextmanager
-# def get_connection():
-#     with sqlite3.connect(DB_PATH) as conn:
-#         cursor = conn.cursor()
-#         yield conn, cursor
 
 
 Session = sa_orm.sessionmaker(bind=engine)

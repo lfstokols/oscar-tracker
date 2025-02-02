@@ -13,6 +13,7 @@ from backend.types.api_validators import (
     CategoryValidator,
     PosterPathValidator,
 )
+from backend.types.my_types import WatchStatus
 import backend.utils.env_reader as env
 from sqlalchemy import Index
 
@@ -157,6 +158,16 @@ class Email_SQL(sa.TypeDecorator):
         return value if value else None
 
 
+class WatchStatus_SQL(sa.TypeDecorator):
+    impl = sa.String
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        return value.value if value else None
+
+    def process_result_value(self, value, dialect):
+        return WatchStatus(value) if value else None
+
 # * # * # * # * # * #
 # * Table Classes * #
 # * # * # * # * # * #
@@ -262,7 +273,7 @@ class Watchnotice(Base):
     movie_id: sa.Column[MovieID] = sa.Column(
         MovieID_SQL, sa.ForeignKey("movies.movie_id"), primary_key=True
     )
-    status: sa.Column[str] = sa.Column(sa.String, nullable=False)
+    status: sa.Column[WatchStatus] = sa.Column(WatchStatus_SQL, nullable=False)
 
     user = orm.relationship("User", back_populates="watchnotices", viewonly=True)
     movie = orm.relationship("Movie", back_populates="watchnotices", viewonly=True)

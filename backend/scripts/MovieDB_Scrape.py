@@ -176,42 +176,42 @@ def fetch_movie_db(year, error_cutoff):
             if not keep:
                 continue
             new_data: dict[str, int] = {
-                MovieColumns.MovieDB_ID: movie_db_id,
+                'movie_db_id': movie_db_id,
             }
             if details["imdb_id"]:
-                new_data[MovieColumns.Imdb_ID] = details["imdb_id"]
+                new_data['imdb_id'] = details["imdb_id"]
             else:
                 debug_print(f"Missing Imdb ID for {title}")
             if details["runtime"] and details["runtime"] > 0:
-                new_data[MovieColumns.RUNTIME] = details["runtime"]
+                new_data['runtime'] = details["runtime"]
             if details["poster_path"]:
-                new_data[MovieColumns.POSTER_PATH] = details["poster_path"]
+                new_data['poster_path'] = details["poster_path"]
 
             if not dry_run:
-                mu.update_movie(movie["movie_id"], year, new_data=new_data)
+                mu.update_movie(movie[MovieColumns.ID], year, new_data=new_data)
             if dry_run:
                 print(f"{title}: {new_data}")
         except Exception as e:
-            print(f"Error with {movie['movie_id']}: {e}")
+            error_print(f"Error with {movie[MovieColumns.ID]}: {e}")
             raise e
 
 
 def try_to_find_moviedb_id(movie, year) -> Optional[int]:
-    movId = movie["movie_id"]
+    movId = movie[MovieColumns.ID]
     debug_print(f"Fetching data for {movId}")
-    title = movie["title"]
+    title = movie[MovieColumns.TITLE]
     assert title is not None
     debug_print(f"Title: {title}")
-    if not pd.isna(movie["movie_db_id"]):
+    if movie[MovieColumns.MovieDB_ID] is not None:
         debug_print(f"Already have a MovieDB ID for {movId} <{title}>")
-        return movie["movie_db_id"]
-    if not pd.isna(movie["imdb_id"]):
+        return movie[MovieColumns.MovieDB_ID]
+    if not pd.isna(movie[MovieColumns.Imdb_ID]):
         # use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
         # if use_Imdb:
-        Imdb_id = movie["imdb_id"]
+        Imdb_id = movie[MovieColumns.MovieDB_ID]
         result = fetch_from_Imdb_id(Imdb_id)
         if result is None:
-            debug_print(
+            error_print(
                 f"Movie {movId} has Imdb ID set as {Imdb_id}, but no results found. The ID might be invalid."
             )
         return result
@@ -221,7 +221,7 @@ def try_to_find_moviedb_id(movie, year) -> Optional[int]:
         if len(result["results"]) > 0:
             return result["results"][0]["id"]
         else:
-            debug_print(f"No search results found for {title} in {year}")
+            error_print(f"No search results found for {title} in {year}")
             return None
 
 
@@ -249,6 +249,9 @@ def fetch_wrapper(endpoint, params=None, headers=None):
 def debug_print(message):
     if verbose:
         print("LOG: " + str(message))
+
+def error_print(message):
+    print("ERROR: " + str(message))
 
 
 if __name__ == "__main__":

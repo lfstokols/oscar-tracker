@@ -1,8 +1,6 @@
 import logging
 import re
-from typing import Hashable, overload, Any
 from backend.types.api_schemas import (
-    api_CategoryCompletionsDict,
     MovieID,
     CategoryCompletionKey,
 )
@@ -10,7 +8,6 @@ import requests
 from bs4 import BeautifulSoup, Tag
 import pandas as pd
 from backend.types.my_types import Grouping
-from backend.routing_lib import utils
 from backend.logic.storage_manager import StorageManager
 from backend.types.api_schemas import UserID
 from backend.types.my_types import *

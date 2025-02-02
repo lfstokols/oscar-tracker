@@ -24,6 +24,7 @@ def create_unique_movie_id(year: int | str) -> MovieID:
             validated_id = MovieValidator(movie=id).movie
             return validated_id
         tries += 1
+    logging.warning("Unable to create unique ID after 100 tries. Erroring out to avoid infinite loop.")
     raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")
 
 
@@ -43,6 +44,7 @@ def create_unique_user_id() -> UserID:
                 raise
             return validated_id
         tries += 1
+    logging.warning("Unable to create unique ID after 100 tries. Erroring out to avoid infinite loop.")
     raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")
 
 

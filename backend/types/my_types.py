@@ -142,7 +142,7 @@ class UserStatsColumns(str, Enum):
     TODO_WATCHTIME = "todoWatchtime"
 
 
-class WatchStatus(str, Enum):
+class WatchStatus(Enum):
     SEEN = "seen"
     TODO = "todo"
     BLANK = "blank"

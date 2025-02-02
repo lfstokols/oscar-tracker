@@ -26,13 +26,13 @@ class Config:
             "id": "check_letterboxd",
             "func": "backend.scheduled_tasks.scheduling:check_letterboxd",
             "trigger": "interval",
-            "hours": 1,
+            "hours": 18,
         },
         {
             "id": "backup_database",
             "func": "backend.scheduled_tasks.scheduling:backup_database",
             "trigger": "interval",
-            "days": 1,
+            "days": 2,
         },
     ]
 

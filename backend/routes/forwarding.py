@@ -1,7 +1,6 @@
 from flask import request, Blueprint
 import requests
-from backend.routing_lib.utils import handle_errors
-import backend.utils.env_reader as env
+from backend.routing_lib.error_handling import handle_errors
 
 forwarding = Blueprint("forwarding", __name__)
 

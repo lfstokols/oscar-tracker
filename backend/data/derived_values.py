@@ -13,8 +13,6 @@ from backend.data.db_connections import Session
 from backend.types.api_schemas import (
     UserID,
     MovieID,
-    CategoryID,
-    WatchStatus_pyd,
 )
 from backend.types.my_types import WatchStatus
 
@@ -104,7 +102,7 @@ def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
                 sa.case(
                     (
                         sa.and_(
-                            (Watchnotice.status == WatchStatus_pyd.SEEN.value),
+                            (Watchnotice.status == WatchStatus.SEEN),
                             ~shortness.c.is_short,
                         ),
                         1,
@@ -115,7 +113,7 @@ def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
                 sa.case(
                     (
                         sa.and_(
-                            (Watchnotice.status == WatchStatus_pyd.SEEN.value),
+                            (Watchnotice.status == WatchStatus.SEEN),
                             shortness.c.is_short,
                         ),
                         1,
@@ -126,7 +124,7 @@ def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
                 sa.case(
                     (
                         sa.and_(
-                            (Watchnotice.status == WatchStatus_pyd.TODO.value),
+                            (Watchnotice.status == WatchStatus.TODO),
                             ~shortness.c.is_short,
                         ),
                         1,
@@ -137,7 +135,7 @@ def num_movies_marked() -> sa.Select[tuple[UserID, int, int, int, int]]:
                 sa.case(
                     (
                         sa.and_(
-                            (Watchnotice.status == WatchStatus_pyd.TODO.value),
+                            (Watchnotice.status == WatchStatus.TODO),
                             shortness.c.is_short,
                         ),
                         1,
@@ -169,11 +167,11 @@ def get_filtered_watchlist(status: Literal["seen", "todo", "both"], year: int) -
             movie_id: MovieID
     """
     if status == "seen":
-        status_filter = Watchnotice.status == WatchStatus_pyd.SEEN.value
+        status_filter = Watchnotice.status == WatchStatus.SEEN
     elif status == "todo":
-        status_filter = Watchnotice.status == WatchStatus_pyd.TODO.value
+        status_filter = Watchnotice.status == WatchStatus.TODO
     else:
-        status_filter = sa.or_(Watchnotice.status == WatchStatus_pyd.SEEN.value, Watchnotice.status == WatchStatus_pyd.TODO.value)
+        status_filter = sa.or_(Watchnotice.status == WatchStatus.SEEN, Watchnotice.status == WatchStatus.TODO)
     return (
         sa.select(
             Watchnotice.user_id,

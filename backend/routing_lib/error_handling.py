@@ -1,21 +1,13 @@
-from collections.abc import Callable
 import logging
-import re
-from sqlite3 import OperationalError
+from pprint import pformat
+from flask import g, jsonify, make_response
+from typing import Any, Callable
+from sqlalchemy.exc import OperationalError
 import time
-from typing import Any
-from flask import jsonify, Request
-from flask.cli import F
-import numpy as np
-import pandas as pd
 from functools import wraps
 from pydantic import ValidationError
+
 import backend.utils.env_reader as env
-from backend.types.api_schemas import Flavor, UserID
-from backend.types.api_validators import AnnotatedValidator
-import backend.types.flavors as flv
-from backend.types.my_types import *
-import backend.data.queries as qu
 
 
 class APIArgumentError(Exception):
@@ -89,58 +81,6 @@ def catch_file_locked_error(
         raise
 
 
-def df_to_jsonable(df: pd.DataFrame, flavor: Flavor) -> list[dict]:
-    """
-    Converts a pandas DataFrame to a list of dictionaries.
-    It's not a json, but it's easily castable to json.
-    """
-    # flavor = flv.format_flavor(flavor)
-    if flv.flavor_props(flavor)["shape"] == "entity":
-        df = df.reset_index()
-    df = df.replace({np.nan: None})
-    return df.to_dict(orient="records")
-
-
-def has_flag(request: Request, arg: str) -> bool:
-    """
-    returns true if the argument is present and its value
-    is "true" (case insensitive)
-    """
-    value = request.args.get(arg, "false").lower()
-    output = value == "true"
-    return output
-
-
-def get_active_user_id(request: Request) -> UserID | None:
-    active_user_id = request.cookies.get("activeUserId")
-    if active_user_id is None:
-        return None
-    if not re.fullmatch(r"^usr_[0-9a-fA-F]{6}$", active_user_id):
-        return None
-    users = qu.get_users()
-    if active_user_id not in [user["id"] for user in users]:
-        return None
-    active_user_id = AnnotatedValidator(user=active_user_id).user
-    return active_user_id
-
-
-def get_year(request: Request, body: bool = False) -> int:
-    """
-    Only call this if you want to throw on a missing / invalid year.
-    """
-    location = request.args if not body else request.json
-    if not location or not (year := location.get("year")):
-        raise YearError() if not body else YearError(location="body")
-    try:
-        year = int(year)
-    except ValueError:
-        raise APIArgumentError(
-            "Year must be an integer",
-            malformed_data=[("year", "query params" if not body else "body")],
-        )
-    return year
-
-
 def handle_errors(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -159,7 +99,7 @@ def handle_errors(func):
                 )
                 return LockedFileResponse
         except ValidationError as e:
-            logging.warning(f"Pydantic validation failed: {e.errors()}")
+            logging.error(f"Pydantic validation failed in {func.__name__}({args}, {kwargs}):\n {pformat(e.errors())}")
             return (
                 jsonify({"error": "Pydantic validation failed", "message": str(e)}),
                 env.PYDANTIC_ERROR_STATUS_CODE,
@@ -170,16 +110,23 @@ def handle_errors(func):
                 f"Missing data: {e.missing_data}",
                 f"Malformed data: {e.malformed_data}",
             )
-            return (
-                jsonify(
-                    {
-                        "error": e.message,
-                        "missing_data": e.missing_data,
-                        "malformed_data": e.malformed_data,
-                    }
-                ),
-                422,
+
+            response = make_response()
+            body = (
+                {
+                    "error": e.message,
+                    "missing_data": e.missing_data,
+                    "malformed_data": e.malformed_data,
+                }
             )
+            response.status_code = 422
+            if g.get("should_delete_cookie", False):
+                logging.info(f"Deleting malformed activeUserId cookie. Active user id was <{g.get('initial_user_id_value')}>")
+                response.delete_cookie("activeUserId")
+                body["message"] = "Invalid activeUserId in cookie was deleted."
+            response.data = jsonify(body)
+            return response
+
         except Exception as e:
             logging.error(
                 f"Request yielded uncaught error while running {func.__name__}({args}, {kwargs})"

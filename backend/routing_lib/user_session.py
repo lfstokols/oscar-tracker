@@ -1,41 +1,44 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import random
 from flask import session
 from enum import Enum
-
 from backend.types.api_schemas import UserID
 
 
 class UserSession:
-    def __init__(self, user_id: UserID):
-        self.session_token: int = random.randint(1, 2**32)
-        self.user_id: UserID = user_id
-        self.session_start: datetime = datetime.now()
-        self.last_activity: datetime = datetime.now()
-        self.ip_address = None
-        self.user_agent = None
-        self.last_letterboxd_check = None
+    delta_minutes_inactive = 20
 
-    def update_activity(self):
-        self.last_activity = datetime.now()
+    @staticmethod
+    def start_new(user_id: UserID) -> None:
+        session[_SessionArgs.user_id.value] = user_id
+        session[_SessionArgs.last_activity.value] = datetime.now()
 
+    @staticmethod
+    def end() -> None:
+        session[_SessionArgs.user_id.value] = None
+        session[_SessionArgs.last_activity.value] = None
+    
+    @staticmethod
+    def log_activity() -> None:
+        session[_SessionArgs.last_activity.value] = datetime.now()
 
-def start_new_session(user_id: UserID):
-    session[SessionArgs.user_id.value] = user_id
-    session[SessionArgs.last_activity.value] = datetime.now()
+    @staticmethod
+    def is_time_to_update() -> bool:
+        last_activity = session.get(_SessionArgs.last_activity.value, datetime.min)
+        time_since_last_activity = datetime.now() - last_activity
+        return time_since_last_activity > timedelta(minutes=UserSession.delta_minutes_inactive)
 
+    @staticmethod
+    def id_matches_session(user_id: UserID) -> bool:
+        return session.get(_SessionArgs.user_id.value) == user_id
 
-def log_session_activity():
-    session[SessionArgs.last_activity.value] = datetime.now()
+    @staticmethod
+    def session_added_user() -> None:
+        if _SessionArgs.new_user_additions.value not in session:
+            session[_SessionArgs.new_user_additions.value] = []
+        session[_SessionArgs.new_user_additions.value].append(datetime.now())
 
-
-def session_added_user():
-    if SessionArgs.new_user_additions.value not in session:
-        session[SessionArgs.new_user_additions.value] = []
-    session[SessionArgs.new_user_additions.value].append(datetime.now())
-
-
-class SessionArgs(Enum):
+class _SessionArgs(Enum):
     user_id = "user_id"
     last_activity = "last_activity"
     new_user_additions = "new_user_additions"

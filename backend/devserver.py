@@ -1,8 +1,7 @@
 import sys, os, logging
 from pathlib import Path
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-from flask import Flask, request, send_from_directory, abort, session
+from flask import Flask, g, request, send_from_directory, abort, session
 from flask_apscheduler import APScheduler
 
 # * Add the project root to the system path
@@ -16,12 +15,8 @@ from backend.utils.logging_config import setup_logging
 
 setup_logging(env.LOG_PATH)
 # * The rest of the imports
-from backend.types.api_validators import UserValidator, AnnotatedValidator
-from backend.routing_lib.user_session import (
-    start_new_session,
-    log_session_activity,
-    SessionArgs,
-)
+from backend.types.api_validators import UserValidator, AnnotatedValidator, validate_user_id
+from backend.routing_lib.user_session import UserSession
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
 import backend.data.db_connections
@@ -32,6 +27,7 @@ logging.info(f"The port should be {DEVSERVER_PORT}.")
 
 
 if not env.STATIC_PATH.exists():
+    logging.error(f"The static folder {env.STATIC_PATH} does not exist, cannot start devserver.")
     raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
 app = Flask(__name__, static_folder=env.STATIC_PATH)
@@ -72,18 +68,6 @@ def serve_joke():
     return "<h1>It's a joke!</h1>"
 
 
-# @app.route("/force-refresh")
-# def force_refresh():
-#     logging.debug("got a force refresh")
-#     try:
-#         user_id = AnnotatedValidator(user=session.get("activeUserId")).user
-#         assert user_id is not None
-#         update_user_watchlist(user_id)
-#         return "bsnsns", 200
-#     except Exception as e:
-#         return abort(400)
-
-
 @app.route("/favicon.ico")
 def favicon():
     return send_from_directory(
@@ -94,25 +78,25 @@ def favicon():
 @app.before_request
 def before_request():
     login = request.cookies.get("activeUserId")
+    g.initial_user_id_value = login
     if login is None or login == "":
         return
-    try:
-        login = UserValidator(user=login).user
-    except Exception as e:
-        logging.error(f"Invalid user id {e} found in cookie.")
-        login = None
-        session[SessionArgs.user_id.value] = None
-        session[SessionArgs.last_activity.value] = None
+    #! From here, assume cookie is _intended_ to have valid UserID
+    id, code = validate_user_id(login)
 
-    if login and session.get("session_token") != login:
-        start_new_session(login)
+    if code != 0:
+        logging.error(f"[before_request()] Invalid user id {login} found in cookie.")
+        UserSession.end()
+        g.should_delete_cookie = True
+        return
+    
+    if UserSession.id_matches_session(id):
+        UserSession.log_activity()
+    else:
+        UserSession.start_new(id)
 
-    if login and datetime.now() - session.get(
-        "last_activity", datetime.min
-    ) > timedelta(minutes=20):
-        update_user_watchlist(login)
-        log_session_activity()
-
+    if UserSession.is_time_to_update():
+        update_user_watchlist(id)
 
 if __name__ == "__main__":
     app.run(debug=env.RUN_DEBUG, port=env.DEVSERVER_PORT)

@@ -1,42 +1,32 @@
-import os, logging
-from datetime import datetime
-import time
+import logging
 from functools import wraps
 from flask import Blueprint, send_from_directory, request, jsonify, abort, make_response
 from pathlib import Path
-from pydantic import ValidationError
-import requests
-import backend.utils.env_reader as env
 import backend.data.queries as qu
 import backend.data.mutations as mu
 from backend.types.my_types import *
-from backend.types.api_schemas import UserID, WatchStatus_pyd
+from backend.types.api_schemas import UserID
 from backend.types.api_validators import (
+    validate_movie_id,
     validate_nom_list,
     validate_movie_list,
+    validate_user_id,
     validate_user_list,
     validate_watchlist,
     validate_category_list,
     validate_my_user_data,
     validate_category_completion_dict,
     validate_user_stats_list,
-    AnnotatedValidator,
     UserValidator,
-    MovieValidator,
-    CategoryValidator,
-    PosterPathValidator,
+    validate_watchstatus,
 )
-from backend.routing_lib.user_session import session_added_user
+from backend.routing_lib.user_session import UserSession
 
-from backend.scheduled_tasks.check_rss import (
-    get_movie_list_from_rss,
-)
 from backend.routes.forwarding import forwarding
 from backend.routes.hooks import hooks
 
-from backend.routing_lib import utils
-from backend.routing_lib.utils import (
-    has_flag,
+import backend.routing_lib.request_parser as parser
+from backend.routing_lib.error_handling import (
     APIArgumentError,
     handle_errors,
 )
@@ -56,7 +46,7 @@ oscars.register_blueprint(hooks, url_prefix="/hooks/")
 @oscars.route("/nominations", methods=["GET"])
 @handle_errors
 def serve_noms():
-    year = utils.get_year(request)
+    year = parser.get_year(request)
     data = qu.get_noms(year)
     return validate_nom_list(data)
 
@@ -64,7 +54,7 @@ def serve_noms():
 @oscars.route("/movies", methods=["GET"])
 @handle_errors
 def serve_movies():
-    year = utils.get_year(request)
+    year = parser.get_year(request)
     data = qu.get_movies(year)
     return validate_movie_list(data)
 
@@ -72,14 +62,8 @@ def serve_movies():
 @oscars.route("/users", methods=["GET"])
 @handle_errors
 def serve_users_GET():
-    userId = utils.get_active_user_id(request)
-    if has_flag(request, "myData"):
-        if userId is None:
-            if request.cookies.get("activeUserId") is not None:
-                response = make_response()
-                response.delete_cookie("activeUserId")
-                return response, 400
-            raise APIArgumentError("No active user id", [("activeUserId", "cookie")])
+    if parser.has_flag(request, "myData"):
+        userId = parser.get_active_user_id(request)
         data = qu.get_my_user_data(userId)
         return jsonify(validate_my_user_data(data))
     else:
@@ -87,16 +71,20 @@ def serve_users_GET():
 
 
 @oscars.route("/users", methods=["POST"])
+#* (POST means add a new user)
 @handle_errors
 def serve_users_POST():
     # * Expects a body with a username field
     # * Any other fields in body will be added to the user
     if request.json is None:
-        raise ValueError("No body provided, what am I supposed to update?")
+        raise APIArgumentError("No body provided, what am I supposed to update?", [("body", "literally anything")])
     username = request.json.get("username")
-    newUserId: UserID = mu.add_user(username)
-    newUserId = UserValidator(user=newUserId).user
-    session_added_user()
+    newUserReturn = mu.add_user(username)
+    newUserId, code = validate_user_id(newUserReturn)
+    if code != 0:
+        logging.error(f"Tried to add a new user, but somehow mu.add_user() returned an invalid user id <{newUserReturn}>.")
+        return jsonify({"error": "Ambiguous success state from user creation process"}), 500
+    UserSession.session_added_user()
     mu.update_user(newUserId, request.json)
     newState = qu.get_users()
     newState = validate_user_list(newState)
@@ -104,12 +92,11 @@ def serve_users_POST():
 
 
 @oscars.route("/users", methods=["PUT"])
+#* (PUT means update a user's info)
 @handle_errors
 def serve_users_PUT():
     # * Expects any dictionary of user data
-    userId = utils.get_active_user_id(request)
-    if userId is None:
-        raise APIArgumentError("No active user id", [("activeUserId", "cookie")])
+    userId = parser.get_active_user_id(request)
     if request.json is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
     mu.update_user(userId, request.json)
@@ -123,9 +110,9 @@ def serve_users_PUT():
 def serve_users_DELETE():
     if request.json is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
-    cookie_id = request.cookies.get("activeUserId")
+    cookie_id = parser.get_active_user_id(request)
     param_id = request.args.get("userId")
-    body_id: UserID = request.json.get("userId")
+    body_id = request.json.get("userId")
     if not (request.json.get("forRealsies") and request.json.get("delete")):
         raise APIArgumentError(
             "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
@@ -135,7 +122,7 @@ def serve_users_DELETE():
             "Need matching ids in cookie, param, and body",
             [("activeUserId", "cookie"), ("userId", "param"), ("userId", "body")],
         )
-    real_id = UserValidator(user=body_id).user
+    real_id = cookie_id
     mu.delete_user(real_id)
     return validate_user_list(qu.get_users())
 
@@ -151,12 +138,10 @@ def serve_categories():
 @oscars.route("/watchlist", methods=["GET"])
 @handle_errors
 def serve_watchlist_GET():
-    userId = utils.get_active_user_id(request)
-    justMe = (
-        x.lower() == "true" if ((x := request.args.get("justMe")) != None) else False
-    )
-    year = utils.get_year(request)
+    year = parser.get_year(request)
+    justMe = parser.has_flag(request, "justMe")
     if justMe:
+        userId = parser.get_active_user_id(request)
         data = qu.get_watchlist(year)
         data = [row for row in data if row["userId"] == userId]
         return validate_watchlist(data)
@@ -167,23 +152,27 @@ def serve_watchlist_GET():
 @oscars.route("/watchlist", methods=["PUT"])
 @handle_errors
 def serve_watchlist_PUT():
-    userId = utils.get_active_user_id(request)
+    userId = parser.get_active_user_id(request)
     if request.json is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
-    year = utils.get_year(request, body=True)
-    if userId is None:
-        raise APIArgumentError("No active user id", [("activeUserId", "cookie")])
+    year = parser.get_year(request, body=True)
     movieIds = request.json.get("movieIds")
     status = request.json.get("status")
     for movieId in movieIds:
-        mu.add_watchlist_entry(year, userId, movieId, status)
+        validMovieId, code = validate_movie_id(movieId)
+        if code != 0:
+            raise APIArgumentError(f"Invalid movie id: {movieId}", [("movieIds", "body")])
+        validStatus, code = validate_watchstatus(status)
+        if code != 0:
+            raise APIArgumentError(f"Invalid status: {status}", [("status", "body")])
+        mu.add_watchlist_entry(year, userId, validMovieId, validStatus)
     return validate_watchlist(qu.get_watchlist(year))
 
 
 @oscars.route("/by_user", methods=["GET"])
 @handle_errors
 def serve_by_user():
-    year = utils.get_year(request)
+    year = parser.get_year(request)
     data = qu.get_user_stats(year)
     return validate_user_stats_list(data)
 
@@ -191,7 +180,7 @@ def serve_by_user():
 @oscars.route("/by_category", methods=["GET"])
 @handle_errors
 def serve_by_category():
-    year = utils.get_year(request)
+    year = parser.get_year(request)
     data = qu.get_category_completion_dict(year)
     return validate_category_completion_dict(data)
 
