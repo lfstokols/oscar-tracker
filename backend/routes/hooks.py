@@ -30,4 +30,5 @@ def force_refresh():
             movieId=movie_id,
             status=WatchStatus.SEEN,
         )
-    return jsonify({"message": "Watchlist updated"}), 200
+    total_new_entries = len(movie_list)
+    return jsonify({"message": "Watchlist updated", "foundEntries": total_new_entries}), 200
