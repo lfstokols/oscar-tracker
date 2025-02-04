@@ -208,7 +208,7 @@ def try_to_find_moviedb_id(movie, year) -> Optional[int]:
     if not pd.isna(movie[MovieColumns.Imdb_ID]):
         # use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
         # if use_Imdb:
-        Imdb_id = movie[MovieColumns.MovieDB_ID]
+        Imdb_id = movie[MovieColumns.Imdb_ID]
         result = fetch_from_Imdb_id(Imdb_id)
         if result is None:
             error_print(

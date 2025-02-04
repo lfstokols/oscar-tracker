@@ -1,6 +1,12 @@
 from flask import request, Blueprint
 import requests
-from backend.routing_lib.error_handling import handle_errors
+from backend.access_external.get_links import get_Imdb, get_justwatch
+from backend.data.db_connections import Session
+from backend.data.db_schema import Movie
+from backend.routing_lib.error_handling import APIArgumentError, handle_errors
+import backend.routing_lib.request_parser as parser
+from backend.types.api_schemas import MovieID
+from backend.types.api_validators import validate_movie_id
 
 forwarding = Blueprint("forwarding", __name__)
 
@@ -19,6 +25,31 @@ def serve_letterboxd_search():
     url = f"https://letterboxd.com/s/search/members/{search_term}"
     response = requests.get(url)
     return response.text
+
+
+@forwarding.route("/get_link", methods=["GET"])
+@handle_errors
+def serve_get_link():
+    """
+    Returns a link to the service for the given movie_id and service.
+    """
+    movie_id = parser.get_param(request, "id")
+    valid_movie_id, code = validate_movie_id(movie_id)
+    if code != 0:
+        raise APIArgumentError(f"Invalid movie id: {movie_id}", [("movie_id", "query params")])
+    service = parser.get_param(request, "service")
+    if service not in ["justwatch", "imdb"]:
+        raise APIArgumentError(f"Invalid service: {service}", [("service", "query params")])
+    with Session() as session:
+        movie = session.query(Movie.movie_db_id, Movie.movie_id).filter(Movie.movie_id == valid_movie_id).first()
+        if movie is None:
+            raise APIArgumentError(f"Movie not found: {movie_id}", [("movie_id", "query params")])        
+        id_number = int(movie[0])
+    if service == "justwatch":
+        url = get_justwatch(id_number)
+    elif service == "imdb":
+        url = get_Imdb(id_number)
+    return {"url": url}
 
 
 @forwarding.route("/moviedb", methods=["GET"])

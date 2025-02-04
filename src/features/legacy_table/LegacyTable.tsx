@@ -97,6 +97,7 @@ export default function LegacyTable({
           <TableRow>
             <TableHeaderCell key="film" colSpan={2} text="Film" />
             <TableHeaderCell key="nominations" text="Nominations" />
+            <TableHeaderCell key="external" text="External Links" />
             <TableHeaderCell
               key="runtime"
               icon={<SwapHoriz />}

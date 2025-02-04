@@ -49,6 +49,10 @@ LockedFileResponse = (
     423,
 )
 
+class externalAPIError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 def catch_file_locked_error(
     func: Callable[..., Any], *args, **kwargs

@@ -1,4 +1,5 @@
 import logging
+from typing import Type, TypeVar, cast
 from flask import Request, g
 from backend.types.api_schemas import UserID
 from backend.types.api_validators import validate_user_id
@@ -54,3 +55,26 @@ def get_year(request: Request, body: bool = False) -> int:
             malformed_data=[("year", "query params" if not body else "body")],
         )
     return year
+
+
+T = TypeVar("T")
+
+def get_param(request: Request, param: str, type_: Type[T] = str) -> T:
+    """
+    Returns the value of the given parameter from the request.
+    Use instead of request.args.get() for type-safety and error-handling.
+    """
+    value = request.args.get(param)
+    if value is None:
+        raise APIArgumentError(
+            f"Missing parameter {param}",
+            missing_data=[(param, "query params")],
+        )
+    try:
+        return cast(T, value)
+    except ValueError:
+        raise APIArgumentError(
+            f"Invalid parameter {param}, expected {type_} but got {value}",
+            malformed_data=[(param, "query params")],
+        )
+

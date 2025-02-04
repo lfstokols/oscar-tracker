@@ -1,4 +1,5 @@
 import TableRow from '@mui/material/TableRow';
+import ExternalLinkCell from './cells/ExternalLinkCell';
 import MoviePosterCell from './cells/MoviePosterCell';
 import NominationsCell from './cells/NominationsCell';
 import RuntimeCell from './cells/RuntimeCell';
@@ -43,6 +44,9 @@ export default function MovieRows({
               categories={categories}
               movieId={movie.id}
               nominations={nominations}
+            />
+            <ExternalLinkCell
+              movieId={movie.id}
             />
             <RuntimeCell
               isRuntimeFormatted={isRuntimeFormatted}
