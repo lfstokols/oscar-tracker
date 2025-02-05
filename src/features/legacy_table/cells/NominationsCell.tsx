@@ -153,7 +153,7 @@ function Entry({
   return (
     <>
       {getGroupingMarker(Grouping[category.grouping])}
-      {category.fullName + (!isMobile && category.hasNote ? ': ' : '')}
+      {category.shortName + (!isMobile && category.hasNote ? ': ' : '')}
       {!isMobile ? formattedNote : ''}
       <br />
     </>

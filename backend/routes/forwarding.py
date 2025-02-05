@@ -1,3 +1,4 @@
+import re
 from flask import request, Blueprint
 import requests
 from backend.access_external.get_links import get_Imdb, get_justwatch
@@ -46,10 +47,12 @@ def serve_get_link():
             raise APIArgumentError(f"Movie not found: {movie_id}", [("movie_id", "query params")])        
         id_number = int(movie[0])
     if service == "justwatch":
-        url = get_justwatch(id_number)
+        url, code = get_justwatch(id_number)
+        if code == 1:
+           return {"failed": True, "message": url}
     elif service == "imdb":
         url = get_Imdb(id_number)
-    return {"url": url}
+    return {"failed": False, "url": url}
 
 
 @forwarding.route("/moviedb", methods=["GET"])

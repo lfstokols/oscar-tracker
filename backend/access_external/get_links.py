@@ -1,3 +1,5 @@
+import logging
+import re
 import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
@@ -6,7 +8,7 @@ from routing_lib.error_handling import externalAPIError
 
 movie_db_key = env.TMDB_API_KEY
 
-def get_justwatch(tmdb_id: int) -> str:
+def get_justwatch(tmdb_id: int) -> tuple[str, int]:
     """
     Get the JustWatch URL for a given TMDB ID.
     """
@@ -19,15 +21,18 @@ def get_justwatch(tmdb_id: int) -> str:
     text = ott_div.find_next('p')
     if text is None or type(text) != Tag:
         raise externalAPIError(f"No JustWatch URL found for {tmdb_id}: no text found after ott_title block")
+    if re.fullmatch(r"^(There are no offers).*", text.text.strip()):
+        return text.text.strip(), 1
     link = text.find("a")
     if link is None or type(link) != Tag or "href" not in link.attrs:
+        logging.debug(f"No link found for {tmdb_id}: {text.text.strip()}")
         raise externalAPIError(f"No JustWatch URL found for {tmdb_id}: no link found after ott_title block")
     justwatch_url = link["href"]
     if type(justwatch_url) == list and len(justwatch_url) > 0 and type(justwatch_url[0]) == str:
         justwatch_url = justwatch_url[0]
     if justwatch_url is None or type(justwatch_url) != str:
         raise externalAPIError(f"No JustWatch URL found for {tmdb_id}: link href is not a string")
-    return justwatch_url
+    return justwatch_url, 0
 
 def movie_db_url(tmdb_id: int) -> str:
     """
