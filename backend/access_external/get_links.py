@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 import backend.utils.env_reader as env
-from routing_lib.error_handling import externalAPIError
+from backend.routing_lib.error_handling import externalAPIError
 
 movie_db_key = env.TMDB_API_KEY
 

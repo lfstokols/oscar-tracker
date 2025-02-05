@@ -1,5 +1,6 @@
 #! /bin/bash
-set -eux # exit on error or undefined variable, print commands before execution
+#set -eux # exit on error or undefined variable, print commands before execution
+set -eu
 #* 0. Get configuration
 CONFIG_FILE="$HOME/deploy.config.sh"
 if [ -f "$CONFIG_FILE" ]; then
@@ -65,5 +66,5 @@ ssh "$MY_SSH" "rm $REMOTE_CURRENT \
 
 #* 7. Restart service
 echo "Restarting gunicorn..."
-ssh "$MY_SSH" "sudo systemctl restart $SERVICE_NAME"
+ssh -S "$MY_SSH" "sudo systemctl restart $SERVICE_NAME"
 echo "gunicorn restarted."
