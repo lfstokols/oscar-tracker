@@ -1,0 +1,73 @@
+{
+    "include": [
+        "backend"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "**/.venv/**",
+        "**/.*"
+    ],
+    "venvPath": ".",
+    "venv": ".venv",
+    "reportMissingImports": true,
+    "reportMissingTypeStubs": "information",
+    "pythonVersion": "3.12",
+    "pythonPlatform": "Linux",
+    "executionEnvironments": [
+        {
+            "root": ".",
+            "extraPaths": [
+                "."
+            ]
+        }
+    ],
+    // General settings
+    "typeCheckingMode": "basic",
+    "reportUnnecessaryTypeIgnoreComment": "warning", // use "# pyright ignore[relevant_problem]" to ignore a specific error
+    "useLibraryCodeForTypes": true,
+
+    // Personal preferences
+    "deprecateTypingAliases": true,
+    "reportUninitializedInstanceVariable": "information",
+    "reportImplicitOverride": "information",
+    "reportMissingSuperCall": "information",
+    "strictParameterNoneValue": true, // Apparently the alternative is deprecated :(
+
+    // Misc error settings
+    "reportPropertyTypeMismatch": true,
+    "reportImportCycles": "warning",
+    "reportDuplicateImport": "warning",
+    "reportNoOverloads": "warning",
+    "reportReturnType": "error",  // This is iffy. On saved code, it should definitely be an error, but I hate that it complains while I'm typing.
+    "reportRedeclaration": "warning",
+    "reportDeprecated": "warning",
+    "reportInconsistentConstructor": "warning",
+    "reportUnnecessaryContains": "information",
+    "reportUnnecessaryIsInstance": "none",
+    "reportUnnecessaryComparison": "information",
+    "reportUnnecessaryCast": "information",
+    "reportUnusedCallResult": "warning",
+
+    // Complain on untyped code
+    "reportUnknownMemberType": "warning",  // This is the only way to catch typos in . access, e.g. foo.my_thinng
+    "reportUnknownArgumentType": "warning",
+    "reportUnknownVariableType": "warning",
+    "reportUnknownLambdaType": "warning",
+    "reportUnknownParameterType": "warning",
+    "reportUnknownReturnType": "warning",
+    "reportUntypedClassDecorator": "warning",
+    "reportUntypedBaseClass": "warning",
+    "reportUntypedNamedTuple": "warning",
+    "reportMissingTypeArgument": "information",
+
+    // Unused stuff
+    "reportUnusedFunction": "information",
+    "reportUnusedClass": "information",
+    "reportUnusedVariable": "information",
+    "reportUnusedImport": "information",
+    "reportUnusedTypeAlias": "information",
+    "reportUnusedTypeParameter": "information"
+
+
+}
