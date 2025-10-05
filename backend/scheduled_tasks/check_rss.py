@@ -1,18 +1,15 @@
-from datetime import datetime
 import logging
+from datetime import datetime
+
 import pandas as pd
-from backend.types.my_types import *
-from backend.types.api_schemas import MovieID, UserID
 import requests
 from bs4 import BeautifulSoup
+
 import backend.data.mutations as mu
 import backend.data.queries as qu
-from backend.data.db_schema import User
-from backend.types.api_validators import (
-    AnnotatedValidator,
-    MovieValidator,
-    UserValidator,
-)
+from backend.types.api_schemas import MovieID, UserID
+from backend.types.api_validators import MovieValidator
+from backend.types.my_types import *
 
 
 def update_user_watchlist(user_id: UserID) -> bool:
@@ -80,11 +77,15 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     # * fetch the data
     soup = fetch_rss(account)
     mdb_id_list = parse_rss(soup)
-    logging.debug(f"While checking RSS for {user_id}, found {len(mdb_id_list)} movie IDs listed on the page."\
-                  f"For example: {mdb_id_list[:3]}")
+    logging.debug(
+        f"While checking RSS for {user_id}, found {len(mdb_id_list)} movie IDs listed on the page."
+        f"For example: {mdb_id_list[:3]}"
+    )
     # * identify the movies
     movies = qu.get_movies(year)
-    sample_data = [[x[MovieColumns.ID.value], x[MovieColumns.MovieDB_ID.value]] for x in movies[:3]]
+    sample_data = [
+        [x[MovieColumns.ID.value], x[MovieColumns.MovieDB_ID.value]] for x in movies[:3]
+    ]
     sample_strings = [f"{x[0]}: {type(x[1])} {x[1]}" for x in sample_data]
     logging.debug(f"The movie data has tmdb ids like {', '.join(sample_strings)}")
     my_id_list = [
@@ -92,7 +93,9 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
         for row in movies
         if int(row[MovieColumns.MovieDB_ID.value]) in mdb_id_list
     ]
-    logging.debug(f"Of those {len(mdb_id_list)} movie IDs listed on the page, {len(my_id_list)} matched movies in my database.")
+    logging.debug(
+        f"Of those {len(mdb_id_list)} movie IDs listed on the page, {len(my_id_list)} matched movies in my database."
+    )
     validated_idlist = []
     for id in my_id_list:
         try:

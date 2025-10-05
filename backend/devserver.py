@@ -1,7 +1,10 @@
-import sys, os, logging
-from pathlib import Path
+import logging
+import os
+import sys
 from datetime import datetime, timedelta
-from flask import Flask, g, request, send_from_directory, abort, session
+from pathlib import Path
+
+from flask import Flask, abort, g, request, send_from_directory, session
 from flask_apscheduler import APScheduler
 
 # * Add the project root to the system path
@@ -14,20 +17,27 @@ import backend.utils.env_reader as env
 from backend.utils.logging_config import setup_logging
 
 setup_logging(env.LOG_PATH)
-# * The rest of the imports
-from backend.types.api_validators import UserValidator, AnnotatedValidator, validate_user_id
+import backend.data.db_connections
+from backend.routes.database_routes import oscars
 from backend.routing_lib.user_session import UserSession
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
-import backend.data.db_connections
-from backend.routes.database_routes import oscars
+
+# * The rest of the imports
+from backend.types.api_validators import (
+    AnnotatedValidator,
+    UserValidator,
+    validate_user_id,
+)
 
 DEVSERVER_PORT = env.DEVSERVER_PORT  #! Gunicorn breaks without this!!!
 logging.info(f"The port should be {DEVSERVER_PORT}.")
 
 
 if not env.STATIC_PATH.exists():
-    logging.error(f"The static folder {env.STATIC_PATH} does not exist, cannot start devserver.")
+    logging.error(
+        f"The static folder {env.STATIC_PATH} does not exist, cannot start devserver."
+    )
     raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
 app = Flask(__name__, static_folder=env.STATIC_PATH)
@@ -89,7 +99,7 @@ def before_request():
         UserSession.end()
         g.should_delete_cookie = True
         return
-    
+
     if UserSession.id_matches_session(id):
         UserSession.log_activity()
     else:
@@ -97,6 +107,7 @@ def before_request():
 
     if UserSession.is_time_to_update():
         update_user_watchlist(id)
+
 
 if __name__ == "__main__":
     app.run(debug=env.RUN_DEBUG, port=env.DEVSERVER_PORT)

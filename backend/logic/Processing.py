@@ -1,16 +1,14 @@
 import logging
 import re
-from backend.types.api_schemas import (
-    MovieID,
-    CategoryCompletionKey,
-)
+
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup, Tag
-import pandas as pd
-from backend.types.my_types import Grouping
+
 from backend.logic.storage_manager import StorageManager
-from backend.types.api_schemas import UserID
+from backend.types.api_schemas import CategoryCompletionKey, MovieID, UserID
 from backend.types.my_types import *
+from backend.types.my_types import Grouping
 
 
 def are_movies_short(
@@ -30,9 +28,9 @@ def are_movies_short(
     return (num_short_noms > 0).rename(DerivedMovieColumns.IS_SHORT.value)
 
 
-def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series:
+def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series[bool]:
     return (nominations.groupby(NomColumns.MOVIE.value).size() > 1).rename(
-        DerivedMovieColumns.IS_MULTI_NOM.value
+        DerivedMovieColumns.IS_MULTI_NOM.value  # pyright: ignore[reportCallIssue, reportArgumentType]
     )
 
     # Create boolean series indicating if each movie has any short nominations
@@ -75,6 +73,7 @@ def break_into_subtitles(fullTitle: str, subtitlePosition: int) -> tuple[str, st
             subtitle = ""
         return mainTitle, subtitle
     except Exception as e:
+        logging.error(f"Error breaking into subtitles: {e}")
         return fullTitle, ""
 
 
