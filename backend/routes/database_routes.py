@@ -1,20 +1,16 @@
 import logging
-from functools import wraps
-from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi import APIRouter, HTTPException, Request
 
 import backend.data.mutations as mu
 import backend.data.queries as qu
 import backend.routing_lib.request_parser as parser
 from backend.routes.forwarding import router as forwarding_router
 from backend.routes.hooks import router as hooks_router
-from backend.routing_lib.error_handling import APIArgumentError, handle_errors
+from backend.routing_lib.error_handling import APIArgumentError
 from backend.routing_lib.user_session import UserSession
-from backend.types.api_schemas import UserID
+from backend.types.api_schemas import api_Movie, api_Nom
 from backend.types.api_validators import (
-    UserValidator,
     validate_category_completion_dict,
     validate_category_list,
     validate_movie_id,
@@ -37,23 +33,18 @@ router.include_router(hooks_router, prefix="/hooks")
 
 # Serve data
 @router.get("/nominations")
-@handle_errors
-async def serve_noms(request: Request) -> :
-    year = parser.get_year(request)
+async def serve_noms(year: parser.ActiveYear) -> list[api_Nom]:
     data = qu.get_noms(year)
     return validate_nom_list(data)
 
 
 @router.get("/movies")
-@handle_errors
-async def serve_movies(request: Request):
-    year = parser.get_year(request)
+async def serve_movies(year: parser.ActiveYear) -> list[api_Movie]:
     data = qu.get_movies(year)
     return validate_movie_list(data)
 
 
 @router.get("/users")
-@handle_errors
 async def serve_users_GET(request: Request):
     if parser.has_flag(request, "myData"):
         userId = parser.get_active_user_id(request)
@@ -65,7 +56,6 @@ async def serve_users_GET(request: Request):
 
 @router.post("/users")
 # * (POST means add a new user)
-@handle_errors
 async def serve_users_POST(request: Request):
     # * Expects a body with a username field
     # * Any other fields in body will be added to the user
@@ -85,7 +75,7 @@ async def serve_users_POST(request: Request):
         raise HTTPException(
             status_code=500, detail="Ambiguous success state from user creation process"
         )
-    UserSession.session_added_user()
+    UserSession(request).session_added_user()
     mu.update_user(newUserId, body)
     newState = qu.get_users()
     newState = validate_user_list(newState)
@@ -94,7 +84,6 @@ async def serve_users_POST(request: Request):
 
 @router.put("/users")
 # * (PUT means update a user's info)
-@handle_errors
 async def serve_users_PUT(request: Request):
     # * Expects any dictionary of user data
     userId = parser.get_active_user_id(request)
@@ -108,7 +97,6 @@ async def serve_users_PUT(request: Request):
 
 
 @router.delete("/users")
-@handle_errors
 async def serve_users_DELETE(request: Request):
     body = await request.json()
     if body is None:
@@ -131,7 +119,6 @@ async def serve_users_DELETE(request: Request):
 
 
 @router.get("/categories")
-@handle_errors
 async def serve_categories():
     return validate_category_list(qu.get_categories())
 
@@ -139,7 +126,6 @@ async def serve_categories():
 # Expect justMe = bool
 # If PUT, expect movieId and status
 @router.get("/watchlist")
-@handle_errors
 async def serve_watchlist_GET(request: Request):
     year = parser.get_year(request)
     justMe = parser.has_flag(request, "justMe")
@@ -153,7 +139,6 @@ async def serve_watchlist_GET(request: Request):
 
 
 @router.put("/watchlist")
-@handle_errors
 async def serve_watchlist_PUT(request: Request):
     userId = parser.get_active_user_id(request)
     body = await request.json()
@@ -176,7 +161,6 @@ async def serve_watchlist_PUT(request: Request):
 
 
 @router.get("/by_user")
-@handle_errors
 async def serve_by_user(request: Request):
     year = parser.get_year(request)
     data = qu.get_user_stats(year)
@@ -184,7 +168,6 @@ async def serve_by_user(request: Request):
 
 
 @router.get("/by_category")
-@handle_errors
 async def serve_by_category(request: Request):
     year = parser.get_year(request)
     data = qu.get_category_completion_dict(year)

@@ -7,7 +7,7 @@ import backend.routing_lib.request_parser as parser
 from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
-from backend.routing_lib.error_handling import APIArgumentError, handle_errors
+from backend.routing_lib.error_handling import APIArgumentError
 from backend.types.api_schemas import MovieID
 from backend.types.api_validators import validate_movie_id
 
@@ -15,7 +15,6 @@ router = APIRouter()
 
 
 @router.get("/letterboxd/search")
-@handle_errors
 async def serve_letterboxd_search(request: Request):
     """
     Just a proxy for letterboxd.com search
@@ -31,7 +30,6 @@ async def serve_letterboxd_search(request: Request):
 
 
 @router.get("/get_link")
-@handle_errors
 async def serve_get_link(request: Request):
     """
     Returns a link to the service for the given movie_id and service.
@@ -68,7 +66,6 @@ async def serve_get_link(request: Request):
 
 
 @router.get("/moviedb")
-@handle_errors
 async def serve_moviedb(request: Request):
     """
     Just a proxy for moviedb.org

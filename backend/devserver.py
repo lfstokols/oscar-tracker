@@ -6,10 +6,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
-from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import (
+    SessionMiddleware as StarletteSessionMiddleware,
+)
 
 # * Add the project root to the system path
 project_root_directory = Path(__file__).parent.parent
@@ -23,8 +25,8 @@ from backend.utils.logging_config import setup_logging
 setup_logging(env.LOG_PATH)
 import backend.data.db_connections
 from backend.routes.database_routes import router as oscars_router
-from backend.routing_lib.user_session import UserSession
-from backend.scheduled_tasks.check_rss import update_user_watchlist
+from backend.routing_lib.error_handling import apply_error_handling
+from backend.routing_lib.user_session import SessionMiddleware as MySessionMiddleware
 from backend.scheduled_tasks.scheduling import Config
 
 # * The rest of the imports
@@ -45,7 +47,7 @@ if not env.STATIC_PATH.exists():
     raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
 # Setup scheduler
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(Config.JOBS)
 
 
 @asynccontextmanager
@@ -66,8 +68,8 @@ app.include_router(oscars_router, prefix="/api")
 app.mount("/", StaticFiles(directory=str(env.STATIC_PATH), html=True), name="static")
 
 
-@app.route("/jokes")
-def serve_joke():
+@app.get("/jokes")
+async def serve_joke():
     return HTMLResponse("<h1>It's a joke!</h1>")
 
 
@@ -76,28 +78,40 @@ async def favicon():
     return FileResponse("../public/favicon.ico", media_type="image/vnd.microsoft.icon")
 
 
-@app.middleware("http")
-def before_request(request: Request):
-    login = request.cookies.get("activeUserId")
-    request.state.initial_user_id_value = login
-    if login is None or login == "":
-        return
-    #! From here, assume cookie is _intended_ to have valid UserID
-    id, code = validate_user_id(login)
+app.add_middleware(MySessionMiddleware)
+app.add_middleware(
+    StarletteSessionMiddleware,
+    secret_key=env.FLASK_SECRET_KEY,
+    max_age=7 * 24 * 60 * 60,  # 7 days
+    same_site="lax",
+)
 
-    if code != 0:
-        logging.error(f"[before_request()] Invalid user id {login} found in cookie.")
-        UserSession.end()
-        request.state.should_delete_cookie = True
-        return
 
-    if UserSession.id_matches_session(id):
-        UserSession.log_activity()
-    else:
-        UserSession.start_new(id)
+# @app.middleware("http")
+# async def before_request(request: Request):
+#     login = request.cookies.get("activeUserId")
+#     request.state.initial_user_id_value = login
+#     if login is None or login == "":
+#         return
+#     #! From here, assume cookie is _intended_ to have valid UserID
+#     id, code = validate_user_id(login)
 
-    if UserSession.is_time_to_update():
-        update_user_watchlist(id)
+#     if code != 0:
+#         logging.error(f"[before_request()] Invalid user id {login} found in cookie.")
+#         UserSession.end()
+#         request.state.should_delete_cookie = True
+#         return
+
+#     if UserSession.id_matches_session(id):
+#         UserSession.log_activity()
+#     else:
+#         UserSession.start_new(id)
+
+#     if UserSession.is_time_to_update():
+#         update_user_watchlist(id)
+
+
+apply_error_handling(app)
 
 
 if __name__ == "__main__":

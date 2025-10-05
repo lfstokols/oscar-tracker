@@ -5,7 +5,6 @@ from fastapi import APIRouter, Request
 
 import backend.data.mutations as mu
 from backend.routing_lib import request_parser as parser
-from backend.routing_lib.error_handling import handle_errors
 from backend.scheduled_tasks.check_rss import get_movie_list_from_rss
 from backend.types.my_types import *
 
@@ -13,7 +12,6 @@ router = APIRouter()
 
 
 @router.get("/force-refresh")
-@handle_errors
 async def force_refresh(request: Request):
     logging.info("got a force refresh")
     year = datetime.now().year - 1

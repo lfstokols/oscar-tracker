@@ -1,11 +1,12 @@
 import logging
-from pprint import pformat
-from flask import g, jsonify, make_response
-from typing import Any, Callable
-from sqlalchemy.exc import OperationalError
 import time
 from functools import wraps
+from pprint import pformat
+from typing import Any, Callable
+
+from fastapi import FastAPI, Request, Response
 from pydantic import ValidationError
+from sqlalchemy.exc import OperationalError
 
 import backend.utils.env_reader as env
 
@@ -28,8 +29,8 @@ class APIArgumentError(Exception):
         super().__init__(self.message)
 
 
-def no_year_response():
-    return (jsonify({"error": "No year provided"}), 422)
+# def no_year_response():
+#     return (jsonify({"error": "No year provided"}), 422)
 
 
 class YearError(APIArgumentError):
@@ -49,10 +50,12 @@ LockedFileResponse = (
     423,
 )
 
+
 class externalAPIError(Exception):
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
+
 
 def catch_file_locked_error(
     func: Callable[..., Any], *args, **kwargs
@@ -67,7 +70,7 @@ def catch_file_locked_error(
                 jsonify(func(*args, **kwargs))
     """
     try:
-        return jsonify(func(*args, **kwargs)), 200
+        return func(*args, **kwargs), 200
     except OperationalError as e:
         if "database is locked" in str(e):
             logging.error(
@@ -85,57 +88,105 @@ def catch_file_locked_error(
         raise
 
 
-def handle_errors(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except OperationalError as e:
-            if "database is locked" in str(e):
-                logging.warning(
-                    f"Locked database [SQLITE_BUSY]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
-                )
-                return LockedFileResponse
-        except OSError as e:
-            if e.errno == 13:
-                logging.warning(
-                    f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
-                )
-                return LockedFileResponse
-        except ValidationError as e:
-            logging.error(f"Pydantic validation failed in {func.__name__}({args}, {kwargs}):\n {pformat(e.errors())}")
-            return (
-                jsonify({"error": "Pydantic validation failed", "message": str(e)}),
-                env.PYDANTIC_ERROR_STATUS_CODE,
-            )
-        except APIArgumentError as e:
+# def handle_errors(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         try:
+#             return func(*args, **kwargs)
+#         except OperationalError as e:
+#             if "database is locked" in str(e):
+#                 logging.warning(
+#                     f"Locked database [SQLITE_BUSY]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
+#                 )
+#                 return LockedFileResponse
+#         except OSError as e:
+#             if e.errno == 13:
+#                 logging.warning(
+#                     f"Locked file [Errno 13]: {func.__name__}({args}, {kwargs}) failed at {time.time()}"
+#                 )
+#                 return LockedFileResponse
+#         except ValidationError as e:
+#             logging.error(
+#                 f"Pydantic validation failed in {func.__name__}({args}, {kwargs}):\n {pformat(e.errors())}"
+#             )
+#             return (
+#                 {"error": "Pydantic validation failed", "message": str(e)},
+#                 env.PYDANTIC_ERROR_STATUS_CODE,
+#             )
+#         except APIArgumentError as e:
+#             logging.warning(
+#                 f"APIArgumentError: {e.message}",
+#                 f"Missing data: {e.missing_data}",
+#                 f"Malformed data: {e.malformed_data}",
+#             )
+
+#             response = Response()
+#             body = {
+#                 "error": e.message,
+#                 "missing_data": e.missing_data,
+#                 "malformed_data": e.malformed_data,
+#             }
+#             response.status_code = 422
+#             if g.should_delete_cookie:
+#                 logging.info(
+#                     f"Deleting malformed activeUserId cookie. Active user id was <{g.get('initial_user_id_value')}>"
+#                 )
+#                 response.delete_cookie("activeUserId")
+#                 body["message"] = "Invalid activeUserId in cookie was deleted."
+#             response.body = body
+#             return response
+
+#         except Exception as e:
+#             logging.error(
+#                 f"Request yielded uncaught error while running {func.__name__}({args}, {kwargs})"
+#             )
+#             logging.error(f"Error of type {type(e)} with message {e}")
+#             raise
+
+#     return wrapper
+
+
+def apply_error_handling(app: FastAPI):
+    @app.exception_handler(OperationalError)
+    async def sqlite_locked_handler(request: Request, exc: OperationalError):
+        if "database is locked" in str(exc):
             logging.warning(
-                f"APIArgumentError: {e.message}",
-                f"Missing data: {e.missing_data}",
-                f"Malformed data: {e.malformed_data}",
+                f"Locked database [SQLITE_BUSY]: {request} failed at {time.time()}"
             )
+            return LockedFileResponse
+        raise
 
-            response = make_response()
-            body = (
-                {
-                    "error": e.message,
-                    "missing_data": e.missing_data,
-                    "malformed_data": e.malformed_data,
-                }
+    @app.exception_handler(OSError)
+    async def file_locked_handler(request: Request, exc: OSError):
+        if exc.errno == 13:
+            logging.warning(
+                f"Locked file [Errno 13]: {request} failed at {time.time()}"
             )
-            response.status_code = 422
-            if g.get("should_delete_cookie", False):
-                logging.info(f"Deleting malformed activeUserId cookie. Active user id was <{g.get('initial_user_id_value')}>")
-                response.delete_cookie("activeUserId")
-                body["message"] = "Invalid activeUserId in cookie was deleted."
-            response.data = jsonify(body)
-            return response
+            return LockedFileResponse
+        raise
 
-        except Exception as e:
-            logging.error(
-                f"Request yielded uncaught error while running {func.__name__}({args}, {kwargs})"
+    # @app.exception_handler(ValidationError) [I'm hoping FastAPI's Pydantic integration handles this]
+    @app.exception_handler(APIArgumentError)
+    async def custom_argument_error_handler(request: Request, exc: APIArgumentError):
+        logging.warning(
+            f"APIArgumentError: {exc.message}",
+            f"Missing data: {exc.missing_data}",
+            f"Malformed data: {exc.malformed_data}",
+        )
+        should_delete_cookie = request.state.should_delete_cookie
+        body: dict[str, Any] = {
+            "error": exc.message,
+            "missing_data": exc.missing_data,
+            "malformed_data": exc.malformed_data,
+        }
+        if should_delete_cookie:
+            # Announce before doing
+            logging.info(
+                f"Deleting malformed activeUserId cookie. Active user id was <{request.state.initial_user_id_value}>"
             )
-            logging.error(f"Error of type {type(e)} with message {e}")
-            raise
+            body["message"] = "Invalid activeUserId in cookie was deleted."
 
-    return wrapper
+        response = Response(status_code=422, content=body)
+        if should_delete_cookie:
+            response.delete_cookie("activeUserId")
+        return response

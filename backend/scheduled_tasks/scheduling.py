@@ -1,15 +1,14 @@
-import logging, os
-import sqlite3
-from flask import Flask
-from flask_apscheduler import APScheduler
+import logging
 import shutil
+import sqlite3
 from datetime import datetime
-from pathlib import Path
+
+import sqlalchemy as sa
+
 import backend.utils.env_reader as env
 from backend.data.db_connections import Session
-from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.data.db_schema import User
-import sqlalchemy as sa
+from backend.scheduled_tasks.check_rss import update_user_watchlist
 
 """
 How to use:
@@ -21,7 +20,7 @@ scheduler.start()
 
 
 class Config:
-    JOBS = [
+    JOBS: list[dict[str, str | int]] = [
         {
             "id": "check_letterboxd",
             "func": "backend.scheduled_tasks.scheduling:check_letterboxd",

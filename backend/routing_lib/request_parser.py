@@ -42,6 +42,9 @@ def get_active_user_id(request: Request) -> UserID:
     return id
 
 
+ActiveUserID = Annotated[UserID, Depends(get_active_user_id)]
+
+
 def get_year(request: Request, body: bool = False) -> int:
     """
     Only call this if you want to throw on a missing / invalid year.
@@ -58,6 +61,8 @@ def get_year(request: Request, body: bool = False) -> int:
         )
     return year
 
+
+ActiveYear = Annotated[int, Depends(get_year)]
 
 T = TypeVar("T")
 

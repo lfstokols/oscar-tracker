@@ -1,11 +1,6 @@
 import inspect
 import logging
 
-import numpy as np
-import pandas as pd
-from flask import jsonify
-
-import backend.types.flavors as flv
 from backend.types.api_schemas import *
 from backend.types.my_types import WatchStatus
 
@@ -14,7 +9,9 @@ from backend.types.my_types import WatchStatus
 
 
 def validate_user_list(user_list: list[dict]) -> list[api_User]:
-    return [api_User(**record).model_dump() for record in user_list]
+    return [
+        api_User(**record).model_dump() for record in user_list
+    ]  # pyright: ignore[reportReturnType]
 
 
 def validate_movie_list(movie_list: list[dict]) -> list[api_Movie]:
@@ -59,7 +56,9 @@ def validate_category_completion_dict(
     ],
 ) -> dict[UserID, api_CategoryCompletions]:
     return {
-        UserValidator(user=k).user: api_CategoryCompletions(**v).model_dump()
+        UserValidator(user=k)
+        .user: api_CategoryCompletions(**v)  # pyright: ignore[reportArgumentType]
+        .model_dump()  # pyright: ignore[]
         for k, v in category_completion_dict.items()
     }
 
