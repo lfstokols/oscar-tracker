@@ -1,119 +1,122 @@
 import logging
 from functools import wraps
-from flask import Blueprint, send_from_directory, request, jsonify, abort, make_response
 from pathlib import Path
-import backend.data.queries as qu
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import FileResponse, JSONResponse
+
 import backend.data.mutations as mu
-from backend.types.my_types import *
+import backend.data.queries as qu
+import backend.routing_lib.request_parser as parser
+from backend.routes.forwarding import router as forwarding_router
+from backend.routes.hooks import router as hooks_router
+from backend.routing_lib.error_handling import APIArgumentError, handle_errors
+from backend.routing_lib.user_session import UserSession
 from backend.types.api_schemas import UserID
 from backend.types.api_validators import (
+    UserValidator,
+    validate_category_completion_dict,
+    validate_category_list,
     validate_movie_id,
-    validate_nom_list,
     validate_movie_list,
+    validate_my_user_data,
+    validate_nom_list,
     validate_user_id,
     validate_user_list,
-    validate_watchlist,
-    validate_category_list,
-    validate_my_user_data,
-    validate_category_completion_dict,
     validate_user_stats_list,
-    UserValidator,
+    validate_watchlist,
     validate_watchstatus,
 )
-from backend.routing_lib.user_session import UserSession
+from backend.types.my_types import *
 
-from backend.routes.forwarding import forwarding
-from backend.routes.hooks import hooks
+router = APIRouter()
 
-import backend.routing_lib.request_parser as parser
-from backend.routing_lib.error_handling import (
-    APIArgumentError,
-    handle_errors,
-)
-
-
-oscars = Blueprint(
-    "oscars",
-    __name__,
-    static_url_path="/api/",
-)
-
-oscars.register_blueprint(forwarding, url_prefix="/forward/")
-oscars.register_blueprint(hooks, url_prefix="/hooks/")
+router.include_router(forwarding_router, prefix="/forward")
+router.include_router(hooks_router, prefix="/hooks")
 
 
 # Serve data
-@oscars.route("/nominations", methods=["GET"])
+@router.get("/nominations")
 @handle_errors
-def serve_noms():
+async def serve_noms(request: Request) -> :
     year = parser.get_year(request)
     data = qu.get_noms(year)
     return validate_nom_list(data)
 
 
-@oscars.route("/movies", methods=["GET"])
+@router.get("/movies")
 @handle_errors
-def serve_movies():
+async def serve_movies(request: Request):
     year = parser.get_year(request)
     data = qu.get_movies(year)
     return validate_movie_list(data)
 
 
-@oscars.route("/users", methods=["GET"])
+@router.get("/users")
 @handle_errors
-def serve_users_GET():
+async def serve_users_GET(request: Request):
     if parser.has_flag(request, "myData"):
         userId = parser.get_active_user_id(request)
         data = qu.get_my_user_data(userId)
-        return jsonify(validate_my_user_data(data))
+        return validate_my_user_data(data)
     else:
-        return jsonify(validate_user_list(qu.get_users()))
+        return validate_user_list(qu.get_users())
 
 
-@oscars.route("/users", methods=["POST"])
-#* (POST means add a new user)
+@router.post("/users")
+# * (POST means add a new user)
 @handle_errors
-def serve_users_POST():
+async def serve_users_POST(request: Request):
     # * Expects a body with a username field
     # * Any other fields in body will be added to the user
-    if request.json is None:
-        raise APIArgumentError("No body provided, what am I supposed to update?", [("body", "literally anything")])
-    username = request.json.get("username")
+    body = await request.json()
+    if body is None:
+        raise APIArgumentError(
+            "No body provided, what am I supposed to update?",
+            [("body", "literally anything")],
+        )
+    username = body.get("username")
     newUserReturn = mu.add_user(username)
     newUserId, code = validate_user_id(newUserReturn)
     if code != 0:
-        logging.error(f"Tried to add a new user, but somehow mu.add_user() returned an invalid user id <{newUserReturn}>.")
-        return jsonify({"error": "Ambiguous success state from user creation process"}), 500
+        logging.error(
+            f"Tried to add a new user, but somehow mu.add_user() returned an invalid user id <{newUserReturn}>."
+        )
+        raise HTTPException(
+            status_code=500, detail="Ambiguous success state from user creation process"
+        )
     UserSession.session_added_user()
-    mu.update_user(newUserId, request.json)
+    mu.update_user(newUserId, body)
     newState = qu.get_users()
     newState = validate_user_list(newState)
-    return jsonify({"userId": newUserId, "users": newState})
+    return {"userId": newUserId, "users": newState}
 
 
-@oscars.route("/users", methods=["PUT"])
-#* (PUT means update a user's info)
+@router.put("/users")
+# * (PUT means update a user's info)
 @handle_errors
-def serve_users_PUT():
+async def serve_users_PUT(request: Request):
     # * Expects any dictionary of user data
     userId = parser.get_active_user_id(request)
-    if request.json is None:
+    body = await request.json()
+    if body is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
-    mu.update_user(userId, request.json)
+    mu.update_user(userId, body)
     newState = qu.get_my_user_data(userId)
     newState = validate_my_user_data(newState)
-    return jsonify(newState)
+    return newState
 
 
-@oscars.route("/users", methods=["DELETE"])
+@router.delete("/users")
 @handle_errors
-def serve_users_DELETE():
-    if request.json is None:
+async def serve_users_DELETE(request: Request):
+    body = await request.json()
+    if body is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
     cookie_id = parser.get_active_user_id(request)
-    param_id = request.args.get("userId")
-    body_id = request.json.get("userId")
-    if not (request.json.get("forRealsies") and request.json.get("delete")):
+    param_id = request.query_params.get("userId")
+    body_id = body.get("userId")
+    if not (body.get("forRealsies") and body.get("delete")):
         raise APIArgumentError(
             "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
         )
@@ -127,17 +130,17 @@ def serve_users_DELETE():
     return validate_user_list(qu.get_users())
 
 
-@oscars.route("/categories", methods=["GET"])
+@router.get("/categories")
 @handle_errors
-def serve_categories():
+async def serve_categories():
     return validate_category_list(qu.get_categories())
 
 
 # Expect justMe = bool
 # If PUT, expect movieId and status
-@oscars.route("/watchlist", methods=["GET"])
+@router.get("/watchlist")
 @handle_errors
-def serve_watchlist_GET():
+async def serve_watchlist_GET(request: Request):
     year = parser.get_year(request)
     justMe = parser.has_flag(request, "justMe")
     if justMe:
@@ -149,19 +152,22 @@ def serve_watchlist_GET():
         return validate_watchlist(qu.get_watchlist(year))
 
 
-@oscars.route("/watchlist", methods=["PUT"])
+@router.put("/watchlist")
 @handle_errors
-def serve_watchlist_PUT():
+async def serve_watchlist_PUT(request: Request):
     userId = parser.get_active_user_id(request)
-    if request.json is None:
+    body = await request.json()
+    if body is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
     year = parser.get_year(request, body=True)
-    movieIds = request.json.get("movieIds")
-    status = request.json.get("status")
+    movieIds = body.get("movieIds")
+    status = body.get("status")
     for movieId in movieIds:
         validMovieId, code = validate_movie_id(movieId)
         if code != 0:
-            raise APIArgumentError(f"Invalid movie id: {movieId}", [("movieIds", "body")])
+            raise APIArgumentError(
+                f"Invalid movie id: {movieId}", [("movieIds", "body")]
+            )
         validStatus, code = validate_watchstatus(status)
         if code != 0:
             raise APIArgumentError(f"Invalid status: {status}", [("status", "body")])
@@ -169,17 +175,17 @@ def serve_watchlist_PUT():
     return validate_watchlist(qu.get_watchlist(year))
 
 
-@oscars.route("/by_user", methods=["GET"])
+@router.get("/by_user")
 @handle_errors
-def serve_by_user():
+async def serve_by_user(request: Request):
     year = parser.get_year(request)
     data = qu.get_user_stats(year)
     return validate_user_stats_list(data)
 
 
-@oscars.route("/by_category", methods=["GET"])
+@router.get("/by_category")
 @handle_errors
-def serve_by_category():
+async def serve_by_category(request: Request):
     year = parser.get_year(request)
     data = qu.get_category_completion_dict(year)
     return validate_category_completion_dict(data)

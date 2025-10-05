@@ -1,11 +1,15 @@
 import logging
 import os
 import sys
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from flask import Flask, abort, g, request, send_from_directory, session
-from flask_apscheduler import APScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 # * Add the project root to the system path
 project_root_directory = Path(__file__).parent.parent
@@ -18,7 +22,7 @@ from backend.utils.logging_config import setup_logging
 
 setup_logging(env.LOG_PATH)
 import backend.data.db_connections
-from backend.routes.database_routes import oscars
+from backend.routes.database_routes import router as oscars_router
 from backend.routing_lib.user_session import UserSession
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 from backend.scheduled_tasks.scheduling import Config
@@ -40,55 +44,42 @@ if not env.STATIC_PATH.exists():
     )
     raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
-app = Flask(__name__, static_folder=env.STATIC_PATH)
-app.secret_key = env.FLASK_SECRET_KEY
-
-app.url_map.strict_slashes = False
-
-app.config.from_object(Config())
-
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
-
-app.register_blueprint(oscars, url_prefix="/api/")
+# Setup scheduler
+scheduler = AsyncIOScheduler()
 
 
-@app.route("/")
-def serve_root():
-    return send_from_directory(app.static_folder, "index.html")  # type: ignore
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    scheduler.start()
+    yield
+    # Shutdown
+    scheduler.shutdown()
 
 
-@app.route("/<path:relpath>")
-def serve_files(relpath):
-    if app.static_folder is None:
-        return abort(404)
-    filepath = Path(app.static_folder) / relpath
-    if not filepath.is_relative_to(app.static_folder):
-        return abort(403)
-    if filepath.exists():
-        return send_from_directory(filepath.parent, filepath.name)
-    if (filepath / "index.html").exists():
-        return send_from_directory(filepath, "index.html")
-    return send_from_directory(Path(app.static_folder), "index.html")
+app = FastAPI(lifespan=lifespan)
+
+# Include the API routes
+app.include_router(oscars_router, prefix="/api")
+
+# Mount static files
+app.mount("/", StaticFiles(directory=str(env.STATIC_PATH), html=True), name="static")
 
 
 @app.route("/jokes")
 def serve_joke():
-    return "<h1>It's a joke!</h1>"
+    return HTMLResponse("<h1>It's a joke!</h1>")
 
 
-@app.route("/favicon.ico")
-def favicon():
-    return send_from_directory(
-        "../public", "favicon.ico", mimetype="image/vnd.microsoft.icon"
-    )
+@app.get("/favicon.ico")
+async def favicon():
+    return FileResponse("../public/favicon.ico", media_type="image/vnd.microsoft.icon")
 
 
-@app.before_request
-def before_request():
+@app.middleware("http")
+def before_request(request: Request):
     login = request.cookies.get("activeUserId")
-    g.initial_user_id_value = login
+    request.state.initial_user_id_value = login
     if login is None or login == "":
         return
     #! From here, assume cookie is _intended_ to have valid UserID
@@ -97,7 +88,7 @@ def before_request():
     if code != 0:
         logging.error(f"[before_request()] Invalid user id {login} found in cookie.")
         UserSession.end()
-        g.should_delete_cookie = True
+        request.state.should_delete_cookie = True
         return
 
     if UserSession.id_matches_session(id):
@@ -110,4 +101,11 @@ def before_request():
 
 
 if __name__ == "__main__":
-    app.run(debug=env.RUN_DEBUG, port=env.DEVSERVER_PORT)
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=env.DEVSERVER_PORT,
+        log_level="info" if env.RUN_DEBUG else "warning",
+    )

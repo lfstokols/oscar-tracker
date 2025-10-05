@@ -1,20 +1,22 @@
 import re
-from flask import request, Blueprint
+
 import requests
+from fastapi import APIRouter, HTTPException, Request
+
+import backend.routing_lib.request_parser as parser
 from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
 from backend.routing_lib.error_handling import APIArgumentError, handle_errors
-import backend.routing_lib.request_parser as parser
 from backend.types.api_schemas import MovieID
 from backend.types.api_validators import validate_movie_id
 
-forwarding = Blueprint("forwarding", __name__)
+router = APIRouter()
 
 
-@forwarding.route("/letterboxd/search", methods=["GET"])
+@router.get("/letterboxd/search")
 @handle_errors
-def serve_letterboxd_search():
+async def serve_letterboxd_search(request: Request):
     """
     Just a proxy for letterboxd.com search
     The search term is passed as a query parameter,
@@ -22,42 +24,52 @@ def serve_letterboxd_search():
     are returned.
     The results come in as html and are returned as html.
     """
-    search_term = request.args.get("searchTerm")
+    search_term = request.query_params.get("searchTerm")
     url = f"https://letterboxd.com/s/search/members/{search_term}"
     response = requests.get(url)
     return response.text
 
 
-@forwarding.route("/get_link", methods=["GET"])
+@router.get("/get_link")
 @handle_errors
-def serve_get_link():
+async def serve_get_link(request: Request):
     """
     Returns a link to the service for the given movie_id and service.
     """
     movie_id = parser.get_param(request, "id")
     valid_movie_id, code = validate_movie_id(movie_id)
     if code != 0:
-        raise APIArgumentError(f"Invalid movie id: {movie_id}", [("movie_id", "query params")])
+        raise APIArgumentError(
+            f"Invalid movie id: {movie_id}", [("movie_id", "query params")]
+        )
     service = parser.get_param(request, "service")
     if service not in ["justwatch", "imdb"]:
-        raise APIArgumentError(f"Invalid service: {service}", [("service", "query params")])
+        raise APIArgumentError(
+            f"Invalid service: {service}", [("service", "query params")]
+        )
     with Session() as session:
-        movie = session.query(Movie.movie_db_id, Movie.movie_id).filter(Movie.movie_id == valid_movie_id).first()
+        movie = (
+            session.query(Movie.movie_db_id, Movie.movie_id)
+            .filter(Movie.movie_id == valid_movie_id)
+            .first()
+        )
         if movie is None:
-            raise APIArgumentError(f"Movie not found: {movie_id}", [("movie_id", "query params")])        
+            raise APIArgumentError(
+                f"Movie not found: {movie_id}", [("movie_id", "query params")]
+            )
         id_number = int(movie[0])
     if service == "justwatch":
         url, code = get_justwatch(id_number)
         if code == 1:
-           return {"failed": True, "message": url}
+            return {"failed": True, "message": url}
     elif service == "imdb":
         url = get_Imdb(id_number)
     return {"failed": False, "url": url}
 
 
-@forwarding.route("/moviedb", methods=["GET"])
+@router.get("/moviedb")
 @handle_errors
-def serve_moviedb():
+async def serve_moviedb(request: Request):
     """
     Just a proxy for moviedb.org
     """

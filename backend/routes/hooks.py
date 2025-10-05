@@ -1,23 +1,20 @@
-from flask import jsonify, request, Blueprint
+import logging
+from datetime import datetime
+
+from fastapi import APIRouter, Request
+
+import backend.data.mutations as mu
 from backend.routing_lib import request_parser as parser
 from backend.routing_lib.error_handling import handle_errors
 from backend.scheduled_tasks.check_rss import get_movie_list_from_rss
-import backend.data.mutations as mu
 from backend.types.my_types import *
-from datetime import datetime
-import logging
+
+router = APIRouter()
 
 
-hooks = Blueprint(
-    "hooks",
-    __name__,
-    static_url_path="/hooks/",
-)
-
-
-@hooks.route("/force-refresh", methods=["GET"])
+@router.get("/force-refresh")
 @handle_errors
-def force_refresh():
+async def force_refresh(request: Request):
     logging.info("got a force refresh")
     year = datetime.now().year - 1
     user_id = parser.get_active_user_id(request)
@@ -31,4 +28,4 @@ def force_refresh():
             status=WatchStatus.SEEN,
         )
     total_new_entries = len(movie_list)
-    return jsonify({"message": "Watchlist updated", "foundEntries": total_new_entries}), 200
+    return {"message": "Watchlist updated", "foundEntries": total_new_entries}
