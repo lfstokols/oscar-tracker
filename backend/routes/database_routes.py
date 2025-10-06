@@ -9,20 +9,23 @@ from backend.routes.forwarding import router as forwarding_router
 from backend.routes.hooks import router as hooks_router
 from backend.routing_lib.error_handling import APIArgumentError
 from backend.routing_lib.user_session import UserSession
-from backend.types.api_schemas import api_Movie, api_Nom
-from backend.types.api_validators import (
-    validate_category_completion_dict,
-    validate_category_list,
-    validate_movie_id,
-    validate_movie_list,
-    validate_my_user_data,
-    validate_nom_list,
-    validate_user_id,
-    validate_user_list,
-    validate_user_stats_list,
-    validate_watchlist,
-    validate_watchstatus,
+from backend.types.api_schemas import (
+    CategoryCompletionKey,
+    Primitive,
+    UserID,
+    api_Category,
+    api_CategoryCompletions,
+    api_Movie,
+    api_MyUserData,
+    api_NewUserResponse,
+    api_NewWatchlistRequest,
+    api_Nom,
+    api_User,
+    api_UserStats,
+    api_WatchNotice,
+    countTypes,
 )
+from backend.types.api_validators import validate_user_id
 from backend.types.my_types import *
 
 router = APIRouter()
@@ -32,31 +35,33 @@ router.include_router(hooks_router, prefix="/hooks")
 
 
 # Serve data
-@router.get("/nominations")
-async def serve_noms(year: parser.ActiveYear) -> list[api_Nom]:
-    data = qu.get_noms(year)
-    return validate_nom_list(data)
+@router.get("/nominations", response_model=list[api_Nom])
+async def serve_noms(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
+    return qu.get_noms(year)
 
 
-@router.get("/movies")
-async def serve_movies(year: parser.ActiveYear) -> list[api_Movie]:
-    data = qu.get_movies(year)
-    return validate_movie_list(data)
+@router.get("/movies", response_model=list[api_Movie])
+async def serve_movies(
+    year: parser.ActiveYear,
+) -> list[dict[str, Primitive]]:
+    return qu.get_movies(year)
 
 
-@router.get("/users")
-async def serve_users_GET(request: Request):
-    if parser.has_flag(request, "myData"):
-        userId = parser.get_active_user_id(request)
-        data = qu.get_my_user_data(userId)
-        return validate_my_user_data(data)
-    else:
-        return validate_user_list(qu.get_users())
+@router.get("/users", response_model=list[api_User])
+async def serve_users_GET() -> list[dict[str, Primitive]]:
+    return qu.get_users()
 
 
-@router.post("/users")
+@router.get("/users/my_data", response_model=api_MyUserData)
+async def serve_my_user_data(userId: parser.ActiveUserID) -> dict[str, Primitive]:
+    return qu.get_my_user_data(userId)
+
+
+@router.post("/users", response_model=api_NewUserResponse)
 # * (POST means add a new user)
-async def serve_users_POST(request: Request):
+async def serve_users_POST(
+    request: Request,
+) -> dict[str, str | list[dict[str, Primitive]]]:
     # * Expects a body with a username field
     # * Any other fields in body will be added to the user
     body = await request.json()
@@ -78,26 +83,22 @@ async def serve_users_POST(request: Request):
     UserSession(request).session_added_user()
     mu.update_user(newUserId, body)
     newState = qu.get_users()
-    newState = validate_user_list(newState)
     return {"userId": newUserId, "users": newState}
 
 
-@router.put("/users")
+@router.put("/users", response_model=api_MyUserData)
 # * (PUT means update a user's info)
-async def serve_users_PUT(request: Request):
+async def serve_users_PUT(
+    userId: parser.ActiveUserID, body: api_MyUserData
+) -> dict[str, Primitive]:
     # * Expects any dictionary of user data
-    userId = parser.get_active_user_id(request)
-    body = await request.json()
-    if body is None:
-        raise APIArgumentError("No body provided", [("anythng json-y", "body")])
-    mu.update_user(userId, body)
+    mu.update_user(userId, body.model_dump())
     newState = qu.get_my_user_data(userId)
-    newState = validate_my_user_data(newState)
     return newState
 
 
-@router.delete("/users")
-async def serve_users_DELETE(request: Request):
+@router.delete("/users", response_model=list[api_User])
+async def serve_users_DELETE(request: Request) -> list[dict[str, Primitive]]:
     body = await request.json()
     if body is None:
         raise APIArgumentError("No body provided", [("anythng json-y", "body")])
@@ -115,63 +116,49 @@ async def serve_users_DELETE(request: Request):
         )
     real_id = cookie_id
     mu.delete_user(real_id)
-    return validate_user_list(qu.get_users())
+    return qu.get_users()
 
 
-@router.get("/categories")
-async def serve_categories():
-    return validate_category_list(qu.get_categories())
+@router.get("/categories", response_model=list[api_Category])
+async def serve_categories() -> list[dict[str, Primitive]]:
+    return qu.get_categories()
 
 
 # Expect justMe = bool
 # If PUT, expect movieId and status
-@router.get("/watchlist")
-async def serve_watchlist_GET(request: Request):
-    year = parser.get_year(request)
-    justMe = parser.has_flag(request, "justMe")
+@router.get("/watchlist", response_model=list[api_WatchNotice])
+async def serve_watchlist_GET(
+    request: Request, year: parser.ActiveYear, justMe: bool = False
+):
     if justMe:
         userId = parser.get_active_user_id(request)
         data = qu.get_watchlist(year)
         data = [row for row in data if row["userId"] == userId]
-        return validate_watchlist(data)
+        return data
     else:
-        return validate_watchlist(qu.get_watchlist(year))
+        return qu.get_watchlist(year)
 
 
-@router.put("/watchlist")
-async def serve_watchlist_PUT(request: Request):
-    userId = parser.get_active_user_id(request)
-    body = await request.json()
-    if body is None:
-        raise APIArgumentError("No body provided", [("anythng json-y", "body")])
-    year = parser.get_year(request, body=True)
-    movieIds = body.get("movieIds")
-    status = body.get("status")
-    for movieId in movieIds:
-        validMovieId, code = validate_movie_id(movieId)
-        if code != 0:
-            raise APIArgumentError(
-                f"Invalid movie id: {movieId}", [("movieIds", "body")]
-            )
-        validStatus, code = validate_watchstatus(status)
-        if code != 0:
-            raise APIArgumentError(f"Invalid status: {status}", [("status", "body")])
-        mu.add_watchlist_entry(year, userId, validMovieId, validStatus)
-    return validate_watchlist(qu.get_watchlist(year))
+@router.put("/watchlist", response_model=list[api_WatchNotice])
+async def serve_watchlist_PUT(
+    userId: parser.ActiveUserID, year: parser.BodyYear, body: api_NewWatchlistRequest
+):
+    status = body.status
+    for movieId in body.movieIds:
+        mu.add_watchlist_entry(year, userId, movieId, status)
+    return qu.get_watchlist(year)
 
 
-@router.get("/by_user")
-async def serve_by_user(request: Request):
-    year = parser.get_year(request)
-    data = qu.get_user_stats(year)
-    return validate_user_stats_list(data)
+@router.get("/by_user", response_model=list[api_UserStats])
+async def serve_by_user(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
+    return qu.get_user_stats(year)
 
 
-@router.get("/by_category")
-async def serve_by_category(request: Request):
-    year = parser.get_year(request)
-    data = qu.get_category_completion_dict(year)
-    return validate_category_completion_dict(data)
+@router.get("/by_category", response_model=dict[UserID, api_CategoryCompletions])
+async def serve_by_category(
+    year: parser.ActiveYear,
+) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
+    return qu.get_category_completion_dict(year)
 
 
 if __name__ == "__main__":

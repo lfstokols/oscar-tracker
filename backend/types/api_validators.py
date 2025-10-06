@@ -8,46 +8,48 @@ from backend.types.my_types import WatchStatus
 #     return UserID(user_id)
 
 
-def validate_user_list(user_list: list[dict]) -> list[api_User]:
-    return [
-        api_User(**record).model_dump() for record in user_list
-    ]  # pyright: ignore[reportReturnType]
+# def validate_user_list(user_list: list[dict[str, Primitive]]) -> list[api_User]:
+#     return [
+#         api_User(**record).model_dump() for record in user_list
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_movie_list(movie_list: list[dict]) -> list[api_Movie]:
-    return [
-        api_Movie(**record).model_dump() for record in movie_list
-    ]  # pyright: ignore[reportReturnType]
+# def validate_movie_list(movie_list: list[dict[str, Primitive]]) -> list[api_Movie]:
+#     return [
+#         api_Movie(**record).model_dump() for record in movie_list
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_nom_list(nom_list: list[dict]) -> list[api_Nom]:
-    return [
-        api_Nom(**record).model_dump() for record in nom_list
-    ]  # pyright: ignore[reportReturnType]
+# def validate_nom_list(nom_list: list[dict[str, Primitive]]) -> list[api_Nom]:
+#     return [
+#         api_Nom(**record).model_dump() for record in nom_list
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_category_list(category_list: list[dict]) -> list[api_Category]:
-    return [
-        api_Category(**record).model_dump() for record in category_list
-    ]  # pyright: ignore[reportReturnType]
+# def validate_category_list(
+#     category_list: list[dict[str, Primitive]],
+# ) -> list[api_Category]:
+#     return [
+#         api_Category(**record).model_dump() for record in category_list
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_watchlist(watchlist: list[dict]) -> list[api_WatchNotice]:
-    return [
-        api_WatchNotice(**record).model_dump() for record in watchlist
-    ]  # pyright: ignore[reportReturnType]
+# def validate_watchlist(watchlist: list[dict[str, Primitive]]) -> list[api_WatchNotice]:
+#     return [
+#         api_WatchNotice(**record).model_dump() for record in watchlist
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_user_stats_list(user_stats_list: list[dict]) -> list[api_UserStats]:
-    return [
-        api_UserStats(**record).model_dump() for record in user_stats_list
-    ]  # pyright: ignore[reportReturnType]
+# def validate_user_stats_list(user_stats_list: list[dict[str, Primitive]]) -> list[api_UserStats]:
+#     return [
+#         api_UserStats(**record).model_dump() for record in user_stats_list
+#     ]  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
-def validate_my_user_data(my_user_data: dict) -> api_MyUserData:
-    return api_MyUserData(
-        **my_user_data
-    ).model_dump()  # pyright: ignore[reportReturnType]
+# def validate_my_user_data(my_user_data: dict[str, Primitive]) -> api_MyUserData:
+#     return api_MyUserData(
+#         **my_user_data
+#     ).model_dump()  # pyright: ignore[reportArgumentType, reportReturnType]
 
 
 def validate_category_completion_dict(

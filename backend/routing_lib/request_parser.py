@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 from typing import Annotated, Type, TypeVar, cast
 
 from fastapi import Depends, HTTPException, Request
@@ -63,6 +64,8 @@ def get_year(request: Request, body: bool = False) -> int:
 
 
 ActiveYear = Annotated[int, Depends(get_year)]
+
+BodyYear = Annotated[int, Depends(partial(get_year, body=True))]
 
 T = TypeVar("T")
 

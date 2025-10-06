@@ -1,18 +1,21 @@
+from enum import Enum
+from typing import Annotated, Literal, Optional, Union
+
 from pydantic import (
     BaseModel,
     ConfigDict,
-    StringConstraints,
-    ConfigDict,
+    EmailStr,
     Field,
     HttpUrl,
-    EmailStr,
     RootModel,
+    StringConstraints,
 )
-from typing import Optional, Annotated, Literal, Union
-from enum import Enum
+
 import backend.types.my_types as my_types
 
-# * Primitives
+type Primitive = str | bool | int | None
+
+# * Special Primitives
 MovieID = Annotated[str, StringConstraints(pattern=r"^mov_[0-9a-f]{6}$")]
 UserID = Annotated[str, StringConstraints(pattern=r"^usr_[0-9a-f]{6}$")]
 CategoryID = Annotated[str, StringConstraints(pattern=r"^cat_[a-z]{4}$")]
@@ -52,11 +55,6 @@ class api_User(BaseModel):
     propic: Optional[HttpUrl] = None
 
 
-class api_UserList(BaseModel):
-    data: list[api_User]
-    total_count: int
-
-
 class api_Movie(BaseModel):
     id: MovieID
     title: str
@@ -69,11 +67,6 @@ class api_Movie(BaseModel):
     numNoms: int = Field(ge=1)
     isShort: bool
     posterPath: Optional[str] = None
-
-
-class api_MovieList(BaseModel):
-    data: list[api_Movie]
-    total_count: int
 
 
 class api_Nom(BaseModel):
@@ -96,22 +89,8 @@ class api_WatchNotice(BaseModel):
     userId: UserID
     movieId: MovieID
     status: my_types.WatchStatus
-    
+
     model_config = ConfigDict(use_enum_values=True)
-
-class api_CategoryList(BaseModel):
-    data: list[api_Category]
-    total_count: int
-
-
-class api_NomList(BaseModel):
-    data: list[api_Nom]
-    total_count: int
-
-
-class api_WatchList(BaseModel):
-    data: list[api_WatchNotice]
-    total_count: int
 
 
 # * Extended API Models
@@ -153,3 +132,14 @@ class api_CategoryCompletions(RootModel):
 
 class api_CategoryCompletionsDict(RootModel):
     root: dict[UserID, api_CategoryCompletions]
+
+
+class api_NewUserResponse(BaseModel):
+    userId: UserID
+    users: list[api_User]
+
+
+class api_NewWatchlistRequest(BaseModel):
+    year: int
+    movieIds: list[MovieID]
+    status: my_types.WatchStatus
