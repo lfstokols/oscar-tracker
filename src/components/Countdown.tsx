@@ -1,4 +1,5 @@
-import { useEffect,useState} from 'react';
+import {useEffect, useState} from 'react';
+import {UPCOMING_OSCAR_DATE} from '../config/GlobalConstants';
 
 export default function Countdown(): React.ReactElement {
   const [now, setNow] = useState(new Date());
@@ -16,7 +17,7 @@ export default function Countdown(): React.ReactElement {
 }
 
 function Clock({now}: {now: number}): React.ReactElement {
-  const oscarDate = new Date('2025-03-03T00:00:00Z'); // Explicitly setting the time zone to UTC
+  const oscarDate = UPCOMING_OSCAR_DATE;
   const diffTime = oscarDate.getTime() - now;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor(
@@ -46,12 +47,39 @@ function Clock({now}: {now: number}): React.ReactElement {
           gap: '20px',
           textAlign: 'center',
         }}>
-        <TimeUnit unit="Days" value={diffDays} />
-        <TimeUnit unit="Hours" value={diffHours} />
-        <TimeUnit unit="Minutes" value={diffMinutes} />
-        <TimeUnit unit="Seconds" value={diffSeconds} />
+        {diffDays <= 0 ? (
+          <TillNextYearMessage />
+        ) : (
+          <AllTimers
+            diffDays={diffDays}
+            diffHours={diffHours}
+            diffMinutes={diffMinutes}
+            diffSeconds={diffSeconds}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+function AllTimers({
+  diffDays,
+  diffHours,
+  diffMinutes,
+  diffSeconds,
+}: {
+  diffDays: number;
+  diffHours: number;
+  diffMinutes: number;
+  diffSeconds: number;
+}): React.ReactElement {
+  return (
+    <>
+      <TimeUnit unit="Days" value={diffDays} />
+      <TimeUnit unit="Hours" value={diffHours} />
+      <TimeUnit unit="Minutes" value={diffMinutes} />
+      <TimeUnit unit="Seconds" value={diffSeconds} />
+    </>
   );
 }
 
@@ -81,4 +109,9 @@ function TimeUnit({value, unit}: {value: number; unit: string}) {
       </div>
     </div>
   );
+}
+
+// Once they end, show this in the countdown instead of the clock
+function TillNextYearMessage(): React.ReactElement {
+  return <div>See you next year!</div>;
 }

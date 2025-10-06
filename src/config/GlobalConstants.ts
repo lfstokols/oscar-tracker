@@ -45,6 +45,8 @@ export const BY_USER_URL = 'leaderboard';
 export const BY_CATEGORY_URL = 'categories';
 export const API_BASE_URL = '/api';
 
-
 //* What to set the cookie as if logged out
-export const COOKIE_NULL_VALUE= 'null';
+export const COOKIE_NULL_VALUE = 'null';
+
+//* Upcoming Oscar date
+export const UPCOMING_OSCAR_DATE = new Date('2025-03-03T00:00:00Z'); // Idk where to get this from except hardcoding
