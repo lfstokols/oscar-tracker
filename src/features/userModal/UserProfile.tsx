@@ -31,7 +31,7 @@ import {
   onMutateError,
   updateCacheOnSuccess,
 } from '../../hooks/mutationOptions';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import {useIsMobile} from '../../hooks/useIsMobile';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {useNotifications} from '../../providers/NotificationContext';
 import {UserListSchema} from '../../types/APIDataSchema';
@@ -196,7 +196,9 @@ function Preference({
     errorToConsole(
       `Preference ${whichPref} is not a boolean, it can't be set with a checkbox`,
     );
-    throw new Error(`Preference ${whichPref} is not a boolean: ${JSON.stringify(prefState)}`);
+    throw new Error(
+      `Preference ${whichPref} is not a boolean: ${JSON.stringify(prefState)}`,
+    );
   }
   const handleToggle = () => {
     setPrefState(!prefState);

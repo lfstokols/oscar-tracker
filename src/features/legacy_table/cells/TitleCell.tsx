@@ -1,4 +1,4 @@
-import {Stack,SxProps, TableCell, Theme, Typography} from '@mui/material';
+import {Stack, SxProps, TableCell, Theme, Typography} from '@mui/material';
 import {forwardRef, useEffect, useRef, useState} from 'react';
 import {
   BEST_PICTURE_COLOR,
@@ -179,8 +179,8 @@ const MovieTitle = forwardRef(function MovieTitle(
   const textColor = isBestPicNominee
     ? BEST_PICTURE_COLOR
     : highlightAnimated && isBestAnimatedNominee
-    ? HIGHLIGHT_ANIMATED_COLOR
-    : 'inherit';
+      ? HIGHLIGHT_ANIMATED_COLOR
+      : 'inherit';
 
   return (
     <Stack

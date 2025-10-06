@@ -4,7 +4,7 @@ import DefaultCatcher from '../../components/LoadScreen';
 import CategoryTable from '../../features/category_completion_table/CategoryCompletionTable';
 import TableControls from '../../features/category_completion_table/TableControls';
 import {Hypotheticality} from '../../features/userStatsTable/Enums';
-import { useCategoryOpenState } from '../../hooks/useCategoryOpenState';
+import {useCategoryOpenState} from '../../hooks/useCategoryOpenState';
 
 export default function CategoryTab(): React.ReactElement {
   const [hypotheticality, setHypotheticality] = useState(Hypotheticality.SEEN);

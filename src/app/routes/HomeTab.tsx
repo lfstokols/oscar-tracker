@@ -5,7 +5,7 @@ import DefaultTabContainer from '../../components/DefaultTabContainer';
 import {LoadScreen} from '../../components/LoadScreen';
 import LegacyTable from '../../features/legacy_table/LegacyTable';
 import TableControls from '../../features/legacy_table/table_controls/TableControls';
-import { useFilterState } from '../../hooks/useFilterState';
+import {useFilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';
 
 export default function HomeTab(): React.ReactElement {
@@ -16,7 +16,7 @@ export default function HomeTab(): React.ReactElement {
   // Reset filterState when activeUserId changes
   useEffect(() => {
     if (activeUserId == null) {
-      setFilterState((prev) => ({
+      setFilterState(prev => ({
         ...prev,
         watchstatus: [],
       }));

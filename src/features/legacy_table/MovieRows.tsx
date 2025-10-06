@@ -45,9 +45,7 @@ export default function MovieRows({
               movieId={movie.id}
               nominations={nominations}
             />
-            <ExternalLinkCell
-              movieId={movie.id}
-            />
+            <ExternalLinkCell movieId={movie.id} />
             <RuntimeCell
               isRuntimeFormatted={isRuntimeFormatted}
               runtimeHours={movie['runtime_hours']}

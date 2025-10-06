@@ -9,8 +9,8 @@ import {
   Typography,
 } from '@mui/material';
 import XButton from '../../../components/XButton';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { useIsMobile } from '../../../hooks/useIsMobile';
+import {useFilterState} from '../../../hooks/useFilterState';
+import {useIsMobile} from '../../../hooks/useIsMobile';
 
 export function DisplayedSettingsButton({
   onClick,
@@ -27,30 +27,45 @@ export function DisplayedSettingsButton({
   hasActive: boolean;
   reset?: () => void;
 }): React.ReactElement {
-  const mainButton = (
-    isMobile ? (
-      <IconButton onClick={onClick}>{icon}</IconButton>
-    ) : (
-      <Button
-        onClick={onClick}
-        sx={{display: 'flex', alignItems: 'left', flexDirection: 'row', gap: '8px'}}>
-        {icon}
-        <Typography>{text}</Typography>
-      </Button>
-    )
+  const mainButton = isMobile ? (
+    <IconButton onClick={onClick}>{icon}</IconButton>
+  ) : (
+    <Button
+      onClick={onClick}
+      sx={{
+        display: 'flex',
+        alignItems: 'left',
+        flexDirection: 'row',
+        gap: '8px',
+      }}>
+      {icon}
+      <Typography>{text}</Typography>
+    </Button>
   );
   return (
-  <Stack alignItems="center" direction="row" gap="8px">
+    <Stack alignItems="center" direction="row" gap="8px">
       {mainButton}
-      {hasActive ? <ActiveFilterChip resetFilters={reset ?? (() => {})} /> : null}
-  </Stack>
+      {hasActive ? (
+        <ActiveFilterChip resetFilters={reset ?? (() => {})} />
+      ) : null}
+    </Stack>
   );
 }
 
-function ActiveFilterChip({resetFilters}: {resetFilters: () => void}): React.ReactElement {
+function ActiveFilterChip({
+  resetFilters,
+}: {
+  resetFilters: () => void;
+}): React.ReactElement {
   const {filterState} = useFilterState();
-  const activeFilters = filterState.watchstatus.length + filterState.categories.length;
-  return <Chip label={<Typography>{activeFilters}</Typography>} onDelete={resetFilters} />;
+  const activeFilters =
+    filterState.watchstatus.length + filterState.categories.length;
+  return (
+    <Chip
+      label={<Typography>{activeFilters}</Typography>}
+      onDelete={resetFilters}
+    />
+  );
 }
 
 export function CenteredMenu({
@@ -122,7 +137,7 @@ export function FlexibleMenu({
   }
   return (
     <CenteredMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
-      {children}  
+      {children}
     </CenteredMenu>
   );
 }

@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material/styles';
+import {createTheme} from '@mui/material/styles';
 
 // A custom theme for this app
 export default {
@@ -21,7 +21,7 @@ export default {
       styleOverrides: {
         root: {
           padding: '8px',
-        }
+        },
       },
     },
   },

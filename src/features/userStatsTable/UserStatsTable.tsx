@@ -76,29 +76,29 @@ export default function UserStatsTable({
 
   function numFeature(user: UserStats) {
     return (
-      (includeSeen ? user.numSeenFeature ?? 0 : 0) +
-      (includeTodo ? user.numTodoFeature ?? 0 : 0)
+      (includeSeen ? (user.numSeenFeature ?? 0) : 0) +
+      (includeTodo ? (user.numTodoFeature ?? 0) : 0)
     );
   }
 
   function numShort(user: UserStats) {
     return (
-      (includeSeen ? user.numSeenShort ?? 0 : 0) +
-      (includeTodo ? user.numTodoShort ?? 0 : 0)
+      (includeSeen ? (user.numSeenShort ?? 0) : 0) +
+      (includeTodo ? (user.numTodoShort ?? 0) : 0)
     );
   }
 
   function numMultinom(user: UserStats) {
     return (
-      (includeSeen ? user.numSeenMultinom ?? 0 : 0) +
-      (includeTodo ? user.numTodoMultinom ?? 0 : 0)
+      (includeSeen ? (user.numSeenMultinom ?? 0) : 0) +
+      (includeTodo ? (user.numTodoMultinom ?? 0) : 0)
     );
   }
 
   function watchtime(user: UserStats) {
     return (
-      (includeSeen ? user.seenWatchtime ?? 0 : 0) +
-      (includeTodo ? user.todoWatchtime ?? 0 : 0)
+      (includeSeen ? (user.seenWatchtime ?? 0) : 0) +
+      (includeTodo ? (user.todoWatchtime ?? 0) : 0)
     );
   }
 

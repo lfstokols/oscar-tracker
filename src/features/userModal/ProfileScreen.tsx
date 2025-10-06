@@ -3,7 +3,7 @@ import Dialog from '@mui/material/Dialog';
 import Stack from '@mui/material/Stack';
 import OurWordmark from '../../components/OurWordmark';
 import XButton from '../../components/XButton';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import {useIsMobile} from '../../hooks/useIsMobile';
 import {useOscarAppContext} from '../../providers/AppContext';
 import SignUp from './SignupForm';
 import UserProfile from './UserProfile';
@@ -35,8 +35,7 @@ export default function ProfileScreen({open, closeModal}: Props) {
           backgroundColor: 'background',
           borderRadius: isMobile ? '0' : '2ch',
         },
-      }}
-    >
+      }}>
       <Card
         color="primary"
         sx={{

@@ -3,7 +3,15 @@ import {WatchStatus} from './Enums';
 
 // * Primitive Schemas
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
-export const GroupingSchema = z.enum(['big_three', 'acting', 'filmkraft', 'art', 'audio', 'best_in_class', 'short']);
+export const GroupingSchema = z.enum([
+  'big_three',
+  'acting',
+  'filmkraft',
+  'art',
+  'audio',
+  'best_in_class',
+  'short',
+]);
 export const MovieIdSchema = z
   .string()
   .regex(/^mov_[a-zA-Z0-9]{6}$/)
@@ -16,7 +24,7 @@ export const CategoryIdSchema = z
   .string()
   .regex(/cat_[a-z]{4}/)
   .brand<'CategoryId'>();
-  
+
 // * Primitive Types
 export type MovieId = z.infer<typeof MovieIdSchema>;
 export type UserId = z.infer<typeof UserIdSchema>;
@@ -41,7 +49,10 @@ export const MovieSchema = z
     runtime_minutes: z.number().nullable(),
     numNoms: z.number().gte(1),
     isShort: z.boolean(),
-    posterPath: z.string().regex(/^\/[0-9a-zA-Z]*\.jpg$/).nullable(),
+    posterPath: z
+      .string()
+      .regex(/^\/[0-9a-zA-Z]*\.jpg$/)
+      .nullable(),
   })
   .passthrough();
 
@@ -69,10 +80,10 @@ export const WatchNoticeSchema = z.object({
   status: RawWatchStatusSchema.transform(status => {
     return status === RawWatchStatusSchema.enum['seen']
       ? WatchStatus.seen
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      : status === RawWatchStatusSchema.enum['todo']
-      ? WatchStatus.todo 
-      : WatchStatus.blank;
+      : // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        status === RawWatchStatusSchema.enum['todo']
+        ? WatchStatus.todo
+        : WatchStatus.blank;
   }),
 });
 
@@ -84,11 +95,20 @@ export type Nom = z.infer<typeof NomSchema>;
 export type Category = z.infer<typeof CategorySchema>;
 
 // * Collection Schemas
-export const NomListSchema = z.array(NomSchema).describe('A list of nominations');
+export const NomListSchema = z
+  .array(NomSchema)
+  .describe('A list of nominations');
 export const UserListSchema = z.array(UserSchema).describe('A list of users');
-export const MovieListSchema = z.array(MovieSchema).describe('A list of movies');
-export const CategoryListSchema = z.array(CategorySchema).describe('A list of categories').nonempty();
-export const WatchListSchema = z.array(WatchNoticeSchema).describe('A watchlist');
+export const MovieListSchema = z
+  .array(MovieSchema)
+  .describe('A list of movies');
+export const CategoryListSchema = z
+  .array(CategorySchema)
+  .describe('A list of categories')
+  .nonempty();
+export const WatchListSchema = z
+  .array(WatchNoticeSchema)
+  .describe('A watchlist');
 
 // * Collection Types
 export type WatchList = z.infer<typeof WatchListSchema>;
@@ -117,7 +137,9 @@ export const UserStatsSchema = z.object({
   numCatsSeen: z.number().nullable().default(0),
   numCatsTodo: z.number().nullable().default(0),
 });
-export const UserStatsListSchema = z.array(UserStatsSchema).describe("A list of users' stats");
+export const UserStatsListSchema = z
+  .array(UserStatsSchema)
+  .describe("A list of users' stats");
 
 export type MyUserData = z.infer<typeof MyUserDataSchema>;
 export type UserStats = z.infer<typeof UserStatsSchema>;
@@ -130,11 +152,15 @@ export const HypotheticalityTupleSchema = z.object({
 });
 export type HypotheticalityTuple = z.infer<typeof HypotheticalityTupleSchema>;
 
-export const CategoryCompletionKeySchema = z.union([CategoryIdSchema, GroupingSchema]);
+export const CategoryCompletionKeySchema = z.union([
+  CategoryIdSchema,
+  GroupingSchema,
+]);
 export type CategoryCompletionKey = z.infer<typeof CategoryCompletionKeySchema>;
 
 export const CategoryCompletionSchema = z.record(
-  UserIdSchema, z.record(CategoryCompletionKeySchema, HypotheticalityTupleSchema)
+  UserIdSchema,
+  z.record(CategoryCompletionKeySchema, HypotheticalityTupleSchema),
 );
 
 export type CategoryCompletionData = z.infer<typeof CategoryCompletionSchema>;

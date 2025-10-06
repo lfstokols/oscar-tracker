@@ -16,7 +16,6 @@ export default function TableControls({
 }): React.ReactElement {
   const isMobile = useIsMobile();
 
-
   return (
     <Paper
       sx={{
@@ -25,9 +24,7 @@ export default function TableControls({
         // top: '-40px',
       }}>
       <Stack direction="row" justifyContent="space-between" width="100%">
-          <RefreshWidget
-            isMobile={isMobile}
-          />
+        <RefreshWidget isMobile={isMobile} />
         <HideColumnsWidget isMobile={isMobile} />
         <FilterRowsWidget
           filterState={filterState}
@@ -38,5 +35,3 @@ export default function TableControls({
     </Paper>
   );
 }
-
-

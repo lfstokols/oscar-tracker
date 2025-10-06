@@ -1,8 +1,14 @@
 import LaunchIcon from '@mui/icons-material/Launch';
-import {IconButton, Stack, TableCell, TableRow, Typography} from '@mui/material';
+import {
+  IconButton,
+  Stack,
+  TableCell,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {TABLE_ROW_MINOR_COLOR} from '../../config/StyleChoices';
-import { useNavigateToFilterState } from '../../hooks/useFilterState';
+import {useNavigateToFilterState} from '../../hooks/useFilterState';
 import {
   Category,
   CategoryCompletionData,
@@ -68,15 +74,14 @@ export default function CategoryRow({
       <TableCell />
       <TableCell sx={{paddingLeft: '50px'}}>
         <Stack alignItems="center" direction="row" spacing={1}>
-          <Typography variant="h6">
-            {category.fullName}
-          </Typography>
-          <IconButton onClick={() => {
-            navigateToFilterState({
-              categories: [category.id],
-              watchstatus: [],
-            });
-          }}>
+          <Typography variant="h6">{category.fullName}</Typography>
+          <IconButton
+            onClick={() => {
+              navigateToFilterState({
+                categories: [category.id],
+                watchstatus: [],
+              });
+            }}>
             <LaunchIcon fontSize="small" />
           </IconButton>
         </Stack>
@@ -86,14 +91,15 @@ export default function CategoryRow({
           <ClickableTooltip
             followCursor
             isOpaque
-            popup={<CategoryTooltip
-              catId={category.id}
-              movies={movies}
-              nominations={nominations}
-              userId={user}
-              watchlist={watchlist}
-            />}
-            >
+            popup={
+              <CategoryTooltip
+                catId={category.id}
+                movies={movies}
+                nominations={nominations}
+                userId={user}
+                watchlist={watchlist}
+              />
+            }>
             <Typography variant="h6">
               {make_fraction_display(
                 get_num(user, category.id, hypotheticality, data),

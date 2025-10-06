@@ -16,15 +16,15 @@ export default function AppProvider({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <QueryClientProvider client={queryClient}>
-            <AppContextProvider>
-              <NotificationsContextProvider>
-                {children}
-              </NotificationsContextProvider>
-            </AppContextProvider>
-          </QueryClientProvider>
-        </ThemeProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <QueryClientProvider client={queryClient}>
+        <AppContextProvider>
+          <NotificationsContextProvider>
+            {children}
+          </NotificationsContextProvider>
+        </AppContextProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

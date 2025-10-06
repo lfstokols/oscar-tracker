@@ -68,8 +68,6 @@ export default function NominationsCell({
   );
 }
 
-
-
 function LineClampText({
   children,
   setIsTruncated,

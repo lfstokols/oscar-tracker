@@ -1,4 +1,4 @@
-import { CategoryId,CategoryIdSchema} from '../types/APIDataSchema';
+import {CategoryId, CategoryIdSchema} from '../types/APIDataSchema';
 import {Grouping} from '../types/Enums';
 
 //* Nominees per grouping

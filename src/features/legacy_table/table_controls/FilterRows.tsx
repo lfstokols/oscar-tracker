@@ -20,8 +20,12 @@ import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 import {categoryOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
 
-import {Grouping, WatchStatus,grouping_display_names} from '../../../types/Enums';
-import { DisplayedSettingsButton,FlexibleMenu} from './Common';
+import {
+  Grouping,
+  WatchStatus,
+  grouping_display_names,
+} from '../../../types/Enums';
+import {DisplayedSettingsButton, FlexibleMenu} from './Common';
 import useMenuState from './useMenuState';
 
 export default function FilterRowsWidget({
@@ -73,7 +77,10 @@ export default function FilterRowsWidget({
   return (
     <>
       <DisplayedSettingsButton
-        hasActive={filterState.watchstatus.length !== 0 || filterState.categories.length !== 0}
+        hasActive={
+          filterState.watchstatus.length !== 0 ||
+          filterState.categories.length !== 0
+        }
         icon={<FilterAlt />}
         isMobile={isMobile}
         onClick={handleClick}

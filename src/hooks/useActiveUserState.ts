@@ -42,7 +42,7 @@ export default function useActiveUserState(): [
   //* Set a promise to check the username and userId are consistent with each other
   const TIME_LIMIT = 1000; // TODO - Make this a config variable
   const notifications = useNotifications();
-  
+
   useEffect(() => {
     const timeStamp = Date.now();
     queryClient
@@ -62,7 +62,7 @@ export default function useActiveUserState(): [
         errorToConsole(error);
       });
   }, [defaultUserId, defaultUsername, notifications, queryClient]);
-  
+
   //* Set a new version of setActiveUserId that also updates the cookie and activeUsername
   const newSetActiveUserId = useUpgradeSetActiveUserId(
     setActiveUserId,
@@ -128,10 +128,7 @@ function getCallbackForArrivedUserList(
   return (data: UserList) => {
     const suggestedUsername = getUsernameFromId(activeUserId ?? '', data);
     if (suggestedUsername != activeUsername) {
-      if (
-        timeLimit &&
-        Date.now() - timeStamp > timeLimit
-      ) {
+      if (timeLimit && Date.now() - timeStamp > timeLimit) {
         warnToConsole(
           `The activeUsername ${activeUsername} doesn't match the activeUserId ${activeUserId}.\n'+
             'The activeUserId ${activeUserId} is associated with the username ${suggestedUsername}.\n'+

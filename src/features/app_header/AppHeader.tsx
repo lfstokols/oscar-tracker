@@ -60,9 +60,7 @@ export default function AppHeader({
           {!isMobile && <YearSelector />}
           <Suspense
             fallback={
-              <Avatar>
-                {getUserIdFromCookie()?.charAt(0).toUpperCase()}
-              </Avatar>
+              <Avatar>{getUserIdFromCookie()?.charAt(0).toUpperCase()}</Avatar>
             }>
             <UserButton />
           </Suspense>

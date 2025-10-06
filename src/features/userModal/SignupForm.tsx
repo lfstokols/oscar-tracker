@@ -8,7 +8,7 @@ import {
   addUserOnSuccess,
   onMutateError,
 } from '../../hooks/mutationOptions';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import {useIsMobile} from '../../hooks/useIsMobile';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {useNotifications} from '../../providers/NotificationContext';
 import TitleLine, {boxStyle, boxStyleMobile} from './Common';
@@ -31,7 +31,7 @@ export default function SignUp({closer}: Props) {
     onSuccess: addUserOnSuccess(queryClient, setActiveUserId),
     onError: onMutateError('Failed to create user.', notifications),
   });
-  
+
   const isMobile = useIsMobile();
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     if (emailError || usernameError) {
@@ -89,7 +89,11 @@ export default function SignUp({closer}: Props) {
   return (
     <>
       <TitleLine title="Create an Account" />
-      <Box component="form" noValidate onSubmit={handleSubmit} sx={isMobile ? boxStyleMobile : boxStyle}>
+      <Box
+        component="form"
+        noValidate
+        onSubmit={handleSubmit}
+        sx={isMobile ? boxStyleMobile : boxStyle}>
         {/* <Tooltip title="Username must consist of only letters, numbers, and underscores."> */}
         <TextEntry
           display_name="Username"

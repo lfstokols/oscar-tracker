@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@mui/material';
 import XButton from '../../components/XButton';
-import { useIsMobile } from '../../hooks/useIsMobile';
+import {useIsMobile} from '../../hooks/useIsMobile';
 import {
   CategoryId,
   MovieList,
@@ -52,15 +52,14 @@ export default function CategoryTooltip({
     <Stack
       direction="column"
       justifyContent="space-between"
-      onClick={(event) => {
+      onClick={event => {
         event.stopPropagation();
         event.preventDefault();
       }}
       spacing={0}
       sx={{
         pointerEvents: 'auto',
-      }}
-    >
+      }}>
       {isMobile ? <XButton onClick={() => {}} /> : null}
       {MakeColumn({title: 'Seen', idList: myMovieIds, allMovies: movies})}
       {MakeColumn({

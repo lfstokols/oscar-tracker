@@ -1,4 +1,4 @@
-import { Table, TableBody,TableCell, TableRow} from '@mui/material';
+import {Table, TableBody, TableCell, TableRow} from '@mui/material';
 import MoviePosterCell from './MoviePosterCell';
 import TitleCell from './TitleCell';
 

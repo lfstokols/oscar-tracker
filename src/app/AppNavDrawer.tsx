@@ -1,4 +1,4 @@
-import { BugReport, Comment, Home, Hub,Leaderboard} from '@mui/icons-material';
+import {BugReport, Comment, Home, Hub, Leaderboard} from '@mui/icons-material';
 import {
   Divider,
   Drawer,
@@ -9,11 +9,13 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
-import { Location, useLocation,useNavigate} from 'react-router-dom';
+import {Location, useLocation, useNavigate} from 'react-router-dom';
 import {
   BY_CATEGORY_URL,
-  BY_USER_URL,FEATURE_REQUEST_URL,
-  LEGACY_URL, REPORT_BUG_URL,
+  BY_USER_URL,
+  FEATURE_REQUEST_URL,
+  LEGACY_URL,
+  REPORT_BUG_URL,
 } from '../config/GlobalConstants';
 import YearSelector from '../features/app_header/YearSelector';
 import {useIsMobile} from '../hooks/useIsMobile';

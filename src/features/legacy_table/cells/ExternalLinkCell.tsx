@@ -2,8 +2,11 @@ import {IconButton, Stack, TableCell} from '@mui/material';
 import {z} from 'zod';
 import imdbIcon from '../../../assets/IMDb_Logo_Rectangle_Gold.png';
 import JWIcon from '../../../assets/JW_logo_color_10px.svg';
-import { NotificationsDispatch, useNotifications } from '../../../providers/NotificationContext';
-import { errorToConsole } from '../../../utils/Logger';
+import {
+  NotificationsDispatch,
+  useNotifications,
+} from '../../../providers/NotificationContext';
+import {errorToConsole} from '../../../utils/Logger';
 const logoHeight = '25px';
 const logoMargin = '10px';
 
@@ -39,14 +42,17 @@ function ExternalLink({
   return (
     <IconButton
       onClick={() => handleClick(service, movieId, notifications)}
-      style={{margin: logoMargin, padding: 0}}
-    >
+      style={{margin: logoMargin, padding: 0}}>
       {icon}
     </IconButton>
   );
 }
 
-function handleClick(service: string, movieId: MovieId, notifications: NotificationsDispatch) {
+function handleClick(
+  service: string,
+  movieId: MovieId,
+  notifications: NotificationsDispatch,
+) {
   const params = new URLSearchParams({
     id: movieId.toString(),
     service: service,
@@ -55,13 +61,13 @@ function handleClick(service: string, movieId: MovieId, notifications: Notificat
   fetch(url)
     .then(response => response.json())
     .then((data: z.infer<typeof apiResponse>) => {
-      const valid_data = (apiResponse.parse(data));
-      if ( valid_data.failed ) {
+      const valid_data = apiResponse.parse(data);
+      if (valid_data.failed) {
         notifications.show({
           type: 'info',
           message: valid_data.message ?? 'There are no offers for this movie',
         });
-      } else if ( valid_data.url ) {
+      } else if (valid_data.url) {
         window.open(valid_data.url, '_blank');
       }
     })
@@ -74,19 +80,32 @@ function handleClick(service: string, movieId: MovieId, notifications: Notificat
     });
 }
 
-const justWatchIcon = <img alt="JustWatch" src={JWIcon} style={{maxHeight: logoHeight}} width='auto' />;
+const justWatchIcon = (
+  <img
+    alt="JustWatch"
+    src={JWIcon}
+    style={{maxHeight: logoHeight}}
+    width="auto"
+  />
+);
 
 const ImdbIcon = <img alt="IMDB" height={logoHeight} src={imdbIcon} />;
 
-const apiResponse = z.object({
-  failed: z.boolean(),
-  message: z.string().optional(),
-  url: z.string().url().optional(),
-}).refine((data) => {
-  if (data.failed) {
-    return data.message !== undefined;
-  }
-  return data.url !== undefined;
-}, {
-  message: 'Invalid API response, if successful must include url, if unsuccessful must include message',
-});
+const apiResponse = z
+  .object({
+    failed: z.boolean(),
+    message: z.string().optional(),
+    url: z.string().url().optional(),
+  })
+  .refine(
+    data => {
+      if (data.failed) {
+        return data.message !== undefined;
+      }
+      return data.url !== undefined;
+    },
+    {
+      message:
+        'Invalid API response, if successful must include url, if unsuccessful must include message',
+    },
+  );

@@ -15,8 +15,6 @@ export default function TitleLine({title}: {title: string}) {
   );
 }
 
-
-
 const boxStyleCommon = {
   display: 'flex',
   flexDirection: 'column',

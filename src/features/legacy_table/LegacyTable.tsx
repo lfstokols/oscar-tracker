@@ -32,7 +32,7 @@ export default function LegacyTable({
 }): React.ReactElement {
   const {year, preferences, activeUserId} = useOscarAppContext();
   const [isRuntimeFormatted, setIsRuntimeFormatted] = useState(true);
-  
+
   const [usersQ, nominationsQ, categoriesQ, moviesQ, watchlistQ] =
     useSuspenseQueries({
       queries: [

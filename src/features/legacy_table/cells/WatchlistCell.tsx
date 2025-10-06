@@ -113,8 +113,8 @@ function display(watchstate: WatchStatus): string {
   return watchstate === WatchStatus.seen
     ? 'Seen'
     : watchstate === WatchStatus.todo
-    ? 'To-Do'
-    : ' ';
+      ? 'To-Do'
+      : ' ';
 }
 
 type FillProps = {
@@ -136,8 +136,8 @@ export function MyFill({
           watchstate === WatchStatus.blank
             ? NO_STATUS_COLOR
             : watchstate === WatchStatus.seen
-            ? SEEN_COLOR
-            : TODO_COLOR,
+              ? SEEN_COLOR
+              : TODO_COLOR,
         opacity: disabled ? 0.7 : 1,
         minHeight: '32px',
         width: '60px',
