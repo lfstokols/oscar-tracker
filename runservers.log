@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+
+  VITE v7.3.1  ready in 222 ms
+
+  ➜  Local:   http://localhost:8000/
+  ➜  Network: use --host to expose
+dleware.sessions import (
+  File "/home/logan/projects/oscar-tracker/.venv/lib/python3.12/site-packages/starlette/middleware/sessions.py", line 7, in <module>
+    import itsdangerous
+ModuleNotFoundError: No module named 'itsdangerous'

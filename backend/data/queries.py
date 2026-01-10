@@ -1,21 +1,18 @@
 import logging
 import re
 from typing import Any
-from typing_extensions import Literal
+
 import requests
-from bs4 import BeautifulSoup, Tag
 import sqlalchemy as sa
-from backend.data.db_connections import Session
-from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
-from backend.data.utils import result_to_dict
-from backend.types.api_schemas import (
-    MovieID,
-    CategoryCompletionKey,
-    UserID,
-    countTypes,
-)
-from backend.types.my_types import WatchStatus, Grouping
+from bs4 import BeautifulSoup, Tag
+from typing_extensions import Literal
+
 import backend.data.derived_values as dv
+from backend.data.db_connections import Session
+from backend.data.db_schema import Category, Movie, Nomination, User, Watchnotice
+from backend.data.utils import result_to_dict
+from backend.types.api_schemas import CategoryCompletionKey, MovieID, UserID, countTypes
+from backend.types.my_types import Grouping, WatchStatus
 
 
 def get_number_of_movies(year, shortsIsOne=False) -> int:
@@ -94,9 +91,9 @@ def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]
     with Session() as session:
         result = session.execute(query)
         result = result_to_dict(result)
-    for movie in [m for m in result if m['subtitle'] != ""]:
-        match = re.search(r"(\w.*)$", movie['subtitle'])
-        movie['subtitle'] = match.group(0).strip() if match else ""
+    for movie in [m for m in result if m["subtitle"] != ""]:
+        match = re.search(r"(\w.*)$", movie["subtitle"])
+        movie["subtitle"] = match.group(0).strip() if match else ""
     return result
 
 
@@ -121,8 +118,12 @@ def get_my_user_data(userId: UserID) -> dict[str, Any]:
         result = session.execute(query)
         data = result_to_dict(result)
     if data is None or len(data) == 0:
-        logging.error(f"User with id {userId} not found @ qu.get_my_user_data({userId})")
-        raise Exception(f"User with id {userId} not found @ qu.get_my_user_data({userId})")
+        logging.error(
+            f"User with id {userId} not found @ qu.get_my_user_data({userId})"
+        )
+        raise Exception(
+            f"User with id {userId} not found @ qu.get_my_user_data({userId})"
+        )
     data = data[0]
     data["propic"] = get_user_propic(data["letterboxd"])
     return data
@@ -198,7 +199,7 @@ def get_category_completion_dict(
     all_movies = (
         sa.select(User.user_id.label("user_id"), Movie.movie_id.label("movie_id"))
         .select_from(User)
-        .join(Movie, sa.true()) #* Cartesian product
+        .join(Movie, sa.true())  # * Cartesian product
         .where(Movie.year == year)
         .subquery()
     )
@@ -319,20 +320,22 @@ def get_user_stats(year: int) -> list[dict[str, Any]]:
 
     def query_by_status(status: Literal["seen", "todo"]):
         watchlist = dv.get_filtered_watchlist(status, year)
-        num_cats = dv.num_categories_completed(('seen' if status == 'seen' else 'both'), year)
+        num_cats = dv.num_categories_completed(
+            ("seen" if status == "seen" else "both"), year
+        )
         label = "Seen" if status == "seen" else "Todo"
         return (
             sa.select(
                 User.user_id.label("id"),
                 sa.func.count(watchlist.c.movie_id)
-                    .filter(shortness.c.is_short)
-                    .label(f"num{label}Short"),
+                .filter(shortness.c.is_short)
+                .label(f"num{label}Short"),
                 sa.func.count(watchlist.c.movie_id)
-                    .filter(~shortness.c.is_short)
-                    .label(f"num{label}Feature"),
+                .filter(~shortness.c.is_short)
+                .label(f"num{label}Feature"),
                 sa.func.count(watchlist.c.movie_id)
-                    .filter(multinom.c.is_multinom)
-                    .label(f"num{label}Multinom"),
+                .filter(multinom.c.is_multinom)
+                .label(f"num{label}Multinom"),
                 num_cats.c.num_categories_completed.label(f"numCats{label}"),
                 sa.func.sum(Movie.runtime).label(f"{label.lower()}Watchtime"),
             )

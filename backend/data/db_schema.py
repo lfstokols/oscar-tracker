@@ -1,21 +1,18 @@
 from __future__ import annotations
+
 import sqlite3
-from pydantic import EmailStr
+from datetime import datetime
+from typing import override
+
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from datetime import datetime
-from contextlib import contextmanager
-from backend.types.api_schemas import CategoryID, MovieID, UserID
-from backend.types.api_validators import (
-    AnnotatedValidator,
-    UserValidator,
-    MovieValidator,
-    CategoryValidator,
-    PosterPathValidator,
-)
-from backend.types.my_types import WatchStatus
-import backend.utils.env_reader as env
+from pydantic import EmailStr
 from sqlalchemy import Index
+
+import backend.utils.env_reader as env
+from backend.types.api_schemas import CategoryID, MovieID, UserID
+from backend.types.api_validators import AnnotatedValidator
+from backend.types.my_types import WatchStatus
 
 DB_PATH = env.DATABASE_PATH / env.SQLITE_FILE_NAME
 
@@ -24,7 +21,7 @@ def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         cursor = conn.cursor()
         # Create users table
-        cursor.execute(
+        _ = cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
                 user_id TEXT PRIMARY KEY,
@@ -37,7 +34,7 @@ def init_db():
         )
 
         # Create movies table
-        cursor.execute(
+        _ = cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS movies (
                 movie_id TEXT PRIMARY KEY,
@@ -53,7 +50,7 @@ def init_db():
         )
 
         # Create categories table
-        cursor.execute(
+        _ = cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS categories (
                 category_id TEXT PRIMARY KEY,
@@ -68,7 +65,7 @@ def init_db():
         )
 
         # Create nominations table
-        cursor.execute(
+        _ = cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS nominations (
                 nomination_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,7 +80,7 @@ def init_db():
         )
 
         # Create watchlist table
-        cursor.execute(
+        _ = cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS watchlist (
                 year INTEGER NOT NULL,
@@ -98,11 +95,11 @@ def init_db():
         )
 
         # Create indices for better query performance
-        cursor.execute(
+        _ = cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_nominations_year ON nominations(year)"
         )
-        cursor.execute("CREATE INDEX IF NOT EXISTS idx_movies_year ON movies(year)")
-        cursor.execute(
+        _ = cursor.execute("CREATE INDEX IF NOT EXISTS idx_movies_year ON movies(year)")
+        _ = cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_watchlist_user ON watchlist(user_id)"
         )
 
@@ -114,59 +111,70 @@ Base = orm.declarative_base()
 # * # * # * # * # * # *
 
 
-class UserID_SQL(sa.TypeDecorator):
+class UserID_SQL(sa.TypeDecorator[UserID]):
     impl = sa.String
     cache_ok = True
 
+    @override
     def process_bind_param(self, value, dialect):
         return str(value) if value is not None else None
 
+    @override
     def process_result_value(self, value, dialect):
         return AnnotatedValidator(user=value).user
 
 
-class MovieID_SQL(sa.TypeDecorator):
+class MovieID_SQL(sa.TypeDecorator[MovieID]):
     impl = sa.String
     cache_ok = True
 
+    @override
     def process_bind_param(self, value, dialect):
         return str(value) if value is not None else None
 
+    @override
     def process_result_value(self, value, dialect):
         return AnnotatedValidator(movie=value).movie
 
 
-class CategoryID_SQL(sa.TypeDecorator):
+class CategoryID_SQL(sa.TypeDecorator[CategoryID]):
     impl = sa.String
     cache_ok = True
 
+    @override
     def process_bind_param(self, value, dialect):
         return str(value) if value is not None else None
 
+    @override
     def process_result_value(self, value, dialect):
         return AnnotatedValidator(category=value).category
 
 
-class Email_SQL(sa.TypeDecorator):
+class Email_SQL(sa.TypeDecorator[EmailStr]):
     impl = sa.String
     cache_ok = True
 
+    @override
     def process_bind_param(self, value, dialect):
         return str(value) if value else None
 
+    @override
     def process_result_value(self, value, dialect):
         return value if value else None
 
 
-class WatchStatus_SQL(sa.TypeDecorator):
+class WatchStatus_SQL(sa.TypeDecorator[WatchStatus]):
     impl = sa.String
     cache_ok = True
 
+    @override
     def process_bind_param(self, value, dialect):
         return value.value if value else None
 
+    @override
     def process_result_value(self, value, dialect):
         return WatchStatus(value) if value else None
+
 
 # * # * # * # * # * #
 # * Table Classes * #
@@ -178,7 +186,7 @@ class User(Base):
     user_id: sa.Column[UserID] = sa.Column(UserID_SQL, primary_key=True)
     username: sa.Column[str] = sa.Column(sa.String)
     letterboxd: sa.Column[str] = sa.Column(sa.String)
-    email: sa.Column[Email_SQL] = sa.Column(Email_SQL)
+    email: sa.Column[EmailStr] = sa.Column(Email_SQL)
     last_letterboxd_check: sa.Column[datetime] = sa.Column(sa.DateTime)
 
     watchnotices = orm.relationship("Watchnotice", back_populates="user", viewonly=True)
@@ -217,9 +225,7 @@ class Movie(Base):
     # )
 
     # Add index on year column
-    __table_args__ = (
-        Index('idx_movies_year', 'year'),
-    )
+    __table_args__ = (Index("idx_movies_year", "year"),)
 
 
 class Category(Base):
@@ -230,7 +236,9 @@ class Category(Base):
     max_nominations: sa.Column[int] = sa.Column(sa.Integer)
     is_short: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
     has_note: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
-    grouping: sa.Column[str] = sa.Column(sa.String,)
+    grouping: sa.Column[str] = sa.Column(
+        sa.String,
+    )
 
     nominations = orm.relationship(
         "Nomination", back_populates="category", viewonly=True
@@ -259,9 +267,7 @@ class Nomination(Base):
     category = orm.relationship("Category", back_populates="nominations", viewonly=True)
 
     # Add index on year column
-    __table_args__ = (
-        Index('idx_nominations_year', 'year'),
-    )
+    __table_args__ = (Index("idx_nominations_year", "year"),)
 
 
 class Watchnotice(Base):
@@ -279,6 +285,4 @@ class Watchnotice(Base):
     movie = orm.relationship("Movie", back_populates="watchnotices", viewonly=True)
 
     # Add index on user_id column
-    __table_args__ = (
-        Index('idx_watchlist_user', 'user_id'),
-    )
+    __table_args__ = (Index("idx_watchlist_user", "user_id"),)

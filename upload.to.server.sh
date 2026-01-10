@@ -9,15 +9,21 @@ else
     echo "Can't find config.local.sh. I need an SSH profile to run."
     exit 1
 fi
+mode=stage
+if [ "${1:-}" = "--full" ]; then
+    mode=full
+fi
 # MY_SSH
 # REMOTE_ROOT
 # REMOTE_CURRENT
+# REMOTE_BETA
 # REMOTE_RELEASES
 # MY_USER
 # DAEMON_GROUP
 # SERVICE_NAME
 TIMESTAMP=$(TZ=America/New_York date +%Y-%m-%d_%H-%M-%S)
 REMOTE_VERSION_DIR="$REMOTE_RELEASES/$TIMESTAMP"
+
 
 #* 1. Build the project, if user request it or times out
 # Use read with timeout
@@ -59,10 +65,11 @@ if [ "$UPDATE_SYMLINKS" != "Y" ] && [ "$UPDATE_SYMLINKS" != "y" ]; then
     echo "Exiting without updating symlinks..."
     exit 0
 fi
-ssh "$MY_SSH" "rm $REMOTE_CURRENT \
-&& ln -s $REMOTE_VERSION_DIR $REMOTE_CURRENT \
-&& ln -s $REMOTE_ROOT/var $REMOTE_CURRENT/var \
-&& ln -s $REMOTE_ROOT/.env $REMOTE_CURRENT/.env"
+[ "$mode" = "full" ] && target=REMOTE_CURRENT || target=REMOTE_BETA
+ssh "$MY_SSH" "rm $target \
+&& ln -s $REMOTE_VERSION_DIR $target \
+&& ln -s $REMOTE_ROOT/var $target/var \
+&& ln -s $REMOTE_ROOT/.env $target/.env"
 
 #* 7. Restart service
 echo "Restarting gunicorn..."
