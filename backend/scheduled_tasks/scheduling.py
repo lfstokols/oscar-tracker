@@ -1,39 +1,30 @@
 import logging
-import shutil
 import sqlite3
 from datetime import datetime
 
 import sqlalchemy as sa
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import backend.utils.env_reader as env
 from backend.data.db_connections import Session
 from backend.data.db_schema import User
 from backend.scheduled_tasks.check_rss import update_user_watchlist
 
-"""
-How to use:
-import <this file>
-scheduler = APScheduler()
-scheduler.init_app(app)
-scheduler.start()
-"""
 
-
-class Config:
-    JOBS: list[dict[str, str | int]] = [
-        {
-            "id": "check_letterboxd",
-            "func": "backend.scheduled_tasks.scheduling:check_letterboxd",
-            "trigger": "interval",
-            "hours": 18,
-        },
-        {
-            "id": "backup_database",
-            "func": "backend.scheduled_tasks.scheduling:backup_database",
-            "trigger": "interval",
-            "days": 2,
-        },
-    ]
+def register_jobs(scheduler: AsyncIOScheduler) -> None:
+    """Register all scheduled jobs with the scheduler."""
+    scheduler.add_job(
+        check_letterboxd,
+        trigger="interval",
+        id="check_letterboxd",
+        hours=18,
+    )
+    scheduler.add_job(
+        backup_database,
+        trigger="interval",
+        id="backup_database",
+        days=2,
+    )
 
 
 def check_letterboxd():

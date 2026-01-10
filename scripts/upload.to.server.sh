@@ -1,6 +1,11 @@
 #! /bin/bash
 #set -eux # exit on error or undefined variable, print commands before execution
 set -eu
+
+# Always run in project root
+REPO_ROOT=$(dirname "$0")/..
+cd "$REPO_ROOT"
+
 #* 0. Get configuration
 CONFIG_FILE="$HOME/deploy.config.sh"
 if [ -f "$CONFIG_FILE" ]; then
@@ -40,8 +45,8 @@ fi
 ssh "$MY_SSH" "mkdir -p $REMOTE_VERSION_DIR"
 
 #* 3. Copy dist/, backend/, and requirements.txt to new dir
-SCRIPT_DIR="$PWD"
-scp -q -r "$SCRIPT_DIR"/dist/ "$SCRIPT_DIR"/backend/ "$SCRIPT_DIR"/requirements.txt "$MY_SSH:$REMOTE_VERSION_DIR"
+
+scp -q -r "$REPO_ROOT"/dist/ "$REPO_ROOT"/backend/ "$REPO_ROOT"/requirements.txt "$MY_SSH:$REMOTE_VERSION_DIR"
 
 #* 4. If requirements changed, add them to venv
 # ssh "$MY_SSH" "test -f $REMOTE_CURRENT/requirements.txt && test -f $REMOTE_VERSION_DIR/requirements.txt \

@@ -27,7 +27,7 @@ import backend.data.db_connections
 from backend.routes.database_routes import router as oscars_router
 from backend.routing_lib.error_handling import apply_error_handling
 from backend.routing_lib.user_session import SessionMiddleware as MySessionMiddleware
-from backend.scheduled_tasks.scheduling import Config
+from backend.scheduled_tasks.scheduling import register_jobs
 
 # * The rest of the imports
 from backend.types.api_validators import (
@@ -47,7 +47,8 @@ if not env.STATIC_PATH.exists():
     raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
 
 # Setup scheduler
-scheduler = AsyncIOScheduler(Config.JOBS)
+scheduler = AsyncIOScheduler()
+register_jobs(scheduler)
 
 
 @asynccontextmanager

@@ -3,9 +3,12 @@
 
 set -e
 
+# Always run in project root
+cd "$(dirname "$0")/.."
+
 # Log file
-LOG_FILE_PY="runservers.python.log"
-LOG_FILE_VITE="runservers.vite.log"
+LOG_FILE_PY="logs/runservers.python.log"
+LOG_FILE_VITE="logs/runservers.vite.log"
 
 # Global flag to track if we should shut down
 SHOULD_EXIT=false
