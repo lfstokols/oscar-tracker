@@ -43,8 +43,9 @@ async def serve_noms(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
 @router.get("/movies", response_model=list[api_Movie])
 async def serve_movies(
     year: parser.ActiveYear,
-) -> list[dict[str, Primitive]]:
-    return qu.get_movies(year)
+) -> list[api_Movie]:
+    movies = qu.get_movies(year)
+    return [api_Movie.model_validate(m) for m in movies]
 
 
 @router.get("/users", response_model=list[api_User])

@@ -1,10 +1,10 @@
 import logging
-import re
 from typing import Any, cast
 
 import httpx
 import sqlalchemy as sa
 from bs4 import BeautifulSoup, Tag
+from sqlalchemy.orm import selectinload
 from typing_extensions import Literal
 
 import backend.data.derived_values as dv
@@ -39,64 +39,16 @@ def get_number_of_movies(year: int, shortsIsOne: bool = False) -> int:
         return total
 
 
-def get_movies(year: int, idList: list[MovieID] | None = None) -> list[dict[str, Any]]:
+def get_movies(year: int, idList: list[MovieID] | None = None) -> list[Movie]:
     """
-    Returns an array of movies for a given year.
-    Each movie is a dictionary with the following keys:
-        - id: MovieID
-        - title: str
-        - main_title: str
-        - subtitle: str
-        - ImdbId: str
-        - movieDbId: int
-        - runtime_hours: str
-        - runtime_minutes: int
-        - numNoms: int
-        - isShort: bool
-        - posterPath: str
+    Returns a list of Movie ORM objects for a given year.
+    Use api_Movie.model_validate(movie) at the API boundary for serialization.
     """
-    shortness = dv.movie_is_short().subquery()
-    formatted_runtimes = dv.runtime_formatted().subquery()
-    main_and_subtitles = dv.break_into_subtitles().subquery()
-    num_noms = dv.movie_num_noms().subquery()
-    query = (
-        sa.select(
-            Movie.movie_id.label("id"),
-            Movie.title,
-            main_and_subtitles.c.main_title.label("mainTitle"),
-            main_and_subtitles.c.subtitle,
-            Movie.imdb_id.label("ImdbId"),
-            Movie.movie_db_id.label("movieDbId"),
-            formatted_runtimes.c.runtime_hours,
-            formatted_runtimes.c.runtime_minutes,
-            num_noms.c.num_noms.label("numNoms").cast(sa.Integer),
-            shortness.c.is_short.label("isShort"),
-            Movie.poster_path.label("posterPath"),
-        )
-        .select_from(Movie)
-        .join(shortness, Movie.movie_id == shortness.c.movie_id, isouter=True)
-        .join(
-            formatted_runtimes,
-            Movie.movie_id == formatted_runtimes.c.movie_id,
-            isouter=True,
-        )
-        .join(
-            main_and_subtitles,
-            Movie.movie_id == main_and_subtitles.c.movie_id,
-            isouter=True,
-        )
-        .join(num_noms, Movie.movie_id == num_noms.c.movie_id, isouter=True)
-    )
-    query = query.where(Movie.year == year)
+    query = sa.select(Movie).where(Movie.year == year)
     if idList:
         query = query.where(Movie.movie_id.in_(idList))
     with Session() as session:
-        result = session.execute(query)
-        result = result_to_dict(result)
-    for movie in [m for m in result if m["subtitle"] != ""]:
-        match = re.search(r"(\w.*)$", movie["subtitle"])
-        movie["subtitle"] = match.group(0).strip() if match else ""
-    return result
+        return list(session.execute(query).scalars().all())
 
 
 def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
@@ -327,9 +279,6 @@ def get_user_stats(year: int) -> list[dict[str, Any]]:
 
     """
 
-    shortness = dv.movie_is_short().subquery()
-    multinom = dv.movie_is_multinom().subquery()
-
     def query_by_status(status: Literal["seen", "todo"]):
         watchlist = dv.get_filtered_watchlist(status, year)
         num_cats = dv.num_categories_completed(
@@ -340,13 +289,13 @@ def get_user_stats(year: int) -> list[dict[str, Any]]:
             sa.select(
                 User.user_id.label("id"),
                 sa.func.count(watchlist.c.movie_id)
-                .filter(shortness.c.is_short)
+                .filter(Movie.is_short)
                 .label(f"num{label}Short"),
                 sa.func.count(watchlist.c.movie_id)
-                .filter(~shortness.c.is_short)
+                .filter(~Movie.is_short)
                 .label(f"num{label}Feature"),
                 sa.func.count(watchlist.c.movie_id)
-                .filter(multinom.c.is_multinom)
+                .filter(Movie.is_multinom)
                 .label(f"num{label}Multinom"),
                 num_cats.c.num_categories_completed.label(f"numCats{label}"),
                 sa.func.sum(Movie.runtime).label(f"{label.lower()}Watchtime"),
@@ -354,8 +303,6 @@ def get_user_stats(year: int) -> list[dict[str, Any]]:
             .select_from(User)
             .outerjoin(watchlist, User.user_id == watchlist.c.user_id)
             .outerjoin(Movie, watchlist.c.movie_id == Movie.movie_id)
-            .outerjoin(shortness, watchlist.c.movie_id == shortness.c.movie_id)
-            .outerjoin(multinom, watchlist.c.movie_id == multinom.c.movie_id)
             .outerjoin(num_cats, watchlist.c.user_id == num_cats.c.user_id)
             .group_by(User.user_id)
             .subquery()

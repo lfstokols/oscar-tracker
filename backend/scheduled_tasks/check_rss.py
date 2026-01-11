@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 import backend.data.mutations as mu
 import backend.data.queries as qu
 from backend.types.api_schemas import MovieID, UserID
-from backend.types.api_validators import MovieValidator
-from backend.types.my_types import *
+from backend.types.my_types import MovieDbID, WatchStatus
 
 
 async def update_user_watchlist(user_id: UserID) -> bool:
@@ -85,25 +84,18 @@ async def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     )
     # * identify the movies
     movies = qu.get_movies(year)
-    sample_data = [
-        [x[MovieColumns.ID.value], x[MovieColumns.MovieDB_ID.value]] for x in movies[:3]
-    ]
+    sample_data: list[list[MovieID | None]] = [
+        [m.movie_id, m.movie_db_id] for m in movies[:3]]
     sample_strings = [f"{x[0]}: {type(x[1])} {x[1]}" for x in sample_data]
     logging.debug(
         f"The movie data has tmdb ids like {', '.join(sample_strings)}")
     my_id_list = [
-        row[MovieColumns.ID.value]
-        for row in movies
-        if int(row[MovieColumns.MovieDB_ID.value]) in mdb_id_list
+        movie.movie_id
+        for movie in movies
+        if movie.movie_db_id is not None and int(movie.movie_db_id) in mdb_id_list
     ]
     logging.debug(
         f"Of those {len(mdb_id_list)} movie IDs listed on the page, {len(my_id_list)} matched movies in my database."
     )
-    validated_idlist: list[MovieID] = []
-    for id in my_id_list:
-        try:
-            validated_idlist.append(MovieValidator(movie=id).movie)
-        except:
-            logging.warning(f"Invalid movie id: {id}")
-
-    return validated_idlist
+    # movie_id is already validated by the ORM TypeDecorator
+    return my_id_list

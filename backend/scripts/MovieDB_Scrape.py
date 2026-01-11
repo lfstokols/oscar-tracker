@@ -1,7 +1,3 @@
-from backend.types.my_types import *
-import backend.utils.env_reader as env
-import backend.data.queries as pr
-import backend.data.mutations as mu
 import argparse
 import os
 import re
@@ -12,6 +8,12 @@ from typing import Optional
 
 import pandas as pd
 import requests
+
+import backend.data.mutations as mu
+import backend.data.queries as pr
+import backend.utils.env_reader as env
+from backend.data.db_schema import Movie
+from backend.types.my_types import *
 
 # * local imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -99,20 +101,20 @@ def fetch_movie_db(year: int, error_cutoff: int):
     movie_data = pr.get_movies(year)
     for movie in movie_data:
         try:
-            debug_print(f"Fetching data for {movie['id']}")
+            debug_print(f"Fetching data for {movie.movie_id}")
             movie_db_id = try_to_find_moviedb_id(movie, year)
 
             movie_db_id = try_to_find_moviedb_id(movie, year)
             if movie_db_id is None:
                 continue
         except Exception as e:
-            debug_print(f"Error searching for {movie['id']}: {e}")
+            debug_print(f"Error searching for {movie.movie_id}: {e}")
             continue
         try:
             details = fetch_wrapper(f"movie/{movie_db_id}")
             title = details["title"]
             runtime = details["runtime"]
-            is_short = movie[DerivedMovieColumns.IS_SHORT]
+            is_short = movie.is_short
             release_status = details["status"]
             release_date = details["release_date"]
 
@@ -197,28 +199,28 @@ def fetch_movie_db(year: int, error_cutoff: int):
                 new_data['poster_path'] = details["poster_path"]
 
             if not dry_run:
-                mu.update_movie(movie[MovieColumns.ID],
+                mu.update_movie(movie.movie_id,
                                 year, new_data=new_data)
             if dry_run:
                 print(f"{title}: {new_data}")
         except Exception as e:
-            error_print(f"Error with {movie[MovieColumns.ID]}: {e}")
+            error_print(f"Error with {movie.movie_id}: {e}")
             raise e
 
 
-def try_to_find_moviedb_id(movie, year) -> Optional[int]:
-    movId = movie[MovieColumns.ID]
+def try_to_find_moviedb_id(movie: Movie, year: int) -> Optional[int]:
+    movId = movie.movie_id
     debug_print(f"Fetching data for {movId}")
-    title = movie[MovieColumns.TITLE]
+    title = movie.title
     assert title is not None
     debug_print(f"Title: {title}")
-    if movie[MovieColumns.MovieDB_ID] is not None:
+    if movie.movie_db_id is not None:
         debug_print(f"Already have a MovieDB ID for {movId} <{title}>")
-        return movie[MovieColumns.MovieDB_ID]
-    if not pd.isna(movie[MovieColumns.Imdb_ID]):
+        return int(movie.movie_db_id) if movie.movie_db_id is not None else None
+    if movie.imdb_id is not None:
         # use_Imdb = not (input("Fetch from Imdb ID? (Y/n)").lower() == "n")
         # if use_Imdb:
-        Imdb_id = movie[MovieColumns.Imdb_ID]
+        Imdb_id = movie.imdb_id
         result = fetch_from_Imdb_id(Imdb_id)
         if result is None:
             error_print(
@@ -235,7 +237,7 @@ def try_to_find_moviedb_id(movie, year) -> Optional[int]:
             return None
 
 
-def fetch_from_Imdb_id(imdb_id):
+def fetch_from_Imdb_id(imdb_id: str) -> Optional[int]:
     endpoint = f"find/{imdb_id}"
     params = {"external_source": "imdb_id"}
     result = fetch_wrapper(endpoint, params=params)

@@ -8,6 +8,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pydantic import EmailStr
 from sqlalchemy import Index
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 import backend.utils.env_reader as env
@@ -16,6 +17,10 @@ from backend.types.api_validators import AnnotatedValidator
 from backend.types.my_types import WatchStatus
 
 DB_PATH = env.DATABASE_PATH / env.SQLITE_FILE_NAME
+
+
+class Base(DeclarativeBase):
+    pass
 
 
 def init_db():
@@ -181,7 +186,7 @@ class WatchStatus_SQL(sa.TypeDecorator[WatchStatus]):
 # * # * # * # * # * #
 
 
-class User(DeclarativeBase):
+class User(Base):
     __tablename__ = "users"
     user_id: Mapped[UserID] = mapped_column(UserID_SQL, primary_key=True)
     username: Mapped[str] = mapped_column(sa.String)
@@ -195,7 +200,7 @@ class User(DeclarativeBase):
     movies = orm.relationship("Movie", secondary="watchlist", viewonly=True)
 
 
-class Movie(DeclarativeBase):
+class Movie(Base):
     __tablename__ = "movies"
     movie_id: Mapped[MovieID] = mapped_column(MovieID_SQL, primary_key=True)
     year: Mapped[int] = mapped_column(sa.Integer, nullable=False)
@@ -217,21 +222,109 @@ class Movie(DeclarativeBase):
         "Category", secondary="nominations", back_populates="nominees", viewonly=True
     )
 
-    # is_short = sa.orm.column_property(
-    #     sa.select(1)
-    #     .select_from(sa.table("movies"))
-    #     .join(sa.table("nominations"), sa.table("movies").c.movie_id == sa.table("nominations").c.movie_id)
-    #     .join(sa.table("categories"), sa.table("nominations").c.category_id == sa.table("categories").c.category_id)
-    #     .where(sa.table("categories").c.is_short)
-    #     .exists()
-    #     .select()
-    # )
+    @hybrid_property
+    def is_short(self) -> bool:
+        """True if any nomination is in a short film category."""
+        return any(nom.category.is_short for nom in self.nominations)
+
+    @is_short.inplace.expression
+    @classmethod
+    def _is_short_expr(cls) -> sa.ColumnElement[bool]:
+        return (
+            sa.select(sa.func.max(Category.is_short))
+            .where(Nomination.movie_id == cls.movie_id)
+            .where(Nomination.category_id == Category.category_id)
+            .correlate(cls)
+            .scalar_subquery()
+        )
+
+    @hybrid_property
+    def is_multinom(self) -> bool:
+        """True if the movie has more than one nomination."""
+        return len(self.nominations) > 1
+
+    @is_multinom.inplace.expression
+    @classmethod
+    def _is_multinom_expr(cls) -> sa.ColumnElement[bool]:
+        return (
+            sa.select(sa.func.count() > 1)
+            .where(Nomination.movie_id == cls.movie_id)
+            .correlate(cls)
+            .scalar_subquery()
+        )
+
+    @hybrid_property
+    def num_noms(self) -> int:
+        """Number of nominations for this movie."""
+        return len(self.nominations)
+
+    @num_noms.inplace.expression
+    @classmethod
+    def _num_noms_expr(cls) -> sa.ColumnElement[int]:
+        return (
+            sa.select(sa.func.count())
+            .where(Nomination.movie_id == cls.movie_id)
+            .correlate(cls)
+            .scalar_subquery()
+        )
+
+    @hybrid_property
+    def runtime_hours(self) -> str | None:
+        """Hour portion of the runtime in HH:MM format."""
+        return f"{self.runtime // 60}" if self.runtime else None
+
+    @runtime_hours.inplace.expression
+    @classmethod
+    def _runtime_hours_expr(cls) -> sa.ColumnElement[str | None]:
+        return (
+            sa.func.printf("%d", cls.runtime // 60)
+            .where(cls.runtime.isnot(None))
+            .correlate(cls)
+            .scalar_subquery()
+        )
+
+    @hybrid_property
+    def runtime_minutes(self) -> int | None:
+        """Minute portion of the runtime in HH:MM format."""
+        return self.runtime % 60 if self.runtime else None
+
+    @runtime_minutes.inplace.expression
+    @classmethod
+    def _runtime_minutes_expr(cls) -> sa.ColumnElement[int | None]:
+        return (cls.runtime % 60).where(cls.runtime.isnot(None)).correlate(cls).scalar_subquery()
+
+    @hybrid_property
+    def main_title(self) -> str:
+        """Main title of the movie."""
+        return self.title if self.subtitle_position is None else self.title[:self.subtitle_position]
+
+    @main_title.inplace.expression
+    @classmethod
+    def _main_title_expr(cls) -> sa.ColumnElement[str]:
+        return sa.case(
+            (cls.subtitle_position.is_(None), cls.title),
+            else_=sa.func.substr(cls.title, 1, cls.subtitle_position),
+        ).correlate(cls).scalar_subquery()
+
+    @hybrid_property
+    def subtitle(self) -> str:
+        """Subtitle of the movie."""
+        return "" if self.subtitle_position is None else self.title[self.subtitle_position + 1:]
+
+    @subtitle.inplace.expression
+    @classmethod
+    def _subtitle_expr(cls) -> sa.ColumnElement[str]:
+        return sa.case(
+            (cls.subtitle_position.is_(None), ""),
+            else_=sa.func.substr(
+                cls.title, cls.subtitle_position + 1, sa.func.length(cls.title)),
+        ).correlate(cls).scalar_subquery()
 
     # Add index on year column
     __table_args__ = (Index("idx_movies_year", "year"),)
 
 
-class Category(DeclarativeBase):
+class Category(Base):
     __tablename__ = "categories"
     category_id: Mapped[CategoryID] = mapped_column(
         CategoryID_SQL, primary_key=True)
@@ -251,7 +344,7 @@ class Category(DeclarativeBase):
     )
 
 
-class Nomination(DeclarativeBase):
+class Nomination(Base):
     __tablename__ = "nominations"
     nomination_id: Mapped[int] = mapped_column(
         sa.Integer, primary_key=True, autoincrement=True
@@ -272,7 +365,7 @@ class Nomination(DeclarativeBase):
     __table_args__ = (Index("idx_nominations_year", "year"),)
 
 
-class Watchnotice(DeclarativeBase):
+class Watchnotice(Base):
     __tablename__ = "watchlist"
     year: Mapped[int] = mapped_column(sa.Integer, nullable=False)
     user_id: Mapped[UserID] = mapped_column(
