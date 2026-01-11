@@ -23,6 +23,7 @@ export enum DataFlavor {
 export enum Endpoints {
   movies = 'movies',
   users = 'users',
+  myUserData = 'users/my_data',
   nominations = 'nominations',
   categories = 'categories',
   watchlist = 'watchlist',

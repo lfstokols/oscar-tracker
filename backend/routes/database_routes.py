@@ -54,7 +54,7 @@ async def serve_users_GET() -> list[dict[str, Primitive]]:
 
 @router.get("/users/my_data", response_model=api_MyUserData)
 async def serve_my_user_data(userId: parser.ActiveUserID) -> dict[str, Primitive]:
-    return qu.get_my_user_data(userId)
+    return await qu.get_my_user_data(userId)
 
 
 @router.post("/users", response_model=api_NewUserResponse)
@@ -93,7 +93,7 @@ async def serve_users_PUT(
 ) -> dict[str, Primitive]:
     # * Expects any dictionary of user data
     mu.update_user(userId, body.model_dump())
-    newState = qu.get_my_user_data(userId)
+    newState = await qu.get_my_user_data(userId)
     return newState
 
 

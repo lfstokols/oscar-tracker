@@ -3,8 +3,8 @@ import {ErrorBoundary} from 'react-error-boundary';
 import AppErrorScreen from '../../components/AppErrorScreen';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
 import {LoadScreen} from '../../components/LoadScreen';
-import LegacyTable from '../../features/legacy_table/LegacyTable';
 import TableControls from '../../features/legacy_table/table_controls/TableControls';
+import MovieList from '../../features/movie_info/MovieList';
 import {useFilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';
 
@@ -31,7 +31,7 @@ export default function HomeTab(): React.ReactElement {
             filterState={filterState}
             setFilterState={setFilterState}
           />
-          <LegacyTable filterState={filterState} />
+          <MovieList filterState={filterState} />
         </DefaultTabContainer>
       </Suspense>
     </ErrorBoundary>

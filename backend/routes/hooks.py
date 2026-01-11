@@ -1,7 +1,6 @@
 import logging
-from datetime import datetime
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 
 import backend.data.mutations as mu
 import backend.utils.stuff as stuff
@@ -17,7 +16,7 @@ router = APIRouter()
 async def force_refresh(user_id: parser.ActiveUserID) -> dict[str, Primitive]:
     logging.info("got a force refresh")
     year = stuff.current_year()
-    movie_list = get_movie_list_from_rss(user_id, year)
+    movie_list = await get_movie_list_from_rss(user_id, year)
     for movie_id in movie_list:
         logging.debug(f"Got {movie_id} from {user_id}'s letterboxd.")
         mu.add_watchlist_entry(

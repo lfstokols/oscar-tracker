@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Any
 
-import requests
+import httpx
 import sqlalchemy as sa
 from bs4 import BeautifulSoup, Tag
 from typing_extensions import Literal
@@ -28,16 +28,18 @@ def get_number_of_movies(year, shortsIsOne=False) -> int:
         ).scalar_one()
         if shortsIsOne:
             num_short_films = session.execute(
-                sa.select(sa.func.sum(Category.max_noms)).where(Category.is_short)
+                sa.select(sa.func.sum(Category.max_noms)
+                          ).where(Category.is_short)
             ).scalar_one()
             num_short_categories = session.execute(
-                sa.select(sa.func.count(Category.category_id)).where(Category.is_short)
+                sa.select(sa.func.count(Category.category_id)
+                          ).where(Category.is_short)
             ).scalar_one()
             return total - num_short_films + num_short_categories
         return total
 
 
-def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]]:
+def get_movies(year: int, idList: list[MovieID] | None = None) -> list[dict[str, Any]]:
     """
     Returns an array of movies for a given year.
     Each movie is a dictionary with the following keys:
@@ -98,7 +100,8 @@ def get_movies(year, idList: list[MovieID] | None = None) -> list[dict[str, Any]
 
 
 def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
-    query = sa.select(User.user_id.label("id"), User.username).select_from(User)
+    query = sa.select(User.user_id.label(
+        "id"), User.username).select_from(User)
     if idList:
         query = query.where(User.user_id.in_(idList))
     with Session() as session:
@@ -106,7 +109,7 @@ def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:
         return result_to_dict(result)
 
 
-def get_my_user_data(userId: UserID) -> dict[str, Any]:
+async def get_my_user_data(userId: UserID) -> dict[str, Any]:
     query = sa.select(
         User.user_id.label("id"),
         User.username,
@@ -125,17 +128,18 @@ def get_my_user_data(userId: UserID) -> dict[str, Any]:
             f"User with id {userId} not found @ qu.get_my_user_data({userId})"
         )
     data = data[0]
-    data["propic"] = get_user_propic(data["letterboxd"])
+    data["propic"] = await get_user_propic(data["letterboxd"])
     return data
 
 
-def get_user_propic(letterboxd_username: str | None) -> str | None:
+async def get_user_propic(letterboxd_username: str | None) -> str | None:
     if letterboxd_username is None:
         return None
     try:
         # Get the user's letterboxd profile page
         url = f"https://letterboxd.com/{letterboxd_username}/"
-        response = requests.get(url)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
         response.raise_for_status()
         # Parse the HTML
         soup = BeautifulSoup(response.text, "html.parser")
@@ -150,8 +154,9 @@ def get_user_propic(letterboxd_username: str | None) -> str | None:
         ):
             return avatar.attrs["src"]
         return None
-    except (requests.RequestException, AttributeError) as e:
-        logging.error(f"Error getting user propic for {letterboxd_username}", e)
+    except (httpx.HTTPStatusError, AttributeError) as e:
+        logging.error(
+            f"Error getting user propic for {letterboxd_username}", e)
         return None
 
 
@@ -171,7 +176,8 @@ def get_category_completion_dict(
     all_categories = [c for c, in result]
 
     seen_watchlist = (
-        sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
+        sa.select(User.user_id.label("user_id"),
+                  Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
         .outerjoin(
             Watchnotice,
@@ -184,7 +190,8 @@ def get_category_completion_dict(
         .subquery()
     )
     todo_watchlist = (
-        sa.select(User.user_id.label("user_id"), Watchnotice.movie_id.label("movie_id"))
+        sa.select(User.user_id.label("user_id"),
+                  Watchnotice.movie_id.label("movie_id"))
         .select_from(User)
         .outerjoin(
             Watchnotice,
@@ -197,7 +204,8 @@ def get_category_completion_dict(
         .subquery()
     )
     all_movies = (
-        sa.select(User.user_id.label("user_id"), Movie.movie_id.label("movie_id"))
+        sa.select(User.user_id.label("user_id"),
+                  Movie.movie_id.label("movie_id"))
         .select_from(User)
         .join(Movie, sa.true())  # * Cartesian product
         .where(Movie.year == year)

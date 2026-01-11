@@ -1,16 +1,17 @@
-from datetime import datetime
 import logging
+from datetime import datetime
+
+import httpx
 import pandas as pd
-from backend.logic.storage_manager import StorageManager
-from backend.types.my_types import *
-from backend.types.api_schemas import UserID
-import requests
 from bs4 import BeautifulSoup
 
 import backend.logic.Mutations as mu
+from backend.logic.storage_manager import StorageManager
+from backend.types.api_schemas import MovieID, UserID
+from backend.types.my_types import *
 
 
-def update_user_watchlist(user_id: UserID) -> bool:
+async def update_user_watchlist(user_id: UserID) -> bool:
     """
     For a given user, check their letterboxd rss for relevant movies
     and update their watchlist.
@@ -27,14 +28,16 @@ def update_user_watchlist(user_id: UserID) -> bool:
         logging.debug("cutoff was None in check_rss.update_user_watchlist")
         cutoff = pd.Timestamp.now(tz="UTC") - pd.Timedelta(weeks=52)
     # * fetch the data
-    soup = fetch_rss(account)
-    idlist = parse_rss(soup, cutoff)
+    soup = await fetch_rss(account)
+    raw_idlist: list[MovieDbID] = parse_rss(soup, cutoff)
     # * identify the movies
     movies = storage.read("movies")
     t_to_me = pd.Series(movies.index, index=movies["alternate_id_column"])
-    idlist = t_to_me[t_to_me.index.isin(idlist)]
+    idlist: pd.Series[MovieID] = t_to_me[t_to_me.index.isin(
+        raw_idlist)].astype(MovieID)
     # * add to watchlist
-    logging.info(f"Adding {len(idlist)} movies to watchlist for user {user_id}")
+    logging.info(
+        f"Adding {len(idlist)} movies to watchlist for user {user_id}")
     current_year = (
         datetime.now().year - 1
     )  # * while the system is live, the movies are from last year
@@ -42,20 +45,22 @@ def update_user_watchlist(user_id: UserID) -> bool:
         mu.add_watchlist_entry(
             storage, current_year, user_id, id, WatchStatus(WatchStatus.SEEN)
         )
-    if len(idlist) > 0:
+    if len(raw_idlist) > 0:
         return True
     return False
 
 
-def fetch_rss(account: str) -> BeautifulSoup:
-    response = requests.get(f"https://letterboxd.com/{account}/rss")
+async def fetch_rss(account: str) -> BeautifulSoup:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"https://letterboxd.com/{account}/rss")
+    _ = response.raise_for_status()
     soup = BeautifulSoup(response.text, "html.parser")
     return soup
 
 
 def parse_rss(soup: BeautifulSoup, cutoff: pd.Timestamp) -> list[MovieDbID]:
     items = soup.find_all("item")
-    movie_ids = []
+    movie_ids: list[MovieDbID] = []
     for item in items:
         pubDate = pd.Timestamp(item.find("pubDate").text)
         if pubDate < cutoff:

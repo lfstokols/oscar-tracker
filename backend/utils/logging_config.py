@@ -1,13 +1,16 @@
 import logging
+import os
+import sys
+from datetime import datetime, timezone
 from logging.handlers import (
     RotatingFileHandler,
-    WatchedFileHandler,
     TimedRotatingFileHandler,
+    WatchedFileHandler,
 )
-import os, sys
 from pathlib import Path
-from datetime import datetime, timezone
+from typing import override
 from zoneinfo import ZoneInfo
+
 import backend.utils.env_reader as env
 
 max_log_file_size = env.MAX_LOG_FILE_SIZE
@@ -47,54 +50,63 @@ class ColorFormatter(logging.Formatter):
 
 
 class DebugLevelFilter(logging.Filter):
+    @override
     def filter(self, record):
         return record.levelno == logging.DEBUG
 
 
 class SpecialEventFilter(logging.Filter):
     """Filter that only allows logs with a specific category"""
+
     def __init__(self, category):
         super().__init__()
         self.category = category
 
+    @override
     def filter(self, record):
         return getattr(record, 'category', None) == self.category
 
+
 class HTTPHandler(logging.Handler):
     """Custom handler that makes HTTP requests for error logs"""
-    def __init__(self, url, method='POST', headers=None):
+
+    def __init__(self, url: str, method: str = 'POST', headers: dict[str, str] | None = None):
         super().__init__()
         self.url = url
         self.method = method
         self.headers = headers or {}
 
-    def emit(self, record):
+    @override
+    def emit(self, record: logging.LogRecord) -> None:
         try:
-            import requests  # Import here to avoid loading unless needed
+            import httpx  # Import here to avoid loading unless needed
 
             message = f"ERROR: {record.getMessage()}"
             message = message.encode(encoding='utf-8', errors='replace')
-            
+
             # Make the HTTP request
-            response = requests.request(
+            response = httpx.request(
                 method=self.method,
                 url=self.url,
                 headers=self.headers,
-                data=message,
+                content=message,
             )
             response.raise_for_status()
         except Exception as e:
             # Don't raise exceptions in handler
             self.handleError(record)
 
+
 class NotificationFormatter(logging.Formatter):
     """Custom Formatter that only shows the first line of the message"""
+
     def __init__(self):
         super().__init__(
             "%(levelname)s: [%(name)s @ %(asctime)s] %(message)s",
             datefmt="%D, %H:%M:%S",
         )
-    
+
+    @override
     def format(self, record):
         full_message = super().format(record)
         return full_message.split('\n')[0]

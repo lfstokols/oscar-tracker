@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
 
+import httpx
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup
 
 import backend.data.mutations as mu
@@ -12,7 +12,7 @@ from backend.types.api_validators import MovieValidator
 from backend.types.my_types import *
 
 
-def update_user_watchlist(user_id: UserID) -> bool:
+async def update_user_watchlist(user_id: UserID) -> bool:
     """
     For a given user, check their letterboxd rss for relevant movies
     and update their watchlist.
@@ -21,18 +21,20 @@ def update_user_watchlist(user_id: UserID) -> bool:
     Returns: True if new movies were found, False otherwise.
     """
     current_year = datetime.now().year - 1
-    idlist = get_movie_list_from_rss(user_id, current_year)
+    idlist = await get_movie_list_from_rss(user_id, current_year)
     # * add to watchlist
     for id in idlist:
         logging.debug(f"Adding {id} to watchlist for {user_id}")
-        mu.add_watchlist_entry(current_year, user_id, id, WatchStatus(WatchStatus.SEEN))
+        mu.add_watchlist_entry(current_year, user_id, id,
+                               WatchStatus(WatchStatus.SEEN))
     if len(idlist) > 0:
         return True
     return False
 
 
-def fetch_rss(account: str) -> BeautifulSoup:
-    response = requests.get(f"https://letterboxd.com/{account}/rss/")
+async def fetch_rss(account: str) -> BeautifulSoup:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"https://letterboxd.com/{account}/rss/")
     # * Uncomment for debugging
     # with open(
     #     pathlib.Path(__file__).parent.parent.parent / "fyi" / "rss_debug.xml",
@@ -49,7 +51,7 @@ def parse_rss(
 ) -> list[MovieDbID]:
     items = soup.find_all("item")
     logging.debug(f"Found {len(items)} items in the RSS feed.")
-    movie_ids = []
+    movie_ids: list[MovieDbID] = []
     for item in items:
         # pubDate = pd.Timestamp(item.find("pubDate").text).tz_convert("UTC")
         # if pubDate < pd.Timestamp(cutoff):
@@ -63,7 +65,7 @@ def parse_rss(
     return movie_ids
 
 
-def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
+async def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     """
     For a given user, check their letterboxd rss for relevant movies
     and return a list of movies.
@@ -71,11 +73,11 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     Returns: A list of movies ids (e.g. mov_123aef).
     """
     # * compute parameters
-    account = qu.get_my_user_data(user_id).get("letterboxd")
+    account = (await qu.get_my_user_data(user_id)).get("letterboxd")
     if account is None:
         return []
     # * fetch the data
-    soup = fetch_rss(account)
+    soup = await fetch_rss(account)
     mdb_id_list = parse_rss(soup)
     logging.debug(
         f"While checking RSS for {user_id}, found {len(mdb_id_list)} movie IDs listed on the page."
@@ -87,7 +89,8 @@ def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
         [x[MovieColumns.ID.value], x[MovieColumns.MovieDB_ID.value]] for x in movies[:3]
     ]
     sample_strings = [f"{x[0]}: {type(x[1])} {x[1]}" for x in sample_data]
-    logging.debug(f"The movie data has tmdb ids like {', '.join(sample_strings)}")
+    logging.debug(
+        f"The movie data has tmdb ids like {', '.join(sample_strings)}")
     my_id_list = [
         row[MovieColumns.ID.value]
         for row in movies

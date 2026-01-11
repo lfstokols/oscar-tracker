@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 from typing import Annotated, Type, TypeVar, cast
 
 from fastapi import Depends, HTTPException, Request
@@ -46,26 +45,42 @@ def get_active_user_id(request: Request) -> UserID:
 ActiveUserID = Annotated[UserID, Depends(get_active_user_id)]
 
 
-def get_year(request: Request, body: bool = False) -> int:
+def get_year(request: Request) -> int:
     """
-    Only call this if you want to throw on a missing / invalid year.
+    Get year from query params. Throws on missing / invalid year.
     """
-    location = request.query_params if not body else request.json
-    if not location or not (year := location.get("year")):
-        raise YearError() if not body else YearError(location="body")
+    year_str = request.query_params.get("year")
+    if not year_str:
+        raise YearError()
     try:
-        year = int(year)
+        return int(year_str)
     except ValueError:
         raise APIArgumentError(
             "Year must be an integer",
-            malformed_data=[("year", "query params" if not body else "body")],
+            malformed_data=[("year", "query params")],
         )
-    return year
+
+
+async def get_year_from_body(request: Request) -> int:
+    """
+    Get year from request body. Throws on missing / invalid year.
+    """
+    body = await request.json()
+    if not body or "year" not in body:
+        raise YearError(location="body")
+    year = body.get("year")
+    try:
+        return int(year)
+    except (ValueError, TypeError):
+        raise APIArgumentError(
+            "Year must be an integer",
+            malformed_data=[("year", "body")],
+        )
 
 
 ActiveYear = Annotated[int, Depends(get_year)]
 
-BodyYear = Annotated[int, Depends(partial(get_year, body=True))]
+BodyYear = Annotated[int, Depends(get_year_from_body)]
 
 T = TypeVar("T")
 

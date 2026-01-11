@@ -2,7 +2,9 @@
 name = "oscar-tracker"
 version = "0.1.0"
 description = "Web App to track viewing during awards season"
-authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry]
+package-mode = false
 packages = [{include = "backend"}]
 
 [tool.poetry.dependencies]
@@ -15,10 +17,14 @@ requests = "2.32.3"
 pydantic = {extras = ["email"], version = "^2.11.7"}
 pandera = "0.22.1"
 sqlalchemy = "2.0.37"
-gunicorn = "^23.0.0"
 lxml = "^6.0.1"
 fastapi = "^0.118.0"
 uvicorn = "^0.37.0"
 apscheduler = "^3.11.0"
 alembic = "^1.17.2"
 itsdangerous = "^2.2.0"
+httpx = "^0.28.1"
+
+[tool.poetry.group.dev.dependencies]
+autopep8 = "^2.3.2"
+

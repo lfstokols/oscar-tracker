@@ -1,7 +1,6 @@
-import re
 from typing import Literal
 
-import requests
+import httpx
 from fastapi import APIRouter
 
 from backend.access_external.get_links import get_Imdb, get_justwatch
@@ -23,7 +22,8 @@ async def serve_letterboxd_search(searchTerm: str):
     The results come in as html and are returned as html.
     """
     url = f"https://letterboxd.com/s/search/members/{searchTerm}"
-    response = requests.get(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
     return response.text
 
 
@@ -48,11 +48,11 @@ async def serve_get_link(id: MovieID, service: Literal["justwatch", "imdb"]) -> 
             )
         id_number = int(movie[0])
     if service == "justwatch":
-        url, code = get_justwatch(id_number)
+        url, code = await get_justwatch(id_number)
         if code == 1:
             return {"failed": True, "message": url}
     elif service == "imdb":
-        url = get_Imdb(id_number)
+        url = await get_Imdb(id_number)
     return {"failed": False, "url": url}
 
 
@@ -62,5 +62,6 @@ async def serve_moviedb() -> str:
     Just a proxy for moviedb.org
     """
     url = "https://www.moviedb.org/"
-    response = requests.get(url)
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url)
     return response.text

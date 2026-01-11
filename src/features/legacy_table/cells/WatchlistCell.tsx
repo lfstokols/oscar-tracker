@@ -34,7 +34,7 @@ type Props =
       userId: UserId;
     };
 
-function WatchlistCell({movieId, userId}: Props): React.ReactElement {
+export function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   // TODO - Consider upgrading to React v19 to get fancy use() hook
   const context = useOscarAppContext();
 

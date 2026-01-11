@@ -1,8 +1,8 @@
 import logging
 import re
 
+import httpx
 import pandas as pd
-import requests
 from bs4 import BeautifulSoup, Tag
 
 from backend.logic.storage_manager import StorageManager
@@ -30,7 +30,8 @@ def are_movies_short(
 
 def are_movies_multinom(nominations: pd.DataFrame) -> pd.Series[bool]:
     return (nominations.groupby(NomColumns.MOVIE.value).size() > 1).rename(
-        DerivedMovieColumns.IS_MULTI_NOM.value  # pyright: ignore[reportCallIssue, reportArgumentType]
+        # pyright: ignore[reportCallIssue, reportArgumentType]
+        DerivedMovieColumns.IS_MULTI_NOM.value
     )
 
     # Create boolean series indicating if each movie has any short nominations
@@ -85,12 +86,14 @@ def get_movies(storage: StorageManager, year, idList: list[MovieID] | None = Non
         NomColumns.MOVIE.value
     ).size()
     data = data.rename(
-        columns={MovieColumns.RUNTIME.value: DerivedMovieColumns.RUNTIME_MINUTES.value}
+        columns={
+            MovieColumns.RUNTIME.value: DerivedMovieColumns.RUNTIME_MINUTES.value}
     )
     data[DerivedMovieColumns.RUNTIME_HOURS.value] = data[
         DerivedMovieColumns.RUNTIME_MINUTES.value
-    ].apply(lambda x: f"{int(x/60)}:{int(x%60):02d}" if pd.notna(x) else None)
-    data = pd.concat([data, are_movies_short(data, noms, categories)], axis="columns")
+    ].apply(lambda x: f"{int(x/60)}:{int(x % 60):02d}" if pd.notna(x) else None)
+    data = pd.concat([data, are_movies_short(
+        data, noms, categories)], axis="columns")
     titles_df = pd.DataFrame(
         data[[MovieColumns.TITLE.value, MovieColumns.SUBTITLE_POSITION.value]].apply(
             lambda x: break_into_subtitles(
@@ -122,22 +125,23 @@ def get_users(storage: StorageManager, idList: list[UserID] | None = None):
     return data
 
 
-def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
+async def get_my_user_data(storage: StorageManager, userId: UserID) -> pd.DataFrame:
     data = storage.read("users")
     data = data.loc[[userId]]
     assert data is not None, "User not found <in get_my_user_data>"
-    data[myUserDataColumns.PROFILE_PIC.value] = get_user_propic(
+    data[myUserDataColumns.PROFILE_PIC.value] = await get_user_propic(
         data.at[userId, UserColumns.LETTERBOXD.value]
     )
     data.drop(columns=[UserColumns.LAST_CHECKED.value], inplace=True)
     return data
 
 
-def get_user_propic(letterboxd_username: str) -> str | None:
+async def get_user_propic(letterboxd_username: str) -> str | None:
     try:
         # Get the user's letterboxd profile page
         url = f"https://letterboxd.com/{letterboxd_username}/"
-        response = requests.get(url)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
         response.raise_for_status()
         # Parse the HTML
         soup = BeautifulSoup(response.text, "html.parser")
@@ -152,8 +156,9 @@ def get_user_propic(letterboxd_username: str) -> str | None:
         ):
             return avatar.attrs["src"]
         return None
-    except (requests.RequestException, AttributeError) as e:
-        logging.error(f"Error getting user propic for {letterboxd_username}", e)
+    except (httpx.HTTPStatusError, AttributeError) as e:
+        logging.error(
+            f"Error getting user propic for {letterboxd_username}", e)
         return None
 
 
@@ -171,7 +176,8 @@ def get_category_completion_dict(
     nominations = storage.read("nominations", year)
     users = storage.read("users")
     edges = compute_user_to_category_edgeframe(watchlist, nominations).merge(
-        categories[[CategoryColumns.GROUPING.value, CategoryColumns.MAX_NOMS.value]],
+        categories[[CategoryColumns.GROUPING.value,
+                    CategoryColumns.MAX_NOMS.value]],
         left_on=NomColumns.CATEGORY.value,
         right_index=True,
     )
@@ -204,7 +210,8 @@ def get_category_completion_dict(
                 edges.loc[
                     (edges[WatchlistColumns.USER.value] == user)
                     & (
-                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
+                        edges[CategoryColumns.GROUPING.value].astype(
+                            str) == group.value
                     ),
                     [WatchStatus.SEEN.value],
                 ]
@@ -215,7 +222,8 @@ def get_category_completion_dict(
                 edges.loc[
                     (edges[WatchlistColumns.USER.value] == user)
                     & (
-                        edges[CategoryColumns.GROUPING.value].astype(str) == group.value
+                        edges[CategoryColumns.GROUPING.value].astype(
+                            str) == group.value
                     ),
                     [WatchStatus.TODO.value, WatchStatus.SEEN.value],
                 ]
@@ -236,7 +244,8 @@ def get_category_completion_dict(
             edges.loc[
                 (edges[WatchlistColumns.USER.value] == user)
                 & (
-                    edges[WatchStatus.TODO.value] + edges[WatchStatus.SEEN.value]
+                    edges[WatchStatus.TODO.value] +
+                    edges[WatchStatus.SEEN.value]
                     == edges[CategoryColumns.MAX_NOMS.value]
                 )
             ]
@@ -334,7 +343,8 @@ def num_seen_with_property(
     bool_col = enriched_watchlist[property]
     if inverse:
         bool_col = ~bool_col
-    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER.value).size().fillna(0).rename(new_name)  # type: ignore
+    # type: ignore
+    return enriched_watchlist.loc[bool_col].groupby(WatchlistColumns.USER.value).size().fillna(0).rename(new_name)
 
 
 def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
@@ -372,11 +382,13 @@ def compute_user_stats(storage: StorageManager, year) -> pd.DataFrame:
     movie_is_short = are_movies_short(movies, nominations, categories)
     movie_is_multinom = are_movies_multinom(nominations)
 
-    enriched_seenlist = enrich_watchlist_with_movie_data(seen_watchlist, movie_is_short)
+    enriched_seenlist = enrich_watchlist_with_movie_data(
+        seen_watchlist, movie_is_short)
     enriched_seenlist = enrich_watchlist_with_movie_data(
         enriched_seenlist, movie_is_multinom
     )
-    enriched_todolist = enrich_watchlist_with_movie_data(todo_watchlist, movie_is_short)
+    enriched_todolist = enrich_watchlist_with_movie_data(
+        todo_watchlist, movie_is_short)
     enriched_todolist = enrich_watchlist_with_movie_data(
         enriched_todolist, movie_is_multinom
     )

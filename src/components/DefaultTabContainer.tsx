@@ -19,6 +19,7 @@ export default function DefaultTabContainer({
       paddingX={2}
       sx={{
         height: isMobile ? 'calc(100vh - 56px)' : 'calc(100vh - 64px)',
+        overflowY: 'auto',
         msOverflowStyle: '-ms-autohiding-scrollbar',
         scrollBehavior: 'smooth',
       }}

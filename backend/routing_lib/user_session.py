@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import override
 
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -18,17 +19,21 @@ class UserSession:
 
     def start_new(self, user_id: UserID) -> None:
         self.session[_SessionArgs.user_id.value] = user_id
-        self.session[_SessionArgs.last_activity.value] = datetime.now()
+        # Store as ISO string - datetime objects aren't JSON serializable for session cookies
+        self.session[_SessionArgs.last_activity.value] = datetime.now().isoformat()
 
     def end(self) -> None:
         self.session[_SessionArgs.user_id.value] = None
         self.session[_SessionArgs.last_activity.value] = None
 
     def log_activity(self) -> None:
-        self.session[_SessionArgs.last_activity.value] = datetime.now()
+        self.session[_SessionArgs.last_activity.value] = datetime.now().isoformat()
 
     def is_time_to_update(self) -> bool:
-        last_activity = self.session.get(_SessionArgs.last_activity.value, datetime.min)
+        last_activity_str = self.session.get(_SessionArgs.last_activity.value)
+        if not last_activity_str:
+            return True
+        last_activity = datetime.fromisoformat(last_activity_str)
         time_since_last_activity = datetime.now() - last_activity
         return time_since_last_activity > timedelta(
             minutes=UserSession.delta_minutes_inactive
@@ -40,7 +45,9 @@ class UserSession:
     def session_added_user(self) -> None:
         if _SessionArgs.new_user_additions.value not in self.session:
             self.session[_SessionArgs.new_user_additions.value] = []
-        self.session[_SessionArgs.new_user_additions.value].append(datetime.now())
+        self.session[_SessionArgs.new_user_additions.value].append(
+            datetime.now().isoformat()
+        )
 
 
 class _SessionArgs(Enum):
@@ -50,6 +57,7 @@ class _SessionArgs(Enum):
 
 
 class SessionMiddleware(BaseHTTPMiddleware):
+    @override
     async def dispatch(self, request: Request, call_next):
         if not hasattr(request, "session"):
             logging.error(
@@ -76,5 +84,5 @@ class SessionMiddleware(BaseHTTPMiddleware):
             session.start_new(id)
         # Is it time to update the user's watchlist?
         if session.is_time_to_update():
-            update_user_watchlist(id)
+            await update_user_watchlist(id)
         return await call_next(request)

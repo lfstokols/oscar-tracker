@@ -1,23 +1,15 @@
 import logging
-import pandas as pd
-from backend.types.api_schemas import (
-    UserID,
-    MovieID,
-    CategoryID,
-)
-from backend.types.api_validators import (
-    AnnotatedValidator,
-    UserValidator,
-    MovieValidator,
-    CategoryValidator,
-    PosterPathValidator,
-)
-from backend.logic.storage_manager import StorageManager
-from backend.types.my_types import *
 from typing import Any
 
+import pandas as pd
 
-def add_user(storage: StorageManager, username, letterboxd=None, email=None) -> UserID:
+from backend.logic.storage_manager import StorageManager
+from backend.types.api_schemas import MovieID, UserID
+from backend.types.api_validators import MovieValidator
+from backend.types.my_types import *
+
+
+def add_user(storage: StorageManager, username: str, letterboxd: str | None = None, email: str | None = None) -> UserID:
     user_id = storage.create_unique_user_id()
     newEntry = pd.DataFrame(
         {
@@ -41,7 +33,8 @@ def update_user(
 
     def operation(data: pd.DataFrame):
         assert userId in data.index, f"User '{userId}' not found."
-        assert not ("id" in new_data or "userId" in new_data), "Cannot update user id"
+        assert not (
+            "id" in new_data or "userId" in new_data), "Cannot update user id"
         if not all([x in data.columns for x in new_data.keys()]):
             raise Exception(f"Invalid columns in new data: {new_data.keys()}.")
         for key, value in new_data.items():
@@ -59,15 +52,17 @@ def delete_user(storage, userId):
     return storage.edit(operation, "users")
 
 
-def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
+def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp | None:
     storage = StorageManager.get_storage()
 
     def operation(data: pd.DataFrame):
         last_val = pd.Timestamp(
-            data[UserColumns.LAST_CHECKED.value].fillna(pd.Timestamp.min).at[userId],
+            data[UserColumns.LAST_CHECKED.value].fillna(
+                pd.Timestamp.min).at[userId],
             tz="UTC",
         )
-        data.at[userId, UserColumns.LAST_CHECKED.value] = pd.Timestamp.now(tz="UTC")
+        data.at[userId, UserColumns.LAST_CHECKED.value] = pd.Timestamp.now(
+            tz="UTC")
         return data, last_val
 
     return storage.edit(operation, "users")
@@ -76,7 +71,7 @@ def get_and_set_rss_timestamp(userId: UserID) -> pd.Timestamp:
 # Deletes existing entry if it exists
 # returns True if the entry already existed, False if it didn't
 def add_watchlist_entry(
-    storage: StorageManager, year, userId, movieId, status: WatchStatus
+    storage: StorageManager, year: int, userId: UserID, movieId: MovieID, status: WatchStatus
 ) -> bool:
     storage.validate_id(userId, "users")
     storage.validate_id(movieId, "movies")
@@ -109,7 +104,7 @@ def add_watchlist_entry(
 # Does NOT check if they actually exist in the database
 # 	If you didn't already add/confirm them yourstorage, you're doing something wrong
 # If `validate` is True, the function will at least check if there are too many nominations in a category
-def add_nomination(storage: StorageManager, year, nomination: Nom, validate=False):
+def add_nomination(storage: StorageManager, year: int, nomination, validate: bool = False):
     """Adds a nomination to the database.
 
     Args:
@@ -160,7 +155,8 @@ def add_nomination(storage: StorageManager, year, nomination: Nom, validate=Fals
     if validate:
         bad_cats = storage.validate_nomination_list(year)
         if bad_cats:
-            raise Exception(f"Too many nominations in these categories: {bad_cats}.")
+            raise Exception(
+                f"Too many nominations in these categories: {bad_cats}.")
     storage.edit(operation, "nominations", year)
 
     # Adds a new movie to the database, or updates an existing one
@@ -194,7 +190,7 @@ def update_movie(
                 "Did you mean to send a title? Consider try_title_lookup=True."
             )
 
-        def update_existing_movie(data):
+        def update_existing_movie(data: pd.DataFrame) -> tuple[pd.DataFrame, bool]:
             was_there = movieId in data.index
             for key, value in new_data.items():
                 data.at[movieId, key] = value
@@ -204,14 +200,16 @@ def update_movie(
 
     else:
 
-        def update_or_create_movie(data):
+        def update_or_create_movie(data: pd.DataFrame) -> tuple[pd.DataFrame, MovieID]:
             if movie in data[MovieColumns.TITLE.value].tolist():
-                movieId = data.loc[data[MovieColumns.TITLE.value] == movie].index[0]
+                movieId: MovieID = data.loc[data[MovieColumns.TITLE.value]
+                                            == movie].index[0]
                 for key, value in new_data.items():
                     data.at[movieId, key] = value
             else:
                 movieId = storage.create_unique_movie_id(year=year)
-                data.at[movieId] = {MovieColumns.TITLE.value: movie, **new_data}
+                data.at[movieId] = {
+                    MovieColumns.TITLE.value: movie, **new_data}
             return data, movieId
 
         return storage.edit(update_or_create_movie, "movies", year)

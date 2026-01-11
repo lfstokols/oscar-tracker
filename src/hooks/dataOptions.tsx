@@ -39,8 +39,8 @@ export function myUserDataOptions(userId: UserId) {
   return queryOptions({
     queryKey: ['myUserData', userId],
     queryFn: qFunction(
-      Endpoints.users,
-      {myData: 'true'},
+      Endpoints.myUserData,
+      {userId: userId.toString()},
       MyUserDataSchema.parse,
     ),
     retry: retryFunction,

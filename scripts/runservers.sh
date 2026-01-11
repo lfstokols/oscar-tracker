@@ -92,7 +92,9 @@ start_dev_servers() {
     
     # Start Python backend server in background
     echo "Starting Python backend server..."
-    python backend/devserver.py > "$LOG_FILE_PY" 2>&1 &
+    ROOT_DIR=$(dirname "$0")/..
+    export ROOT_DIR
+    poetry run python -m backend.devserver > "$LOG_FILE_PY" 2>&1 &
     PYTHON_PID=$!
     
     echo "Development servers started."

@@ -2,6 +2,7 @@ import logging
 
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
+from sqlalchemy.pool import NullPool
 
 from backend.data.db_schema import DB_PATH, Base
 
@@ -15,7 +16,11 @@ try:
         logging.warning(f"Database file {DB_PATH} does not exist, creating it")
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         DB_PATH.touch()
-    engine = sa.create_engine(f"sqlite:///{DB_PATH}")
+    engine = sa.create_engine(
+        f"sqlite:///{DB_PATH}",
+        connect_args={"check_same_thread": False, "timeout": 30},
+        poolclass=NullPool,
+    )
 except Exception as e:
     logging.error(f"Error creating engine: {e}")
     raise

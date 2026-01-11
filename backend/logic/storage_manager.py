@@ -1,19 +1,21 @@
 import logging
-from time import sleep
 import random
-from pathlib import Path
-import pandas as pd
-import sys
 import re
-from contextlib import contextmanager
+import sys
 from collections.abc import Callable
-from typing import IO, Any, TYPE_CHECKING, cast
+from contextlib import contextmanager
+from pathlib import Path
+from time import sleep
+from typing import IO, TYPE_CHECKING, Any, cast
+
+import pandas as pd
+
+import backend.types.flavors as flv
+from backend.types.api_schemas import *
 
 # from backend.types.api_schemas import Flavor
 from backend.types.api_validators import AnnotatedValidator
 from backend.types.my_types import *
-import backend.types.flavors as flv
-from backend.types.api_schemas import *
 
 IS_WINDOWS = sys.platform.startswith("win")
 if IS_WINDOWS:
@@ -117,7 +119,7 @@ class StorageManager:
         while tries < 100:
             id = (
                 "mov_"
-                + (f"{(int(year)-1927)%256:02x}" if str(year).isdigit() else "00")
+                + (f"{(int(year)-1927) % 256:02x}" if str(year).isdigit() else "00")
                 + f"{random.randint(0, 0xFF_FF):04x}"
             )
             if id not in existing_ids:
@@ -189,7 +191,8 @@ class StorageManager:
         filename = self.dir
         if is_annual:
             filename = filename / year
-        filenames = filename / f"table_{flavor}.csv", filename / f"table_{flavor}.json"
+        filenames = filename / \
+            f"table_{flavor}.csv", filename / f"table_{flavor}.json"
         return filenames
 
     # Checks if an ID is valid for a certain flavor
@@ -274,7 +277,8 @@ class StorageManager:
             elif "nominations" in filepath[0].name:
                 with open(filepath[0], "w") as file1:
                     with open(filepath[1], "w") as file2:
-                        self.df_to_files(self.DEFAULT_NOMINATIONS, (file1, file2))
+                        self.df_to_files(
+                            self.DEFAULT_NOMINATIONS, (file1, file2))
             elif "users" in filepath[0].name:
                 with open(filepath[0], "w") as file1:
                     with open(filepath[1], "w") as file2:
@@ -282,7 +286,8 @@ class StorageManager:
             elif "watchlist" in filepath[0].name:
                 with open(filepath[0], "w") as file1:
                     with open(filepath[1], "w") as file2:
-                        self.df_to_files(self.DEFAULT_WATCHLIST, (file1, file2))
+                        self.df_to_files(
+                            self.DEFAULT_WATCHLIST, (file1, file2))
             else:
                 raise Exception(
                     f"File {filepath} does not exist but should exist. I won't create it automatically."
@@ -325,7 +330,8 @@ class StorageManager:
                 return output
             except OSError as e:
                 if e.errno == 13 and should_retry:
-                    logging.info(f"File {filepath[0].name} is locked. Retrying...")
+                    logging.info(
+                        f"File {filepath[0].name} is locked. Retrying...")
                     sleep(retry_interval / 1000)
                 else:
                     raise
@@ -392,17 +398,18 @@ class StorageManager:
         self.delete_file("watchlist", year=str(year))
 
     # Checks if the database entry table_nominations.csv has the right number of entries in each category
-    def validate_nomination_list(self, year, expect_full=False):
+    def validate_nomination_list(self, year: int, expect_full: bool = False) -> list[CatID]:
         nominations = self.read("nominations", year)
         category_counts = nominations[NomColumns.CATEGORY].value_counts()
         cat_df = self.read("categories")
         expected_counts = cat_df[CategoryColumns.MAX_NOMS].astype("Int64")
-        bad_cats = []
+        bad_cats: list[CatID] = []
         for category, count in category_counts.items():
             if (
                 (category not in expected_counts.index)
                 or (count > expected_counts.at[category])
                 or (expect_full and count < expected_counts.at[category])
             ):
+                category = cast(CatID, category)
                 bad_cats.append(category)
         return bad_cats

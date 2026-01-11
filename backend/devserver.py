@@ -2,41 +2,33 @@ import logging
 import os
 import sys
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
 from pathlib import Path
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import (
     SessionMiddleware as StarletteSessionMiddleware,
 )
 
-# * Add the project root to the system path
-project_root_directory = Path(__file__).parent.parent
-sys.path.append(str(project_root_directory))
-os.environ["ROOT_DIR"] = str(project_root_directory)
 import backend.utils.env_reader as env
-
-# * Setup logging
-from backend.utils.logging_config import setup_logging
-
-setup_logging(env.LOG_PATH)
-import backend.data.db_connections
 from backend.routes.database_routes import router as oscars_router
 from backend.routing_lib.error_handling import apply_error_handling
 from backend.routing_lib.user_session import SessionMiddleware as MySessionMiddleware
 from backend.scheduled_tasks.scheduling import register_jobs
+from backend.utils.logging_config import setup_logging
 
-# * The rest of the imports
-from backend.types.api_validators import (
-    AnnotatedValidator,
-    UserValidator,
-    validate_user_id,
-)
+# * Add the project root to the system path
+project_root_directory = Path(__file__).parent.parent
+sys.path.append(str(project_root_directory))
+os.environ["ROOT_DIR"] = str(project_root_directory)
 
-DEVSERVER_PORT = env.DEVSERVER_PORT  #! Gunicorn breaks without this!!!
+# * Setup logging
+
+setup_logging(env.LOG_PATH)
+
+DEVSERVER_PORT = env.DEVSERVER_PORT  # ! Gunicorn breaks without this!!!
 logging.info(f"The port should be {DEVSERVER_PORT}.")
 
 
@@ -44,7 +36,8 @@ if not env.STATIC_PATH.exists():
     logging.error(
         f"The static folder {env.STATIC_PATH} does not exist, cannot start devserver."
     )
-    raise FileNotFoundError(f"The static folder {env.STATIC_PATH} does not exist.")
+    raise FileNotFoundError(
+        f"The static folder {env.STATIC_PATH} does not exist.")
 
 # Setup scheduler
 scheduler = AsyncIOScheduler()
@@ -66,7 +59,8 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(oscars_router, prefix="/api")
 
 # Mount static files
-app.mount("/", StaticFiles(directory=str(env.STATIC_PATH), html=True), name="static")
+app.mount("/", StaticFiles(directory=str(env.STATIC_PATH),
+          html=True), name="static")
 
 
 @app.get("/jokes")
@@ -79,6 +73,8 @@ async def favicon():
     return FileResponse("../public/favicon.ico", media_type="image/vnd.microsoft.icon")
 
 
+# Middleware runs in REVERSE order of registration
+# StarletteSessionMiddleware must run first to create request.session
 app.add_middleware(MySessionMiddleware)
 app.add_middleware(
     StarletteSessionMiddleware,
@@ -119,8 +115,9 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        app,
+        'backend.devserver:app',
         host="0.0.0.0",
         port=env.DEVSERVER_PORT,
         log_level="info" if env.RUN_DEBUG else "warning",
+        reload=env.RUN_DEBUG,
     )

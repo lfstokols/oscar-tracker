@@ -4,7 +4,8 @@ from functools import wraps
 from pprint import pformat
 from typing import Any, Callable
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import OperationalError
 
@@ -153,8 +154,11 @@ def apply_error_handling(app: FastAPI):
             logging.warning(
                 f"Locked database [SQLITE_BUSY]: {request} failed at {time.time()}"
             )
-            return LockedFileResponse
-        raise
+            return JSONResponse(
+                status_code=423,
+                content={"error": "File is locked, please try again later", "retryable": "true"},
+            )
+        raise exc
 
     @app.exception_handler(OSError)
     async def file_locked_handler(request: Request, exc: OSError):
@@ -162,8 +166,11 @@ def apply_error_handling(app: FastAPI):
             logging.warning(
                 f"Locked file [Errno 13]: {request} failed at {time.time()}"
             )
-            return LockedFileResponse
-        raise
+            return JSONResponse(
+                status_code=423,
+                content={"error": "File is locked, please try again later", "retryable": "true"},
+            )
+        raise exc
 
     # @app.exception_handler(ValidationError) [I'm hoping FastAPI's Pydantic integration handles this]
     @app.exception_handler(APIArgumentError)
@@ -173,7 +180,7 @@ def apply_error_handling(app: FastAPI):
             f"Missing data: {exc.missing_data}",
             f"Malformed data: {exc.malformed_data}",
         )
-        should_delete_cookie = request.state.should_delete_cookie
+        should_delete_cookie = getattr(request.state, "should_delete_cookie", False)
         body: dict[str, Any] = {
             "error": exc.message,
             "missing_data": exc.missing_data,
@@ -181,12 +188,13 @@ def apply_error_handling(app: FastAPI):
         }
         if should_delete_cookie:
             # Announce before doing
+            initial_user_id = getattr(request.state, "initial_user_id_value", "unknown")
             logging.info(
-                f"Deleting malformed activeUserId cookie. Active user id was <{request.state.initial_user_id_value}>"
+                f"Deleting malformed activeUserId cookie. Active user id was <{initial_user_id}>"
             )
             body["message"] = "Invalid activeUserId in cookie was deleted."
 
-        response = Response(status_code=422, content=body)
+        response = JSONResponse(status_code=422, content=body)
         if should_delete_cookie:
             response.delete_cookie("activeUserId")
         return response
