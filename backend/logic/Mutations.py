@@ -104,7 +104,7 @@ def add_watchlist_entry(
 # Does NOT check if they actually exist in the database
 # 	If you didn't already add/confirm them yourstorage, you're doing something wrong
 # If `validate` is True, the function will at least check if there are too many nominations in a category
-def add_nomination(storage: StorageManager, year: int, nomination, validate: bool = False):
+def add_nomination(storage: StorageManager, year: int, nomination: Nom, validate: bool = False):
     """Adds a nomination to the database.
 
     Args:

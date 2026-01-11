@@ -15,6 +15,7 @@ class UserSession:
     delta_minutes_inactive = 20
 
     def __init__(self, request: Request):
+        super().__init__()
         self.session = request.session
 
     def start_new(self, user_id: UserID) -> None:
@@ -84,5 +85,5 @@ class SessionMiddleware(BaseHTTPMiddleware):
             session.start_new(id)
         # Is it time to update the user's watchlist?
         if session.is_time_to_update():
-            await update_user_watchlist(id)
+            _ = await update_user_watchlist(id)
         return await call_next(request)

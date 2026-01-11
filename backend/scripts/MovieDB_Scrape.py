@@ -1,18 +1,22 @@
+from backend.types.my_types import *
+import backend.utils.env_reader as env
+import backend.data.queries as pr
+import backend.data.mutations as mu
+import argparse
+import os
+import re
 import sys
-from pathlib import Path
-import argparse, requests, re, os
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
+
 import pandas as pd
+import requests
 
 # * local imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
-import backend.utils.env_reader as env
-from backend.types.my_types import *
-import backend.data.queries as pr
-import backend.data.mutations as mu
 
 TMDB_API_KEY = env.TMDB_API_KEY
 Database_Path = env.DATABASE_PATH
@@ -27,14 +31,15 @@ BASE_SESSION.headers.update(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Attempts to scrape TMDB data.")
-    parser.add_argument(
+    parser = argparse.ArgumentParser(
+        description="Attempts to scrape TMDB data.")
+    _ = parser.add_argument(
         "year",
         type=int,
         help="Year to import data for. Year is when movies are released, "
         "not when the Oscars ceremony is held.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-d",
         "--dry-run",
         action="store_true",
@@ -42,19 +47,19 @@ def parse_args():
     )
     # parser.add_argument('--write-test', action='store_true',
     # 				help='Saves data in a test folder.')
-    parser.add_argument(
+    _ = parser.add_argument(
         "-t",
         "--test",
         action="store_true",
         help="Uses movie data from test folder. Also saves to test folder, unless dry-run.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help="Prints additional information.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-c",
         "--cutoff",
         type=int,
@@ -89,7 +94,7 @@ def main():
     fetch_movie_db(year, error_cutoff)
 
 
-def fetch_movie_db(year, error_cutoff):
+def fetch_movie_db(year: int, error_cutoff: int):
 
     movie_data = pr.get_movies(year)
     for movie in movie_data:
@@ -111,8 +116,10 @@ def fetch_movie_db(year, error_cutoff):
             release_status = details["status"]
             release_date = details["release_date"]
 
-            title_correct = ("title" in details) and (details["title"] == title)
-            year_correct = "release_date" in details and (release_date[:4] == str(year))
+            title_correct = ("title" in details) and (
+                details["title"] == title)
+            year_correct = "release_date" in details and (
+                release_date[:4] == str(year))
             runtime_correct = "runtime" in details and (
                 (runtime > 80 and not is_short) or (runtime < 60 and is_short)
             )
@@ -136,7 +143,8 @@ def fetch_movie_db(year, error_cutoff):
                 if "title" not in details:
                     print("No title found.")
                 elif not title_correct:
-                    print(f"Title mismatch: my <{title}> vs their <{details['title']}>")
+                    print(
+                        f"Title mismatch: my <{title}> vs their <{details['title']}>")
                 if "release_date" not in details:
                     print("No year found.")
                 elif not year_correct:
@@ -170,7 +178,8 @@ def fetch_movie_db(year, error_cutoff):
                     f"Genres: <{', '.join([g['name'] for g in details['genres']])}>",
                 )
 
-                keep = input(f"Assume it's still right movie? (y/N): ").lower() == "y"
+                keep = input(
+                    f"Assume it's still right movie? (y/N): ").lower() == "y"
             else:
                 keep = True
             if not keep:
@@ -188,7 +197,8 @@ def fetch_movie_db(year, error_cutoff):
                 new_data['poster_path'] = details["poster_path"]
 
             if not dry_run:
-                mu.update_movie(movie[MovieColumns.ID], year, new_data=new_data)
+                mu.update_movie(movie[MovieColumns.ID],
+                                year, new_data=new_data)
             if dry_run:
                 print(f"{title}: {new_data}")
         except Exception as e:
@@ -249,6 +259,7 @@ def fetch_wrapper(endpoint, params=None, headers=None):
 def debug_print(message):
     if verbose:
         print("LOG: " + str(message))
+
 
 def error_print(message):
     print("ERROR: " + str(message))

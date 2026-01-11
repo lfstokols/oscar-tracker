@@ -1,25 +1,28 @@
 import argparse
+import os
 import sqlite3
-import pandas as pd
+import sys
 from pathlib import Path
-import sys, os
+
+import pandas as pd
+import sqlalchemy as sa
+
+import backend.utils.env_reader as env
+from backend.data.db_connections import Session
+from backend.data.db_schema import (
+    Category,
+    Movie,
+    Nomination,
+    User,
+    Watchnotice,
+    init_db,
+)
+from backend.logic.storage_manager import StorageManager
 
 # * local imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
-import backend.utils.env_reader as env
-from backend.data.db_schema import (
-    init_db,
-    Movie,
-    User,
-    Category,
-    Nomination,
-    Watchnotice,
-)
-from backend.data.db_connections import Session
-import sqlalchemy as sa
-from backend.logic.storage_manager import StorageManager
 
 
 StorageManager.make_storage(env.DATABASE_PATH)
@@ -36,7 +39,7 @@ def migrate_users():
     with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating user {row.name}")
-            session.execute(
+            _ = session.execute(
                 sa.insert(User)
                 .prefix_with("OR REPLACE")
                 .values(
@@ -55,7 +58,7 @@ def migrate_movies(year: int):
     with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating movie {row.name}")
-            session.execute(
+            _ = session.execute(
                 sa.insert(Movie)
                 .prefix_with("OR REPLACE")
                 .values(
@@ -77,7 +80,7 @@ def migrate_categories():
     with Session() as session:
         for _, row in df.iterrows():
             debug_print(f"Migrating category {row.name}")
-            session.execute(
+            _ = session.execute(
                 sa.insert(Category)
                 .prefix_with("OR REPLACE")
                 .values(
@@ -101,7 +104,7 @@ def migrate_nominations(year: int):
             debug_print(
                 f"Migrating nomination {row['movieId']} for category {row['categoryId']}"
             )
-            session.execute(
+            _ = session.execute(
                 sa.insert(Nomination)
                 .prefix_with("OR REPLACE")
                 .values(
@@ -122,7 +125,7 @@ def migrate_watchlist(year: int):
             debug_print(
                 f"Migrating watchlist {row['userId']} for movie {row['movieId']}"
             )
-            session.execute(
+            _ = session.execute(
                 sa.insert(Watchnotice)
                 .prefix_with("OR REPLACE")
                 .values(
@@ -144,7 +147,8 @@ def migrate_year(year: int):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Copies CSV database data to SQLite.")
+    parser = argparse.ArgumentParser(
+        description="Copies CSV database data to SQLite.")
     parser.add_argument(
         "--year",
         type=int,

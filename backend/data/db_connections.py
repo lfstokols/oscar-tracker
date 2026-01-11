@@ -2,9 +2,10 @@ import logging
 
 import sqlalchemy as sa
 import sqlalchemy.orm as sa_orm
+from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
 
-from backend.data.db_schema import DB_PATH, Base
+from backend.data.db_schema import DB_PATH
 
 try:
     if DB_PATH is None:
@@ -27,7 +28,7 @@ except Exception as e:
 
 try:
     with engine.connect():
-        Base.metadata.create_all(engine)
+        DeclarativeBase.metadata.create_all(engine)
 except Exception as e:
     logging.error(f"Error creating engine: {e}")
     raise

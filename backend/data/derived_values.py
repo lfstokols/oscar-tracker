@@ -1,19 +1,10 @@
 import logging
-import pandas as pd
-from typing_extensions import Literal
+
 import sqlalchemy as sa
-from backend.data.db_schema import (
-    Movie,
-    Nomination,
-    Category,
-    User,
-    Watchnotice,
-)
-from backend.data.db_connections import Session
-from backend.types.api_schemas import (
-    UserID,
-    MovieID,
-)
+from typing_extensions import Literal
+
+from backend.data.db_schema import Category, Movie, Nomination, User, Watchnotice
+from backend.types.api_schemas import MovieID, UserID
 from backend.types.my_types import WatchStatus
 
 
@@ -73,13 +64,14 @@ def break_into_subtitles() -> sa.Select[tuple[MovieID, str, str]]:
     return sa.select(
         Movie.movie_id,
         sa.case(
-            (Movie.subtitle_position == None, Movie.title),
+            (Movie.subtitle_position.is_(None), Movie.title),
             else_=sa.func.substr(Movie.title, 1, Movie.subtitle_position),
         ).label("main_title"),
         sa.case(
-            (Movie.subtitle_position == None, ""),
+            (Movie.subtitle_position.is_(None), ""),
             else_=sa.func.substr(
-                Movie.title, Movie.subtitle_position + 1, sa.func.length(Movie.title)
+                Movie.title, Movie.subtitle_position +
+                1, sa.func.length(Movie.title)
             ),
         ).label("subtitle"),
     )
@@ -171,7 +163,8 @@ def get_filtered_watchlist(status: Literal["seen", "todo", "both"], year: int) -
     elif status == "todo":
         status_filter = Watchnotice.status == WatchStatus.TODO
     else:
-        status_filter = sa.or_(Watchnotice.status == WatchStatus.SEEN, Watchnotice.status == WatchStatus.TODO)
+        status_filter = sa.or_(
+            Watchnotice.status == WatchStatus.SEEN, Watchnotice.status == WatchStatus.TODO)
     return (
         sa.select(
             Watchnotice.user_id,
@@ -182,6 +175,7 @@ def get_filtered_watchlist(status: Literal["seen", "todo", "both"], year: int) -
         .where(Watchnotice.year == year)
         .subquery()
     )
+
 
 def num_categories_completed(
     status: Literal["seen", "both"], year: int
@@ -197,8 +191,8 @@ def num_categories_completed(
         raise ValueError(
             f"WatchStatus.BLANK is not a valid status for num_categories_completed."
         )
-    
-    #* Every entry corresponds to a user watching a movie nominated in that category
+
+    # * Every entry corresponds to a user watching a movie nominated in that category
     category_watchlist = (
         sa.select(
             filtered_watchlist.c.user_id,
@@ -239,5 +233,3 @@ def num_categories_completed(
         .group_by(User.user_id)
         .subquery()
     )
-
-

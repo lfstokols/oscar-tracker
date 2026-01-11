@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import sqlalchemy as sa
@@ -15,7 +15,7 @@ from backend.types.api_schemas import CategoryCompletionKey, MovieID, UserID, co
 from backend.types.my_types import Grouping, WatchStatus
 
 
-def get_number_of_movies(year, shortsIsOne=False) -> int:
+def get_number_of_movies(year: int, shortsIsOne: bool = False) -> int:
     """
     Assumes the short categories are mutually exclusive with each other,
     and with all other categories.
@@ -28,7 +28,7 @@ def get_number_of_movies(year, shortsIsOne=False) -> int:
         ).scalar_one()
         if shortsIsOne:
             num_short_films = session.execute(
-                sa.select(sa.func.sum(Category.max_noms)
+                sa.select(sa.func.sum(Category.max_nominations)
                           ).where(Category.is_short)
             ).scalar_one()
             num_short_categories = session.execute(
@@ -139,8 +139,7 @@ async def get_user_propic(letterboxd_username: str | None) -> str | None:
         # Get the user's letterboxd profile page
         url = f"https://letterboxd.com/{letterboxd_username}/"
         async with httpx.AsyncClient() as client:
-            response = await client.get(url)
-        response.raise_for_status()
+            response = (await client.get(url)).raise_for_status()
         # Parse the HTML
         soup = BeautifulSoup(response.text, "html.parser")
         # Find the avatar image
@@ -270,26 +269,31 @@ def get_category_completion_dict(
     # return seen_data, todo_data, total_data
 
 
+type _CategoryCompletionDict = dict[CategoryCompletionKey | Literal["id"], int]
+
+
 def format_category_completion_dict(
-    seen_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
-    todo_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
-    total_data: list[dict[CategoryCompletionKey | Literal["id"], int]],
+    seen_data: list[_CategoryCompletionDict],
+    todo_data: list[_CategoryCompletionDict],
+    total_data: list[_CategoryCompletionDict],
 ) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
-    result = {}
+    result: dict[UserID, dict[countTypes,
+                              dict[CategoryCompletionKey, int]]] = {}
     for row in seen_data:
-        user_id = row.pop("id")
+        user_id = cast(UserID, row.pop("id"))
         result[user_id] = {"seen": row}
     for row in todo_data:
-        user_id = row.pop("id")
+        user_id = cast(UserID, row.pop("id"))
         if user_id not in result:
             result[user_id] = {}
         result[user_id]["todo"] = row
     for row in total_data:
-        user_id = row.pop("id")
+        user_id = cast(UserID, row.pop("id"))
         if user_id not in result:
             result[user_id] = {}
         result[user_id]["total"] = row
-    output = {}
+    output: dict[UserID, dict[CategoryCompletionKey,
+                              dict[countTypes, int]]] = {}
     for user_id in result:
         output[user_id] = {
             key: {

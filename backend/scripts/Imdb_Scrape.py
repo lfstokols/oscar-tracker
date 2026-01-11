@@ -1,17 +1,22 @@
+from backend.types.my_types import *
+from backend.logic.storage_manager import StorageManager
+import backend.utils.env_reader as env
+import backend.logic.Processing as pr
+import backend.logic.Mutations as mu
+import argparse
+import os
+import re
 import sys
-from pathlib import Path
-import argparse, requests, re, os
 from datetime import datetime
+from pathlib import Path
+
 import pandas as pd
+import requests
+
 # * local imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.append(str(PROJECT_ROOT))
 os.environ["ROOT_DIR"] = str(PROJECT_ROOT)
-import backend.utils.env_reader as env
-from backend.types.my_types import *
-from backend.logic.storage_manager import StorageManager
-import backend.logic.Processing as pr
-import backend.logic.Mutations as mu
 
 IMDB_API_KEY = env.IMDB_API_KEY
 Database_Path = env.DATABASE_PATH
@@ -25,13 +30,13 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Attempts to find IMDB entries for movies in the database."
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "year",
         type=int,
         help="Year to import data for. Year is when movies are released, "
         "not when the Oscars ceremony is held.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-d",
         "--dry-run",
         action="store_true",
@@ -39,19 +44,19 @@ def parse_args():
     )
     # parser.add_argument('--write-test', action='store_true',
     # 				help='Saves data in a test folder.')
-    parser.add_argument(
+    _ = parser.add_argument(
         "-t",
         "--test",
         action="store_true",
         help="Uses movie data from test folder. Also saves to test folder, unless dry-run.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
         help="Prints additional information.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "-c",
         "--cutoff",
         type=int,
@@ -106,7 +111,8 @@ def fetch_imdb(year, error_cutoff):
                 response_dict["Year"] == str(year)
             )
             awards_correct = ("Awards" in response_dict) and (
-                re.match(r"^Nominated for \d+ Oscar", response_dict["Awards"]) != None
+                re.match(r"^Nominated for \d+ Oscar",
+                         response_dict["Awards"]) != None
                 or re.match(r"^Won \d+ Oscar", response_dict["Awards"]) != None
             )
             if (
@@ -131,7 +137,8 @@ def fetch_imdb(year, error_cutoff):
                 elif not awards_correct:
                     print(f"Awards mismatch: {response_dict['Awards']}")
 
-                keep = input(f"Assume it's still right movie? (y/n): ").lower() == "y"
+                keep = input(
+                    f"Assume it's still right movie? (y/n): ").lower() == "y"
             else:
                 keep = True
             if not keep:
@@ -167,7 +174,8 @@ def fetch_wrapper(parameters={}):
     # Use the session but customize for this specific request
     response = BASE_SESSION.get(
         f"{URL_BASE}",
-        params={"apikey": IMDB_API_KEY, "type": "movie", "y": year, **parameters},
+        params={"apikey": IMDB_API_KEY,
+                "type": "movie", "y": year, **parameters},
     )
     return response.json()
 

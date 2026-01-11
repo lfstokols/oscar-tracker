@@ -1,14 +1,16 @@
-import sqlite3, logging
+import logging
 from contextlib import contextmanager
-import sqlalchemy as sa
+from typing import Any
+
 import pandas as pd
+import sqlalchemy as sa
+
 from backend.data.db_connections import Session
-from backend.data.db_schema import User, Movie, Category, Nomination, Watchnotice
-from backend.data.utils import create_unique_user_id, create_unique_movie_id
-from backend.types.api_schemas import UserID, MovieID, CategoryID
+from backend.data.db_schema import Movie, Nomination, User, Watchnotice
+from backend.data.utils import create_unique_movie_id, create_unique_user_id
+from backend.types.api_schemas import CategoryID, MovieID, UserID
 from backend.types.api_validators import MovieValidator
 from backend.types.my_types import *
-from typing import Any
 
 
 def add_user(username: str, **kwargs) -> UserID:
@@ -27,7 +29,7 @@ def add_user(username: str, **kwargs) -> UserID:
         **kwargs,
     )
     with Session() as session:
-        session.execute(mutation)
+        _ = session.execute(mutation)
         session.commit()
     return user_id
 
@@ -38,7 +40,7 @@ def update_user(userId: UserID, new_data: dict[str, str]):
         key in User.__table__.columns.keys() for key in new_data
     ), f"Invalid user column(s): {[k for k in new_data if k not in User.__table__.columns.keys()]}"
     with Session() as session:
-        session.execute(
+        _ = session.execute(
             sa.update(User).where(User.user_id == userId).values(**new_data)
         )
         session.commit()
@@ -46,7 +48,7 @@ def update_user(userId: UserID, new_data: dict[str, str]):
 
 def delete_user(userId: UserID):
     with Session() as session:
-        session.execute(sa.delete(User).where(User.user_id == userId))
+        _ = session.execute(sa.delete(User).where(User.user_id == userId))
         session.commit()
 
 
@@ -57,7 +59,8 @@ def get_and_set_rss_timestamp(userId: UserID):
             sa.select(User.last_letterboxd_check).where(User.user_id == userId)
         ).scalar()
         last_checked = (
-            pd.Timestamp(last_checked, tz="UTC") if last_checked else pd.Timestamp.min
+            pd.Timestamp(
+                last_checked, tz="UTC") if last_checked else pd.Timestamp.min
         )
         new_time = pd.Timestamp.now(tz="UTC")
         try:
@@ -68,10 +71,10 @@ def get_and_set_rss_timestamp(userId: UserID):
             )
             raise e
         else:
-            session.execute(
+            _ = session.execute(
                 sa.update(User)
                 .where(User.user_id == userId)
-                .values(last_letterboxd_check=new_time)
+                  .values(last_letterboxd_check=new_time)
             )
             session.commit()
 
@@ -83,11 +86,11 @@ def add_watchlist_entry(
 ):
     with Session() as session:
         if status == WatchStatus.BLANK:
-            session.execute(
+            _ = session.execute(
                 sa.delete(Watchnotice)
                 .where(Watchnotice.year == year)
-                .where(Watchnotice.user_id == userId)
-                .where(Watchnotice.movie_id == movieId)
+                  .where(Watchnotice.user_id == userId)
+                  .where(Watchnotice.movie_id == movieId)
             )
             session.commit()
         else:
@@ -113,7 +116,7 @@ def add_watchlist_entry(
                 )
             )
             logging.debug(f"Mutation: {mutation}")
-            session.execute(mutation)
+            _ = session.execute(mutation)
             session.commit()
 
 
@@ -126,7 +129,7 @@ def add_nomination(year, nomination: Nom):
         else None
     )
     with Session() as session:
-        session.execute(
+        _ = session.execute(
             sa.insert(Nomination)
             .prefix_with("OR REPLACE")
             .values(year=year, movie_id=movie, category_id=category, note=note)
@@ -148,13 +151,15 @@ def update_movie(
         MovieValidator(movie=movieId)
     except Exception as e:
         logging.error(f"update_movie() got invalid movie id '{movieId}'. {e}")
-        raise Exception(f"Invalid movie id '{movieId}'.\n" "Did you send a title?" ) from e
+        raise Exception(
+            f"Invalid movie id '{movieId}'.\n" "Did you send a title?") from e
     assert all(
         key in Movie.__table__.columns.keys() for key in new_data
     ), f"Invalid movie column(s): {[k for k in new_data if k not in Movie.__table__.columns.keys()]}"
     with Session() as session:
-        session.execute(
-            sa.update(Movie).where(Movie.movie_id == movieId).values(**new_data)
+        _ = session.execute(
+            sa.update(Movie).where(Movie.movie_id ==
+                                   movieId).values(**new_data)
         )
         session.commit()
 
@@ -162,6 +167,7 @@ def update_movie(
 def add_movie(year: int, title: str) -> MovieID:
     id = create_unique_movie_id(year=year)
     with Session() as session:
-        session.execute(sa.insert(Movie).values(year=year, movie_id=id, title=title))
+        _ = session.execute(sa.insert(Movie).values(
+            year=year, movie_id=id, title=title))
         session.commit()
     return id

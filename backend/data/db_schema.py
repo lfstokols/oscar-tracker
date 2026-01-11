@@ -8,6 +8,7 @@ import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pydantic import EmailStr
 from sqlalchemy import Index
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 import backend.utils.env_reader as env
 from backend.types.api_schemas import CategoryID, MovieID, UserID
@@ -98,13 +99,12 @@ def init_db():
         _ = cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_nominations_year ON nominations(year)"
         )
-        _ = cursor.execute("CREATE INDEX IF NOT EXISTS idx_movies_year ON movies(year)")
+        _ = cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_movies_year ON movies(year)")
         _ = cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_watchlist_user ON watchlist(user_id)"
         )
 
-
-Base = orm.declarative_base()
 
 # * # * # * # * # * # *
 # * Type Decorators # *
@@ -181,31 +181,34 @@ class WatchStatus_SQL(sa.TypeDecorator[WatchStatus]):
 # * # * # * # * # * #
 
 
-class User(Base):
+class User(DeclarativeBase):
     __tablename__ = "users"
-    user_id: sa.Column[UserID] = sa.Column(UserID_SQL, primary_key=True)
-    username: sa.Column[str] = sa.Column(sa.String)
-    letterboxd: sa.Column[str] = sa.Column(sa.String)
-    email: sa.Column[EmailStr] = sa.Column(Email_SQL)
-    last_letterboxd_check: sa.Column[datetime] = sa.Column(sa.DateTime)
+    user_id: Mapped[UserID] = mapped_column(UserID_SQL, primary_key=True)
+    username: Mapped[str] = mapped_column(sa.String)
+    letterboxd: Mapped[str] = mapped_column(sa.String)
+    email: Mapped[EmailStr] = mapped_column(Email_SQL)
+    last_letterboxd_check: Mapped[datetime] = mapped_column(sa.DateTime)
 
-    watchnotices = orm.relationship("Watchnotice", back_populates="user", viewonly=True)
+    watchnotices = orm.relationship(
+        "Watchnotice", back_populates="user", viewonly=True)
 
     movies = orm.relationship("Movie", secondary="watchlist", viewonly=True)
 
 
-class Movie(Base):
+class Movie(DeclarativeBase):
     __tablename__ = "movies"
-    movie_id: sa.Column[MovieID] = sa.Column(MovieID_SQL, primary_key=True)
-    year: sa.Column[int] = sa.Column(sa.Integer, nullable=False)
-    title: sa.Column[str] = sa.Column(sa.String, nullable=False)
-    imdb_id: sa.Column[str] = sa.Column(sa.String, nullable=True)
-    movie_db_id: sa.Column[str] = sa.Column(sa.String, nullable=True)
-    runtime: sa.Column[int] = sa.Column(sa.Integer, nullable=True)
-    poster_path: sa.Column[str] = sa.Column(sa.String, nullable=True)
-    subtitle_position: sa.Column[int] = sa.Column(sa.Integer, nullable=True)
+    movie_id: Mapped[MovieID] = mapped_column(MovieID_SQL, primary_key=True)
+    year: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    title: Mapped[str] = mapped_column(sa.String, nullable=False)
+    imdb_id: Mapped[str | None] = mapped_column(sa.String, nullable=True)
+    movie_db_id: Mapped[str | None] = mapped_column(sa.String, nullable=True)
+    runtime: Mapped[int | None] = mapped_column(sa.Integer, nullable=True)
+    poster_path: Mapped[str | None] = mapped_column(sa.String, nullable=True)
+    subtitle_position: Mapped[int | None] = mapped_column(
+        sa.Integer, nullable=True)
 
-    nominations = orm.relationship("Nomination", back_populates="movie", viewonly=True)
+    nominations = orm.relationship(
+        "Nomination", back_populates="movie", viewonly=True)
     watchnotices = orm.relationship(
         "Watchnotice", back_populates="movie", viewonly=True
     )
@@ -228,17 +231,16 @@ class Movie(Base):
     __table_args__ = (Index("idx_movies_year", "year"),)
 
 
-class Category(Base):
+class Category(DeclarativeBase):
     __tablename__ = "categories"
-    category_id: sa.Column[CategoryID] = sa.Column(CategoryID_SQL, primary_key=True)
-    short_name: sa.Column[str] = sa.Column(sa.String, nullable=False)
-    full_name: sa.Column[str] = sa.Column(sa.String, nullable=False)
-    max_nominations: sa.Column[int] = sa.Column(sa.Integer)
-    is_short: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
-    has_note: sa.Column[bool] = sa.Column(sa.Boolean, nullable=False)
-    grouping: sa.Column[str] = sa.Column(
-        sa.String,
-    )
+    category_id: Mapped[CategoryID] = mapped_column(
+        CategoryID_SQL, primary_key=True)
+    short_name: Mapped[str] = mapped_column(sa.String, nullable=False)
+    full_name: Mapped[str] = mapped_column(sa.String, nullable=False)
+    max_nominations: Mapped[int] = mapped_column(sa.Integer)
+    is_short: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
+    has_note: Mapped[bool] = mapped_column(sa.Boolean, nullable=False)
+    grouping: Mapped[str] = mapped_column(sa.String)
 
     nominations = orm.relationship(
         "Nomination", back_populates="category", viewonly=True
@@ -249,40 +251,41 @@ class Category(Base):
     )
 
 
-class Nomination(Base):
+class Nomination(DeclarativeBase):
     __tablename__ = "nominations"
-    nomination_id: sa.Column[int] = sa.Column(
+    nomination_id: Mapped[int] = mapped_column(
         sa.Integer, primary_key=True, autoincrement=True
     )
-    year: sa.Column[int] = sa.Column(sa.Integer)
-    movie_id: sa.Column[MovieID] = sa.Column(
-        MovieID_SQL, sa.ForeignKey("movies.movie_id")
-    )
-    category_id: sa.Column[CategoryID] = sa.Column(
-        CategoryID_SQL, sa.ForeignKey("categories.category_id")
-    )
-    note: sa.Column[str] = sa.Column(sa.String)
+    year: Mapped[int] = mapped_column(sa.Integer)
+    movie_id: Mapped[MovieID] = mapped_column(
+        MovieID_SQL, sa.ForeignKey("movies.movie_id"))
+    category_id: Mapped[CategoryID] = mapped_column(
+        CategoryID_SQL, sa.ForeignKey("categories.category_id"))
+    note: Mapped[str | None] = mapped_column(sa.String, nullable=True)
 
-    movie = orm.relationship("Movie", back_populates="nominations", viewonly=True)
-    category = orm.relationship("Category", back_populates="nominations", viewonly=True)
+    movie = orm.relationship(
+        "Movie", back_populates="nominations", viewonly=True)
+    category = orm.relationship(
+        "Category", back_populates="nominations", viewonly=True)
 
     # Add index on year column
     __table_args__ = (Index("idx_nominations_year", "year"),)
 
 
-class Watchnotice(Base):
+class Watchnotice(DeclarativeBase):
     __tablename__ = "watchlist"
-    year: sa.Column[int] = sa.Column(sa.Integer, nullable=False)
-    user_id: sa.Column[UserID] = sa.Column(
-        UserID_SQL, sa.ForeignKey("users.user_id"), primary_key=True
-    )
-    movie_id: sa.Column[MovieID] = sa.Column(
-        MovieID_SQL, sa.ForeignKey("movies.movie_id"), primary_key=True
-    )
-    status: sa.Column[WatchStatus] = sa.Column(WatchStatus_SQL, nullable=False)
+    year: Mapped[int] = mapped_column(sa.Integer, nullable=False)
+    user_id: Mapped[UserID] = mapped_column(
+        UserID_SQL, sa.ForeignKey("users.user_id"), primary_key=True)
+    movie_id: Mapped[MovieID] = mapped_column(
+        MovieID_SQL, sa.ForeignKey("movies.movie_id"), primary_key=True)
+    status: Mapped[WatchStatus] = mapped_column(
+        WatchStatus_SQL, nullable=False)
 
-    user = orm.relationship("User", back_populates="watchnotices", viewonly=True)
-    movie = orm.relationship("Movie", back_populates="watchnotices", viewonly=True)
+    user = orm.relationship(
+        "User", back_populates="watchnotices", viewonly=True)
+    movie = orm.relationship(
+        "Movie", back_populates="watchnotices", viewonly=True)
 
     # Add index on user_id column
     __table_args__ = (Index("idx_watchlist_user", "user_id"),)

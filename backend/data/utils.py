@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import TypeVar
+from typing import Any, TypeVar, overload
 
 import pandas as pd
 import sqlalchemy as sa
@@ -13,12 +13,13 @@ from backend.types.api_validators import MovieValidator, UserValidator
 
 def create_unique_movie_id(year: int | str) -> MovieID:
     with Session() as session:
-        existing_ids = session.execute(sa.select(Movie.id)).scalars().all()
+        existing_ids = session.execute(
+            sa.select(Movie.movie_id)).scalars().all()
     tries = 0
     while tries < 100:
         id = (
             "mov_"
-            + (f"{(int(year)-1927)%256:02x}" if str(year).isdigit() else "00")
+            + (f"{(int(year)-1927) % 256:02x}" if str(year).isdigit() else "00")
             + f"{random.randint(0, 0xFF_FF):04x}"
         )
         if id not in existing_ids:
@@ -29,7 +30,8 @@ def create_unique_movie_id(year: int | str) -> MovieID:
     logging.warning(
         "Unable to create unique ID after 100 tries. Erroring out to avoid infinite loop."
     )
-    raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")
+    raise Exception(
+        "Unable to create unique ID. Erroring out to avoid infinite loop.")
 
 
 def create_unique_user_id() -> UserID:
@@ -51,12 +53,27 @@ def create_unique_user_id() -> UserID:
     logging.warning(
         "Unable to create unique ID after 100 tries. Erroring out to avoid infinite loop."
     )
-    raise Exception("Unable to create unique ID. Erroring out to avoid infinite loop.")
+    raise Exception(
+        "Unable to create unique ID. Erroring out to avoid infinite loop.")
 
 
-def result_to_dict(result: sa.Result) -> list[dict]:
+_DictT = TypeVar("_DictT", bound=dict[str, Any])
+
+
+@overload
+def result_to_dict(result: sa.Result[Any],
+                   row_type: type[_DictT]) -> list[_DictT]: ...
+
+
+@overload
+def result_to_dict(result: sa.Result[Any]) -> list[dict[str, Any]]: ...
+
+
+def result_to_dict(
+    result: sa.Result[Any], row_type: type[_DictT] | None = None
+) -> list[_DictT] | list[dict[str, Any]]:
     mappings = result.mappings().all()
-    return [dict(row) for row in mappings]
+    return [dict(row) for row in mappings]  # type: ignore[return-value]
 
 
 def validate_nominations() -> Exception | None:

@@ -99,7 +99,7 @@ async def get_movie_list_from_rss(user_id: UserID, year: int) -> list[MovieID]:
     logging.debug(
         f"Of those {len(mdb_id_list)} movie IDs listed on the page, {len(my_id_list)} matched movies in my database."
     )
-    validated_idlist = []
+    validated_idlist: list[MovieID] = []
     for id in my_id_list:
         try:
             validated_idlist.append(MovieValidator(movie=id).movie)
