@@ -24,15 +24,10 @@ import {useNotifications} from '../../../providers/NotificationContext';
 import {WatchListSchema} from '../../../types/APIDataSchema';
 import {WatchStatus} from '../../../types/Enums';
 
-type Props =
-  | {
-      movieId: MovieId;
-      userId: UserId;
-    }
-  | {
-      movieId: MovieId[];
-      userId: UserId;
-    };
+type Props = {
+  movieId: MovieId | MovieId[];
+  userId: UserId;
+};
 
 export function WatchlistCell({movieId, userId}: Props): React.ReactElement {
   // TODO - Consider upgrading to React v19 to get fancy use() hook
@@ -114,7 +109,7 @@ function display(watchstate: WatchStatus): string {
     ? 'Seen'
     : watchstate === WatchStatus.todo
       ? 'To-Do'
-      : ' ';
+      : '\u00A0';
 }
 
 type FillProps = {
@@ -147,6 +142,7 @@ export function MyFill({
         alignItems: 'center',
         justifyContent: 'center',
         userSelect: 'none',
+        lineHeight: 1,
       }}
       variant="body2">
       {display(watchstate)}

@@ -53,3 +53,9 @@ export const grouping_display_names: {[key in Grouping]: string} = {
   [Grouping.best_in_class]: 'Best in Class',
   [Grouping.short]: 'Short',
 };
+
+export enum ShortsType {
+  animated = 'animated',
+  liveAction = 'liveAction',
+  documentary = 'documentary',
+}

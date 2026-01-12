@@ -1,5 +1,4 @@
 // Mobile-friendly list of MovieCards to replace LegacyTable
-import {Divider, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import * as React from 'react';
@@ -11,9 +10,18 @@ import {
   watchlistOptions,
 } from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
-import {WatchStatus} from '../../types/Enums';
+import {ShortsType, WatchStatus} from '../../types/Enums';
 import {groupByShort} from '../../utils/dataSelectors';
 import MovieCard from './MovieCard';
+import ShortsCard from './ShortsCard';
+
+function GridItem({movie}: {movie: Movie}): React.ReactElement {
+  return (
+    <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+      <MovieCard movie={movie} />
+    </Grid>
+  );
+}
 
 export default function MovieList({
   filterState,
@@ -64,68 +72,58 @@ export default function MovieList({
 
   const shortsAreOneFilm = preferences.shortsAreOneFilm;
 
+  const featureCards = sortedFeatures.map(movie => (
+    <GridItem key={movie.id} movie={movie} />
+  ));
+  const animatedShortsCards = shortsSection(
+    ShortsType.animated,
+    sortedShortsAnimated,
+    shortsAreOneFilm,
+  );
+  const liveActionShortsCards = shortsSection(
+    ShortsType.liveAction,
+    sortedShortsLive,
+    shortsAreOneFilm,
+  );
+  const documentaryShortsCards = shortsSection(
+    ShortsType.documentary,
+    sortedShortsDoc,
+    shortsAreOneFilm,
+  );
+  const allCards = featureCards.concat(
+    animatedShortsCards,
+    liveActionShortsCards,
+    documentaryShortsCards,
+  );
+
   return (
     <Grid container spacing={1.5} sx={{p: 1, width: '100%'}}>
-      {sortedFeatures.map(movie => (
-        <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
-          <MovieCard movie={movie} />
-        </Grid>
-      ))}
-
-      {sortedShortsAnimated.length > 0 && (
-        <ShortsSection
-          movies={sortedShortsAnimated}
-          shortsAreOneFilm={shortsAreOneFilm}
-          title="Animated Shorts"
-        />
-      )}
-
-      {sortedShortsLive.length > 0 && (
-        <ShortsSection
-          movies={sortedShortsLive}
-          shortsAreOneFilm={shortsAreOneFilm}
-          title="Live Action Shorts"
-        />
-      )}
-
-      {sortedShortsDoc.length > 0 && (
-        <ShortsSection
-          movies={sortedShortsDoc}
-          shortsAreOneFilm={shortsAreOneFilm}
-          title="Documentary Shorts"
-        />
-      )}
+      {allCards}
     </Grid>
   );
 }
 
-function ShortsSection({
-  title,
-  movies,
-  shortsAreOneFilm,
-}: {
-  title: string;
-  movies: Movie[];
-  shortsAreOneFilm: boolean;
-}): React.ReactElement {
-  // TODO: Handle shortsAreOneFilm preference (merge into single card)
-  void shortsAreOneFilm;
-  return (
-    <>
-      <Grid size={12} sx={{pt: 1}}>
-        <Divider>
-          <Typography color="text.secondary" variant="overline">
-            {title}
-          </Typography>
-        </Divider>
-      </Grid>
-      {movies.map(movie => (
-        <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
-          <MovieCard movie={movie} />
-        </Grid>
-      ))}
-    </>
-  );
+/**
+  Returns an array of GridItems, either a unified ShortsCard 
+  or a list of MovieCards, depending on the shortsAreOneFilm preference.
+  @param type - The specific category of shorts
+  @param movies - The movies to display
+  @param shortsAreOneFilm - Whether to display the shorts as a single card
+  @returns An array of GridItems (possibly length 1)
+*/
+function shortsSection(
+  type: ShortsType,
+  movies: Movie[],
+  shortsAreOneFilm: boolean,
+): React.ReactElement[] {
+  if (shortsAreOneFilm) {
+    return [
+      <Grid key={type} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+        <ShortsCard movies={movies} type={type} />
+      </Grid>,
+    ];
+  }
+  return movies.map(movie => <GridItem key={movie.id} movie={movie} />);
 }
 
 function filterMovies(

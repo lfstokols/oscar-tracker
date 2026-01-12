@@ -1,44 +1,57 @@
 // A card that displays information about a movie for mobile view
 // Poster on left, title/metadata on right, footer with watchlist controls
-import ErrorIcon from '@mui/icons-material/DoNotDisturbAlt';
 import {
   Box,
   Card,
   CardActions,
   CardContent,
-  Chip,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
-import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
-import {Suspense, useState} from 'react';
-import {MovieDb_POSTER_URL} from '../../config/GlobalConstants';
-import {SEEN_COLOR, TODO_COLOR} from '../../config/StyleChoices';
-import {
-  categoryOptions,
-  nomOptions,
-  watchlistOptions,
-} from '../../hooks/dataOptions';
+import {useSuspenseQueries} from '@tanstack/react-query';
+import {Suspense} from 'react';
+import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Movie} from '../../types/APIDataSchema';
-import {WatchStatus} from '../../types/Enums';
 import NominationsCell from '../legacy_table/cells/NominationsCell';
-import {WatchlistCell} from '../legacy_table/cells/WatchlistCell';
+import PosterImage from './common/PosterImage';
+import RuntimeChip from './common/RuntimeChip';
+import WatchlistFooter from './common/WatchlistFooter';
 
 type Props = {
   movie: Movie;
 };
 
-export default function MovieCard({movie}: Props): React.ReactElement {
+type GenericMovieCardProps = {
+  image: React.ReactElement;
+  title: string;
+  subtitle?: string;
+  details: React.ReactElement | React.ReactElement[];
+  metadata?: React.ReactElement[];
+  footer?: React.ReactElement;
+};
+
+export function GenericMovieCard({
+  image,
+  title,
+  subtitle,
+  details,
+  metadata,
+  footer,
+}: GenericMovieCardProps): React.ReactElement {
   return (
     <Card sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
-      <Box
-        sx={{display: 'flex', flexDirection: 'row', p: 1.5, gap: 1.5, flex: 1}}>
-        <MoviePoster movie={movie} />
-        <MovieInfo movie={movie} />
-      </Box>
+      <CardContent sx={{display: 'flex', flexDirection: 'row', gap: 1}}>
+        {image}
+        <InfoBlock
+          extras={metadata}
+          mainData={details}
+          subtitle={subtitle}
+          title={title}
+        />
+      </CardContent>
       <CardActions
         sx={{
           borderTop: 1,
@@ -49,87 +62,54 @@ export default function MovieCard({movie}: Props): React.ReactElement {
           mt: 'auto',
         }}>
         <Suspense fallback={<Skeleton height={32} width={120} />}>
-          <WatchlistFooter movieId={movie.id} />
+          {footer}
         </Suspense>
       </CardActions>
     </Card>
   );
 }
 
-function MoviePoster({movie}: {movie: Movie}): React.ReactElement {
-  const [hasError, setHasError] = useState(false);
-  const [hasLoaded, setHasLoaded] = useState(false);
-
-  if (!movie.posterPath) {
-    return (
-      <Box
-        sx={{
-          width: 80,
-          height: 120,
-          bgcolor: 'grey.800',
-          borderRadius: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-        <ErrorIcon color="disabled" />
-      </Box>
-    );
-  }
-
+export default function MovieCard({movie}: Props): React.ReactElement {
   return (
-    <Box sx={{position: 'relative', width: 80, height: 120, flexShrink: 0}}>
-      {hasError ? (
-        <Box
-          sx={{
-            width: 80,
-            height: 120,
-            bgcolor: 'grey.800',
-            borderRadius: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <ErrorIcon color="error" />
-        </Box>
-      ) : (
-        <>
-          {!hasLoaded && (
-            <Skeleton
-              height={120}
-              sx={{position: 'absolute'}}
-              variant="rectangular"
-              width={80}
-            />
-          )}
-          <img
-            alt={movie.mainTitle}
-            onError={() => setHasError(true)}
-            onLoad={() => setHasLoaded(true)}
-            src={MovieDb_POSTER_URL + movie.posterPath}
-            style={{
-              width: 80,
-              height: 120,
-              objectFit: 'cover',
-              borderRadius: 4,
-              display: hasLoaded ? 'block' : 'none',
-            }}
-          />
-        </>
-      )}
+    <GenericMovieCard
+      details={<NominationsBlock movie={movie} />}
+      footer={<WatchlistFooter movieId={movie.id} />}
+      image={<MoviePoster movie={movie} />}
+      metadata={[<RuntimeChip key="runtime" movie={movie} />]}
+      subtitle={movie.subtitle}
+      title={movie.mainTitle}
+    />
+  );
+}
+
+function MoviePoster({movie}: {movie: Movie}): React.ReactElement {
+  return (
+    <Box sx={{flexShrink: 0}}>
+      <PosterImage height={120} movie={movie} showLoading width={80} />
     </Box>
   );
 }
 
-function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
+function InfoBlock({
+  title,
+  subtitle,
+  mainData,
+  extras,
+}: {
+  title: string;
+  subtitle?: string;
+  mainData: React.ReactElement | React.ReactElement[];
+  extras?: React.ReactElement | React.ReactElement[];
+}): React.ReactElement {
+  const mainDataElements = Array.isArray(mainData) ? mainData : [mainData];
   return (
     <CardContent sx={{p: 0, flex: 1, minWidth: 0}}>
       <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
-        {movie.mainTitle}
+        {title}
       </Typography>
-      {!!movie.subtitle && (
+      {!!subtitle && (
         <Typography color="text.secondary" noWrap variant="body2">
-          <i>{movie.subtitle}</i>
+          <i>{subtitle}</i>
         </Typography>
       )}
       <Stack
@@ -138,29 +118,49 @@ function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
         gap={0.5}
         sx={{mt: 1}}
         useFlexGap>
-        <NominationsBlock movie={movie} />
-        <RuntimeBlock movie={movie} />
+        {mainDataElements.map((element, index) => (
+          <Paper key={index} elevation={3}>
+            {element}
+          </Paper>
+        ))}
+        {extras}
       </Stack>
     </CardContent>
   );
 }
 
-function formatRuntime(
-  hours: string | null,
-  minutes: number | null,
-): string | null {
-  if (!hours && !minutes) return null;
-  if (hours === '0' && minutes) return `${minutes}m`;
-  if (hours && !minutes) return `${hours}h`;
-  return `${hours}h ${minutes}m`;
-}
-
-function RuntimeBlock({movie}: {movie: Movie}): React.ReactElement | null {
-  const runtime = formatRuntime(movie.runtime_hours, movie.runtime_minutes);
-  return runtime !== null ? (
-    <Chip label={runtime} size="small" variant="outlined" />
-  ) : null;
-}
+// function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
+//   return (
+//     <InfoBlock
+//       extras={<RuntimeChip movie={movie} />}
+//       mainData={<NominationsBlock movie={movie} />}
+//       subtitle={movie.subtitle}
+//       title={movie.mainTitle}
+//     />
+//   );
+// }
+//   return (
+//     <CardContent sx={{p: 0, flex: 1, minWidth: 0}}>
+//       <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
+//         {movie.mainTitle}
+//       </Typography>
+//       {!!movie.subtitle && (
+//         <Typography color="text.secondary" noWrap variant="body2">
+//           <i>{movie.subtitle}</i>
+//         </Typography>
+//       )}
+//       <Stack
+//         direction="column"
+//         flexWrap="wrap"
+//         gap={0.5}
+//         sx={{mt: 1}}
+//         useFlexGap>
+//         <NominationsBlock movie={movie} />
+//         <RuntimeChip movie={movie} />
+//       </Stack>
+//     </CardContent>
+//   );
+// }
 
 function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
   const {year} = useOscarAppContext();
@@ -170,87 +170,11 @@ function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
   const categories = categoriesQ.data;
   const nominations = nominationsQ.data;
   return (
-    <Paper elevation={3}>
-      {/* // sx={{
-      //   display: 'flex',
-      //   flexDirection: 'row',
-      //   gap: 0.5,
-      //   border: '1px dashed grey',
-      // }}> */}
-      <NominationsCell
-        categories={categories}
-        movieId={movie.id}
-        nominations={nominations}
-        putInCell={false}
-      />
-    </Paper>
-  );
-}
-
-function WatchlistFooter({movieId}: {movieId: MovieId}): React.ReactElement {
-  const context = useOscarAppContext();
-  const year = context.year;
-  const activeUserId = context.activeUserId;
-
-  const {data: watchlist} = useSuspenseQuery(watchlistOptions(year));
-
-  // Get watch statuses for this movie
-  const movieWatches = watchlist.filter(w => w.movieId === movieId);
-
-  // Count other users' statuses
-  const otherUsersWatches = movieWatches.filter(w => w.userId !== activeUserId);
-  const seenCount = otherUsersWatches.filter(
-    w => w.status === WatchStatus.seen,
-  ).length;
-  const todoCount = otherUsersWatches.filter(
-    w => w.status === WatchStatus.todo,
-  ).length;
-
-  return (
-    <>
-      {activeUserId !== null ? (
-        <WatchlistCell movieId={movieId} userId={activeUserId} />
-      ) : (
-        <Typography color="text.secondary" variant="body2">
-          Log in to track
-        </Typography>
-      )}
-      <OtherUsersWatchSummary seenCount={seenCount} todoCount={todoCount} />
-    </>
-  );
-}
-
-function OtherUsersWatchSummary({
-  seenCount,
-  todoCount,
-}: {
-  seenCount: number;
-  todoCount: number;
-}): React.ReactElement {
-  if (seenCount === 0 && todoCount === 0) {
-    return (
-      <Typography color="text.secondary" variant="body2">
-        No one else tracking
-      </Typography>
-    );
-  }
-
-  return (
-    <Stack direction="row" gap={0.5}>
-      {seenCount > 0 && (
-        <Chip
-          label={`${seenCount} seen`}
-          size="small"
-          sx={{bgcolor: SEEN_COLOR, color: 'white'}}
-        />
-      )}
-      {todoCount > 0 && (
-        <Chip
-          label={`${todoCount} to-do`}
-          size="small"
-          sx={{bgcolor: TODO_COLOR, color: 'white'}}
-        />
-      )}
-    </Stack>
+    <NominationsCell
+      categories={categories}
+      movieId={movie.id}
+      nominations={nominations}
+      putInCell={false}
+    />
   );
 }
