@@ -40,10 +40,12 @@ export const REPORT_BUG_URL =
   'https://docs.google.com/forms/d/e/1FAIpQLSdZoo8OeT0y7BPiERtv8rtSA1VFNzG0FhjukGNcrIOQOYxKvw/viewform?usp=dialog';
 
 //* Route URLs
-export const LEGACY_URL = 'home';
+export const MOVIES_URL = 'home';
+export const LEGACY_URL = 'legacy';
 export const BY_USER_URL = 'leaderboard';
 export const BY_CATEGORY_URL = 'categories';
 export const API_BASE_URL = '/api';
+export const HOME_URL = MOVIES_URL; // Used when you want to return the home page, whatever that may be
 
 //* What to set the cookie as if logged out
 export const COOKIE_NULL_VALUE = 'null';

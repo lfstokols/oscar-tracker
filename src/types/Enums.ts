@@ -4,11 +4,13 @@ export enum WatchStatus {
   blank = 'blank',
 }
 
+// Note: order here determines display order
 export enum AppTabType {
-  legacy = 'legacy',
+  movies = 'movies',
   // byMovie = 'byMovie',
   byCategory = 'byCategory',
   byUser = 'byUser',
+  legacy = 'legacy',
   // loginPage = 'loginPage',
 }
 

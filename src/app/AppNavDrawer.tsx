@@ -1,4 +1,11 @@
-import {BugReport, Comment, Home, Hub, Leaderboard} from '@mui/icons-material';
+import {
+  BugReport,
+  Comment,
+  Grid3x3,
+  Home,
+  Hub,
+  Leaderboard,
+} from '@mui/icons-material';
 import {
   Divider,
   Drawer,
@@ -15,6 +22,7 @@ import {
   BY_USER_URL,
   FEATURE_REQUEST_URL,
   LEGACY_URL,
+  MOVIES_URL,
   REPORT_BUG_URL,
 } from '../config/GlobalConstants';
 import YearSelector from '../features/app_header/YearSelector';
@@ -25,6 +33,8 @@ export const DRAWER_WIDTH = 256;
 
 function mapLocationToAppTab(location: Location) {
   switch (location.pathname.split('/')[1]) {
+    case MOVIES_URL:
+      return AppTabType.movies;
     case LEGACY_URL:
       return AppTabType.legacy;
     case BY_USER_URL:
@@ -32,7 +42,7 @@ function mapLocationToAppTab(location: Location) {
     case BY_CATEGORY_URL:
       return AppTabType.byCategory;
     default:
-      return AppTabType.legacy;
+      return AppTabType.movies;
   }
 }
 
@@ -42,18 +52,22 @@ function tabDisplayName(tab: AppTabType) {
       return 'Breakdown by Category';
     case AppTabType.byUser:
       return 'Leaderboard';
-    case AppTabType.legacy:
+    case AppTabType.movies:
       return 'Homepage';
+    case AppTabType.legacy:
+      return 'Legacy View';
   }
 }
 function tabIcon(tab: AppTabType) {
   switch (tab) {
     case AppTabType.legacy:
-      return <Home />;
+      return <Grid3x3 />;
     case AppTabType.byUser:
       return <Leaderboard />;
     case AppTabType.byCategory:
       return <Hub />;
+    case AppTabType.movies:
+      return <Home />;
   }
 }
 
@@ -74,14 +88,17 @@ export default function AppNavDrawer({
 
   const handleTabClick = (tab: AppTabType) => {
     switch (tab) {
-      case AppTabType.legacy:
-        void navigate(`/${LEGACY_URL}/${year}`);
+      case AppTabType.movies:
+        void navigate(`/${MOVIES_URL}/${year}`);
         break;
       case AppTabType.byUser:
         void navigate(`/${BY_USER_URL}/${year}`);
         break;
       case AppTabType.byCategory:
         void navigate(`/${BY_CATEGORY_URL}/${year}`);
+        break;
+      case AppTabType.legacy:
+        void navigate(`/${LEGACY_URL}/${year}`);
         break;
     }
     if (!isDrawerPersistent) {

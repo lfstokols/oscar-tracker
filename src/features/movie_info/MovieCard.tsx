@@ -7,18 +7,24 @@ import {
   CardActions,
   CardContent,
   Chip,
+  Paper,
   Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
-import {useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
 import {Suspense, useState} from 'react';
 import {MovieDb_POSTER_URL} from '../../config/GlobalConstants';
 import {SEEN_COLOR, TODO_COLOR} from '../../config/StyleChoices';
-import {watchlistOptions} from '../../hooks/dataOptions';
+import {
+  categoryOptions,
+  nomOptions,
+  watchlistOptions,
+} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Movie} from '../../types/APIDataSchema';
 import {WatchStatus} from '../../types/Enums';
+import NominationsCell from '../legacy_table/cells/NominationsCell';
 import {WatchlistCell} from '../legacy_table/cells/WatchlistCell';
 
 type Props = {
@@ -27,8 +33,9 @@ type Props = {
 
 export default function MovieCard({movie}: Props): React.ReactElement {
   return (
-    <Card sx={{display: 'flex', flexDirection: 'column'}}>
-      <Box sx={{display: 'flex', flexDirection: 'row', p: 1.5, gap: 1.5}}>
+    <Card sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+      <Box
+        sx={{display: 'flex', flexDirection: 'row', p: 1.5, gap: 1.5, flex: 1}}>
         <MoviePoster movie={movie} />
         <MovieInfo movie={movie} />
       </Box>
@@ -39,6 +46,7 @@ export default function MovieCard({movie}: Props): React.ReactElement {
           justifyContent: 'space-between',
           px: 1.5,
           py: 1,
+          mt: 'auto',
         }}>
         <Suspense fallback={<Skeleton height={32} width={120} />}>
           <WatchlistFooter movieId={movie.id} />
@@ -114,14 +122,9 @@ function MoviePoster({movie}: {movie: Movie}): React.ReactElement {
 }
 
 function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
-  const runtime = formatRuntime(movie.runtime_hours, movie.runtime_minutes);
-
   return (
     <CardContent sx={{p: 0, flex: 1, minWidth: 0}}>
-      <Typography
-        noWrap
-        sx={{fontWeight: 'bold', lineHeight: 1.2}}
-        variant="body1">
+      <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
         {movie.mainTitle}
       </Typography>
       {!!movie.subtitle && (
@@ -129,17 +132,14 @@ function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
           <i>{movie.subtitle}</i>
         </Typography>
       )}
-      <Stack direction="row" flexWrap="wrap" gap={0.5} sx={{mt: 1}} useFlexGap>
-        {runtime !== null && (
-          <Chip label={runtime} size="small" variant="outlined" />
-        )}
-        {movie.numNoms > 1 && (
-          <Chip
-            label={`${movie.numNoms} noms`}
-            size="small"
-            variant="outlined"
-          />
-        )}
+      <Stack
+        direction="column"
+        flexWrap="wrap"
+        gap={0.5}
+        sx={{mt: 1}}
+        useFlexGap>
+        <NominationsBlock movie={movie} />
+        <RuntimeBlock movie={movie} />
       </Stack>
     </CardContent>
   );
@@ -153,6 +153,38 @@ function formatRuntime(
   if (hours === '0' && minutes) return `${minutes}m`;
   if (hours && !minutes) return `${hours}h`;
   return `${hours}h ${minutes}m`;
+}
+
+function RuntimeBlock({movie}: {movie: Movie}): React.ReactElement | null {
+  const runtime = formatRuntime(movie.runtime_hours, movie.runtime_minutes);
+  return runtime !== null ? (
+    <Chip label={runtime} size="small" variant="outlined" />
+  ) : null;
+}
+
+function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
+  const {year} = useOscarAppContext();
+  const [nominationsQ, categoriesQ] = useSuspenseQueries({
+    queries: [nomOptions(year), categoryOptions()],
+  });
+  const categories = categoriesQ.data;
+  const nominations = nominationsQ.data;
+  return (
+    <Paper elevation={3}>
+      {/* // sx={{
+      //   display: 'flex',
+      //   flexDirection: 'row',
+      //   gap: 0.5,
+      //   border: '1px dashed grey',
+      // }}> */}
+      <NominationsCell
+        categories={categories}
+        movieId={movie.id}
+        nominations={nominations}
+        putInCell={false}
+      />
+    </Paper>
+  );
 }
 
 function WatchlistFooter({movieId}: {movieId: MovieId}): React.ReactElement {

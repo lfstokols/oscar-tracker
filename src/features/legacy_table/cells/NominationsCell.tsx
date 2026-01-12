@@ -14,23 +14,21 @@ export default function NominationsCell({
   nominations,
   categories,
   tableCellProps,
+  putInCell = true,
 }: {
   movieId: MovieId;
   nominations: NomList;
   categories: CategoryList;
+  putInCell?: boolean;
   tableCellProps?: Record<string, unknown>;
 }) {
   const [isTruncated, setIsTruncated] = useState(false);
 
   const myNoms = nominations.filter(nom => nom.movieId === movieId);
 
-  const entries = myNoms.map(nom => (
-    <Entry
-      key={[nom.categoryId, nom.note].join('|')}
-      categories={categories}
-      nom={nom}
-    />
-  ));
+  const entries = putInCell
+    ? decoratedNomEntries({nominations: myNoms, categories})
+    : numberedNomEntries({nominations: myNoms, categories});
 
   const tooBig = entries.length > maxNomsToShow;
   const remainingEntries = tooBig ? entries.splice(maxNomsToShow - 1) : [];
@@ -51,21 +49,72 @@ export default function NominationsCell({
     </Typography>
   );
 
-  return (
-    <TableCell
-      sx={{
-        className: 'nominations-column',
-      }}
-      {...tableCellProps}>
-      {tooBig || isTruncated ? (
-        <ClickableTooltip isOpaque popup={popupContent}>
-          {content}
-        </ClickableTooltip>
-      ) : (
-        content
-      )}
-    </TableCell>
-  );
+  const fullContent =
+    tooBig || isTruncated ? (
+      <ClickableTooltip isOpaque popup={popupContent}>
+        {content}
+      </ClickableTooltip>
+    ) : (
+      content
+    );
+
+  if (putInCell) {
+    return (
+      <TableCell
+        sx={{
+          className: 'nominations-column',
+        }}
+        {...tableCellProps}>
+        {fullContent}
+      </TableCell>
+    );
+  } else {
+    return fullContent;
+  }
+}
+
+function decoratedNomEntries({
+  nominations,
+  categories,
+}: {
+  nominations: NomList;
+  categories: CategoryList;
+  includeNote?: boolean;
+}): React.ReactElement[] {
+  return nominations.map(nom => (
+    <Entry
+      key={[nom.categoryId, nom.note].join('|')}
+      categories={categories}
+      nom={nom}
+    />
+  ));
+}
+
+function numberedNomEntries({
+  nominations,
+  categories,
+}: {
+  nominations: NomList;
+  categories: CategoryList;
+}): React.ReactElement[] {
+  type CountedNom = Nom & {repeated: number};
+  const countedNominations: CountedNom[] = nominations.reduce((acc, nom) => {
+    if (acc.find(c => c.categoryId === nom.categoryId)) {
+      acc.find(c => c.categoryId === nom.categoryId)!.repeated++;
+    } else {
+      acc.push({...nom, repeated: 1});
+    }
+    return acc;
+  }, [] as CountedNom[]);
+  return countedNominations.map(nom => (
+    <Entry
+      key={nom.categoryId}
+      categories={categories}
+      includeNote={false}
+      nom={nom}
+      repeated={nom.repeated}
+    />
+  ));
 }
 
 function LineClampText({

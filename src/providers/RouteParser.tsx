@@ -6,7 +6,9 @@ import {
   BY_CATEGORY_URL,
   BY_USER_URL,
   DEFAULT_YEAR,
+  HOME_URL,
   LEGACY_URL,
+  MOVIES_URL,
 } from '../config/GlobalConstants';
 import {logToConsole} from '../utils/Logger';
 import {UrlParams, UrlParamsContext} from './UrlParamsContext';
@@ -17,7 +19,7 @@ const ROUTES = {
   TABS_ONLY: '/:tab',
 };
 
-const VALID_TABS = [LEGACY_URL, BY_USER_URL, BY_CATEGORY_URL];
+const VALID_TABS = [MOVIES_URL, LEGACY_URL, BY_USER_URL, BY_CATEGORY_URL];
 
 export default function RouteParser({children}: {children: React.ReactNode}) {
   const location = useLocation();
@@ -62,10 +64,9 @@ function getValidParams(pathname: string) {
     completeMatch?.params.year ??
     yearOnlyMatch?.params.year ??
     DEFAULT_YEAR.toString();
-  const tab =
-    completeMatch?.params.tab ?? tabOnlyMatch?.params.tab ?? LEGACY_URL;
+  const tab = completeMatch?.params.tab ?? tabOnlyMatch?.params.tab ?? HOME_URL;
   //* Validate Tab
-  const validTab = VALID_TABS.includes(tab) ? tab : LEGACY_URL;
+  const validTab = VALID_TABS.includes(tab) ? tab : HOME_URL;
 
   // Validate year
   const parsedYear = parseInt(year);

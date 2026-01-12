@@ -44,11 +44,21 @@ def get_movies(year: int, idList: list[MovieID] | None = None) -> list[Movie]:
     Returns a list of Movie ORM objects for a given year.
     Use api_Movie.model_validate(movie) at the API boundary for serialization.
     """
-    query = sa.select(Movie).where(Movie.year == year)
+    query = (
+        sa.select(Movie)
+        .where(Movie.year == year)
+        .options(
+            selectinload(Movie.nominations).selectinload(Nomination.category)
+        )
+    )
     if idList:
         query = query.where(Movie.movie_id.in_(idList))
     with Session() as session:
-        return list(session.execute(query).scalars().all())
+        movies = list(session.execute(query).scalars().all())
+        # Expunge from session so hybrid properties remain accessible after session closes
+        for movie in movies:
+            session.expunge(movie)
+        return movies
 
 
 def get_users(idList: list[UserID] | None = None) -> list[dict[str, Any]]:

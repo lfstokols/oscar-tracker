@@ -1,5 +1,6 @@
 // Mobile-friendly list of MovieCards to replace LegacyTable
-import {Divider, Stack, Typography} from '@mui/material';
+import {Divider, Typography} from '@mui/material';
+import Grid from '@mui/material/Grid2';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import * as React from 'react';
 import {
@@ -64,9 +65,11 @@ export default function MovieList({
   const shortsAreOneFilm = preferences.shortsAreOneFilm;
 
   return (
-    <Stack spacing={1.5} sx={{p: 1}}>
+    <Grid container spacing={1.5} sx={{p: 1, width: '100%'}}>
       {sortedFeatures.map(movie => (
-        <MovieCard key={movie.id} movie={movie} />
+        <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+          <MovieCard movie={movie} />
+        </Grid>
       ))}
 
       {sortedShortsAnimated.length > 0 && (
@@ -92,7 +95,7 @@ export default function MovieList({
           title="Documentary Shorts"
         />
       )}
-    </Stack>
+    </Grid>
   );
 }
 
@@ -109,13 +112,17 @@ function ShortsSection({
   void shortsAreOneFilm;
   return (
     <>
-      <Divider sx={{pt: 1}}>
-        <Typography color="text.secondary" variant="overline">
-          {title}
-        </Typography>
-      </Divider>
+      <Grid size={12} sx={{pt: 1}}>
+        <Divider>
+          <Typography color="text.secondary" variant="overline">
+            {title}
+          </Typography>
+        </Divider>
+      </Grid>
       {movies.map(movie => (
-        <MovieCard key={movie.id} movie={movie} />
+        <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+          <MovieCard movie={movie} />
+        </Grid>
       ))}
     </>
   );

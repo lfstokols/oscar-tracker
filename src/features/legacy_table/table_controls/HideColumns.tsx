@@ -25,10 +25,15 @@ export default function HideColumnsWidget({
   const {preferences} = useOscarAppContext();
   const hiddenColumns = preferences.hiddenColumns.legacy;
   const [isOpen, menuPosition, handleClick, handleClose] = useMenuState();
+  const hasActive = hiddenColumns.length > 0;
 
   return (
     <Paper>
-      <DisplayedButton isMobile={isMobile} onClick={handleClick} />
+      <DisplayedButton
+        hasActive={hasActive}
+        isMobile={isMobile}
+        onClick={handleClick}
+      />
       {!!isOpen && (
         <PlaceholderMenu
           hiddenColumns={hiddenColumns}
@@ -87,12 +92,15 @@ function PlaceholderMenu({
 function DisplayedButton({
   onClick,
   isMobile,
+  hasActive,
 }: {
   onClick: (event: React.MouseEvent<HTMLElement>) => void;
   isMobile: boolean;
+  hasActive: boolean;
 }): React.ReactElement {
   return (
     <DisplayedSettingsButton
+      hasActive={hasActive}
       icon={<ColumnsIcon />}
       isMobile={isMobile}
       onClick={onClick}

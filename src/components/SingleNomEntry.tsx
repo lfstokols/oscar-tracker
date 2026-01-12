@@ -64,15 +64,22 @@ function getGroupingMarker(grouping: Grouping) {
 export default function Entry({
   nom,
   categories,
+  includeNote = true,
+  repeated = 1,
 }: {
   nom: Nom;
   categories: CategoryList;
-}): React.ReactElement {
+  includeNote?: boolean;
+  repeated?: number;
+}): React.ReactElement | null {
+  if (repeated < 1) {
+    return null;
+  }
   const category = categories.find(cat => cat.id === nom.categoryId);
   if (!category) {
     return <Typography variant="body2">???</Typography>;
   }
-  const formattedNote =
+  const formattedNote = includeNote ? (
     category.id === 'cat_frgn' ? (
       <em>
         {getFlag(nom.note ?? '')} {nom.note ?? ''}
@@ -81,12 +88,15 @@ export default function Entry({
       <>{getSong(nom.note ?? '')}</>
     ) : (
       <i>{nom.note}</i>
-    );
-
+    )
+  ) : repeated > 1 ? (
+    <>{repeated}x</>
+  ) : null;
+  const hasNote = formattedNote !== null;
   return (
     <>
       {getGroupingMarker(Grouping[category.grouping])}
-      {category.shortName + (category.hasNote ? ': ' : '')}
+      {category.shortName + (hasNote ? ': ' : '')}
       {formattedNote}
       <br />
     </>
