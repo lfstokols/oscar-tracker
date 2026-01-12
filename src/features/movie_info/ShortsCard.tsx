@@ -8,6 +8,7 @@ import WatchlistFooter from './common/WatchlistFooter';
 type Props = {
   type: ShortsType;
   movies: Movie[];
+  onClick?: () => void;
 };
 
 function displayCategoryName(type: ShortsType) {
@@ -21,7 +22,7 @@ function displayCategoryName(type: ShortsType) {
   }
 }
 
-export default function ShortsCard({type, movies}: Props) {
+export default function ShortsCard({type, movies, onClick}: Props) {
   const poster = conglomeratePoster(movies);
   const movieEntries = movies.map(movie => (
     <IndividualMovieEntry key={movie.id} movie={movie} />
@@ -33,6 +34,7 @@ export default function ShortsCard({type, movies}: Props) {
       details={movieEntries}
       footer={footer}
       image={poster}
+      onClick={onClick}
       title={displayCategoryName(type)}
     />
   );

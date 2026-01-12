@@ -2,6 +2,7 @@
 import Grid from '@mui/material/Grid2';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import * as React from 'react';
+import {PopupPage} from '../../components/PopupPage';
 import {
   categoryOptions,
   movieOptions,
@@ -13,12 +14,19 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {ShortsType, WatchStatus} from '../../types/Enums';
 import {groupByShort} from '../../utils/dataSelectors';
 import MovieCard from './MovieCard';
+import MoviePage from './MoviePage';
 import ShortsCard from './ShortsCard';
 
-function GridItem({movie}: {movie: Movie}): React.ReactElement {
+function GridItem({
+  movie,
+  onCardClick,
+}: {
+  movie: Movie;
+  onCardClick: (movie: Movie) => void;
+}): React.ReactElement {
   return (
     <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
-      <MovieCard movie={movie} />
+      <MovieCard movie={movie} onClick={() => onCardClick(movie)} />
     </Grid>
   );
 }
@@ -29,6 +37,8 @@ export default function MovieList({
   filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
 }): React.ReactElement {
   const {year, preferences, activeUserId} = useOscarAppContext();
+  const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
+  const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   const [_usersQ, nominationsQ, _categoriesQ, moviesQ, watchlistQ] =
     useSuspenseQueries({
@@ -72,23 +82,31 @@ export default function MovieList({
 
   const shortsAreOneFilm = preferences.shortsAreOneFilm;
 
+  const handleCardClick = (movie: Movie) => {
+    setSelectedMovie(movie);
+    setDrawerOpen(true);
+  };
+
   const featureCards = sortedFeatures.map(movie => (
-    <GridItem key={movie.id} movie={movie} />
+    <GridItem key={movie.id} movie={movie} onCardClick={handleCardClick} />
   ));
   const animatedShortsCards = shortsSection(
     ShortsType.animated,
     sortedShortsAnimated,
     shortsAreOneFilm,
+    handleCardClick,
   );
   const liveActionShortsCards = shortsSection(
     ShortsType.liveAction,
     sortedShortsLive,
     shortsAreOneFilm,
+    handleCardClick,
   );
   const documentaryShortsCards = shortsSection(
     ShortsType.documentary,
     sortedShortsDoc,
     shortsAreOneFilm,
+    handleCardClick,
   );
   const allCards = featureCards.concat(
     animatedShortsCards,
@@ -97,9 +115,18 @@ export default function MovieList({
   );
 
   return (
-    <Grid container spacing={1.5} sx={{p: 1, width: '100%'}}>
-      {allCards}
-    </Grid>
+    <>
+      <Grid container spacing={1.5} sx={{p: 1, width: '100%'}}>
+        {allCards}
+      </Grid>
+
+      <PopupPage
+        open={drawerOpen}
+        setOpen={setDrawerOpen}
+        title={selectedMovie?.mainTitle ?? 'Movie Details'}>
+        {selectedMovie ? <MoviePage movie={selectedMovie} /> : null}
+      </PopupPage>
+    </>
   );
 }
 
@@ -109,21 +136,34 @@ export default function MovieList({
   @param type - The specific category of shorts
   @param movies - The movies to display
   @param shortsAreOneFilm - Whether to display the shorts as a single card
+  @param onCardClick - Callback when a card is clicked
   @returns An array of GridItems (possibly length 1)
 */
 function shortsSection(
   type: ShortsType,
   movies: Movie[],
   shortsAreOneFilm: boolean,
+  onCardClick: (movie: Movie) => void,
 ): React.ReactElement[] {
   if (shortsAreOneFilm) {
     return [
       <Grid key={type} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
-        <ShortsCard movies={movies} type={type} />
+        <ShortsCard
+          movies={movies}
+          onClick={() => {
+            // Open the first movie in the collection
+            if (movies.length > 0) {
+              onCardClick(movies[0]);
+            }
+          }}
+          type={type}
+        />
       </Grid>,
     ];
   }
-  return movies.map(movie => <GridItem key={movie.id} movie={movie} />);
+  return movies.map(movie => (
+    <GridItem key={movie.id} movie={movie} onCardClick={onCardClick} />
+  ));
 }
 
 function filterMovies(

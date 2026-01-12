@@ -5,7 +5,7 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
-import {Dispatch, SetStateAction, Suspense} from 'react';
+import {Dispatch, SetStateAction, Suspense, useEffect, useRef} from 'react';
 import OurWordmark from '../../components/OurWordmark';
 import {SITE_HEADER_COLOR} from '../../config/StyleChoices';
 import {useIsMobile} from '../../hooks/useIsMobile';
@@ -25,9 +25,27 @@ export default function AppHeader({
   isDrawerPersistent,
 }: Props): React.ReactElement {
   const isMobile = useIsMobile();
+  const appBarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (appBarRef.current) {
+        const height = appBarRef.current.offsetHeight;
+        document.documentElement.style.setProperty(
+          '--app-header-height',
+          `${height}px`,
+        );
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, []);
 
   return (
     <AppBar
+      ref={appBarRef}
       position="sticky"
       sx={{
         backgroundColor: SITE_HEADER_COLOR,

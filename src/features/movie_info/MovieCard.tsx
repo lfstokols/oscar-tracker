@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import {useSuspenseQueries} from '@tanstack/react-query';
-import {Suspense} from 'react';
+import {Suspense, isValidElement} from 'react';
 import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Movie} from '../../types/APIDataSchema';
@@ -31,6 +31,7 @@ type GenericMovieCardProps = {
   details: React.ReactElement | React.ReactElement[];
   metadata?: React.ReactElement[];
   footer?: React.ReactElement;
+  onClick?: () => void;
 };
 
 export function GenericMovieCard({
@@ -40,9 +41,24 @@ export function GenericMovieCard({
   details,
   metadata,
   footer,
+  onClick,
 }: GenericMovieCardProps): React.ReactElement {
   return (
-    <Card sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+    <Card
+      onClick={onClick}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        cursor: onClick ? 'pointer' : 'default',
+        '&:hover': onClick
+          ? {
+              boxShadow: 6,
+              transform: 'translateY(-2px)',
+              transition: 'all 0.2s ease-in-out',
+            }
+          : {},
+      }}>
       <CardContent sx={{display: 'flex', flexDirection: 'row', gap: 1}}>
         {image}
         <InfoBlock
@@ -53,6 +69,10 @@ export function GenericMovieCard({
         />
       </CardContent>
       <CardActions
+        onClick={e => {
+          // Prevent card click when clicking on footer actions
+          e.stopPropagation();
+        }}
         sx={{
           borderTop: 1,
           borderColor: 'divider',
@@ -69,13 +89,17 @@ export function GenericMovieCard({
   );
 }
 
-export default function MovieCard({movie}: Props): React.ReactElement {
+export default function MovieCard({
+  movie,
+  onClick,
+}: Props & {onClick?: () => void}): React.ReactElement {
   return (
     <GenericMovieCard
       details={<NominationsBlock movie={movie} />}
       footer={<WatchlistFooter movieId={movie.id} />}
       image={<MoviePoster movie={movie} />}
       metadata={[<RuntimeChip key="runtime" movie={movie} />]}
+      onClick={onClick}
       subtitle={movie.subtitle}
       title={movie.mainTitle}
     />
@@ -118,11 +142,18 @@ function InfoBlock({
         gap={0.5}
         sx={{mt: 1}}
         useFlexGap>
-        {mainDataElements.map((element, index) => (
-          <Paper key={index} elevation={3}>
-            {element}
-          </Paper>
-        ))}
+        {mainDataElements.map((element, index) => {
+          // Use element's key if available, otherwise use index as fallback
+          const elementKey =
+            isValidElement(element) && element.key != null
+              ? element.key
+              : `main-data-${index}`;
+          return (
+            <Paper key={elementKey} elevation={3}>
+              {element}
+            </Paper>
+          );
+        })}
         {extras}
       </Stack>
     </CardContent>
