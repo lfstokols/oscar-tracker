@@ -1,14 +1,10 @@
-import LaunchIcon from '@mui/icons-material/Launch';
 import {
   Box,
   Card,
   CardContent,
   Chip,
-  Divider,
   Grid2,
   IconButton,
-  Link,
-  Paper,
   Stack,
   Typography,
 } from '@mui/material';
@@ -17,7 +13,6 @@ import {Suspense} from 'react';
 import {z} from 'zod';
 import imdbIcon from '../../assets/IMDb_Logo_Rectangle_Gold.png';
 import JWIcon from '../../assets/JW_logo_color_10px.svg';
-import Entry from '../../components/SingleNomEntry';
 import {SEEN_COLOR, TODO_COLOR} from '../../config/StyleChoices';
 import {WatchlistCell} from '../../features/legacy_table/cells/WatchlistCell';
 import {
@@ -31,11 +26,12 @@ import {
   NotificationsDispatch,
   useNotifications,
 } from '../../providers/NotificationContext';
-import {CategoryList, Movie, MovieId, NomList} from '../../types/APIDataSchema';
-import {Grouping, WatchStatus, grouping_display_names} from '../../types/Enums';
+import {Movie, MovieId} from '../../types/APIDataSchema';
+import {WatchStatus} from '../../types/Enums';
 import {errorToConsole} from '../../utils/Logger';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
+import NominationsCard from './movie_page_components/NominationsCard';
 import UserStatusGroup from './movie_page_components/UserStatusGroup';
 
 type Props = {
@@ -60,34 +56,6 @@ export default function MoviePage({movie}: Props): React.ReactElement {
   );
 }
 
-type NominationWithCategory = {
-  nom: NomList[0];
-  category: CategoryList[0];
-};
-
-function groupNominationsByGrouping(
-  nominations: NomList,
-  categories: CategoryList,
-): Record<Grouping, NominationWithCategory[]> {
-  const result: Record<Grouping, NominationWithCategory[]> = {} as Record<
-    Grouping,
-    NominationWithCategory[]
-  >;
-  for (const grouping of Object.values(Grouping)) {
-    result[grouping] = nominations
-      .map(nom => {
-        const category = categories.find(cat => cat.id === nom.categoryId);
-        if (!category) return null;
-        if (category.grouping === grouping) {
-          return {nom, category};
-        }
-        return null;
-      })
-      .filter((item): item is NominationWithCategory => item !== null);
-  }
-  return result;
-}
-
 function MoviePageContent({movie}: Props): React.ReactElement {
   const {year} = useOscarAppContext();
   const [nominationsQ, categoriesQ] = useSuspenseQueries({
@@ -98,25 +66,26 @@ function MoviePageContent({movie}: Props): React.ReactElement {
 
   const movieNominations = nominations.filter(nom => nom.movieId === movie.id);
 
-  // Group nominations by category grouping
-  const nominationsByGrouping = groupNominationsByGrouping(
-    movieNominations,
-    categories,
-  );
-
   return (
-    <Grid2
-      container
-      spacing={3}
-      sx={{maxWidth: '1400px', mx: 'auto', width: '100%'}}>
-      <Grid2 size={{md: 4, xs: 12}}>
+    <Grid2 container spacing={3} sx={{width: '100%'}}>
+      <Grid2
+        // size={{xl: 4, lg: 5, xs: 12}}
+
+        sx={{
+          width: '100%',
+          overflow: 'visible',
+          // Ensure enough space for poster (267px) + padding + spacing
+          '@media (min-width: 300px)': {
+            minWidth: '300px',
+          },
+        }}>
         <MovieHeaderCard movie={movie} />
       </Grid2>
 
-      <Grid2 size={{md: 8, xs: 12}}>
-        <Stack spacing={3}>
-          <Card>
-            <CardContent>
+      <Grid2 sx={{width: '100%'}}>
+        <Stack spacing={3} sx={{width: '100%'}}>
+          <Card sx={{width: '100%'}}>
+            <CardContent sx={{width: '100%'}}>
               <Typography sx={{fontWeight: 'bold', mb: 2}} variant="h6">
                 External Links
               </Typography>
@@ -126,7 +95,7 @@ function MoviePageContent({movie}: Props): React.ReactElement {
 
           <NominationsCard
             categories={categories}
-            nominationsByGrouping={nominationsByGrouping}
+            movieNominations={movieNominations}
           />
 
           <WatchlistCard movieId={movie.id} />
@@ -138,46 +107,14 @@ function MoviePageContent({movie}: Props): React.ReactElement {
   );
 }
 
-function NominationsGroup({
-  categories,
-  grouping,
-  nominations,
-}: {
-  categories: CategoryList;
-  grouping: Grouping;
-  nominations: NominationWithCategory[];
-}): React.ReactElement {
-  const displayName = grouping_display_names[grouping] || grouping;
-
-  return (
-    <Box>
-      <Typography sx={{fontWeight: 'bold', mb: 1.5}} variant="subtitle1">
-        {displayName}
-      </Typography>
-      <Divider sx={{mb: 1.5}} />
-      <Stack spacing={1.5}>
-        {nominations.map(({category, nom}) => (
-          <NominationEntry
-            key={`${nom.categoryId}-${nom.note}`}
-            categories={categories}
-            category={category}
-            nom={nom}
-          />
-        ))}
-      </Stack>
-    </Box>
-  );
-}
-
 const logoHeight = '25px';
-const logoMargin = '10px';
 
 const justWatchIcon = (
   <img
     alt="JustWatch"
+    height={logoHeight}
     src={JWIcon}
-    style={{maxHeight: logoHeight}}
-    width="auto"
+    style={{height: logoHeight, width: 'auto'}}
   />
 );
 
@@ -204,7 +141,7 @@ const apiResponse = z
 
 function ExternalLinks({movieId}: {movieId: MovieId}): React.ReactElement {
   return (
-    <Stack direction="column" spacing={0} sx={{width: '100px'}}>
+    <Stack direction="row" justifyContent="space-around" spacing={1}>
       <ExternalLinkButton
         icon={justWatchIcon}
         movieId={movieId}
@@ -228,7 +165,7 @@ function ExternalLinkButton({
   return (
     <IconButton
       onClick={() => handleLinkClick(service, movieId, notifications)}
-      style={{margin: logoMargin, padding: 0}}>
+      sx={{padding: 0}}>
       {icon}
     </IconButton>
   );
@@ -268,8 +205,8 @@ function handleLinkClick(
 
 function WatchlistCard({movieId}: {movieId: MovieId}): React.ReactElement {
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{width: '100%'}}>
+      <CardContent sx={{width: '100%'}}>
         <Typography sx={{fontWeight: 'bold', mb: 2}} variant="h6">
           Watchlist
         </Typography>
@@ -342,8 +279,8 @@ function PersonalWatchStatusCard({
   const activeUserId = context.activeUserId;
 
   return (
-    <Card>
-      <CardContent>
+    <Card sx={{width: '100%'}}>
+      <CardContent sx={{width: '100%'}}>
         <Typography sx={{fontWeight: 'bold', mb: 2}} variant="h6">
           My Watch Status
         </Typography>
@@ -365,10 +302,19 @@ function PersonalWatchStatusCard({
 
 function MovieHeaderCard({movie}: {movie: Movie}): React.ReactElement {
   return (
-    <Card sx={{height: '100%'}}>
-      <CardContent>
-        <Stack alignItems={{md: 'flex-start', xs: 'center'}} spacing={2}>
-          <Box sx={{display: 'flex', justifyContent: 'center', width: '100%'}}>
+    <Card sx={{overflow: 'visible', width: '100%', height: 'fit-content'}}>
+      <CardContent sx={{overflow: 'visible', width: '100%'}}>
+        <Stack
+          alignItems={{md: 'flex-start', xs: 'center'}}
+          spacing={2}
+          sx={{width: '100%'}}>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              width: '100%',
+              overflow: 'visible',
+            }}>
             <PosterImage height={400} movie={movie} showLoading width={267} />
           </Box>
           <MovieTitleSection movie={movie} />
@@ -404,79 +350,6 @@ function MovieTitleSection({movie}: {movie: Movie}): React.ReactElement {
         />
       </Stack>
     </Box>
-  );
-}
-
-function NominationsCard({
-  categories,
-  nominationsByGrouping,
-}: {
-  categories: CategoryList;
-  nominationsByGrouping: Record<Grouping, NominationWithCategory[]>;
-}): React.ReactElement {
-  const groupingList = Object.values(Grouping);
-
-  return (
-    <Card>
-      <CardContent>
-        <Typography sx={{fontWeight: 'bold', mb: 2}} variant="h6">
-          Nominations
-        </Typography>
-        <Stack spacing={3}>
-          {groupingList.map(grouping => {
-            const noms = nominationsByGrouping[grouping];
-            if (noms.length === 0) {
-              return null;
-            }
-            return (
-              <NominationsGroup
-                key={grouping}
-                categories={categories}
-                grouping={grouping}
-                nominations={noms}
-              />
-            );
-          })}
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-}
-
-function NominationEntry({
-  categories,
-  category,
-  nom,
-}: {
-  categories: CategoryList;
-  category: CategoryList[0];
-  nom: NomList[0];
-}): React.ReactElement {
-  return (
-    <Paper elevation={1} sx={{p: 1.5}}>
-      <Stack alignItems="flex-start" direction="row" spacing={1}>
-        <Typography sx={{flex: 1}} variant="body1">
-          <Entry categories={categories} includeNote={true} nom={nom} />
-        </Typography>
-        <Link
-          href="#"
-          onClick={e => {
-            e.preventDefault();
-            // Navigate to category filter - you may want to implement this
-          }}
-          sx={{alignItems: 'center', display: 'flex'}}>
-          <LaunchIcon fontSize="small" />
-        </Link>
-      </Stack>
-      {category.fullName !== category.shortName ? (
-        <Typography
-          color="text.secondary"
-          sx={{display: 'block', mt: 0.5}}
-          variant="caption">
-          {category.fullName}
-        </Typography>
-      ) : null}
-    </Paper>
   );
 }
 

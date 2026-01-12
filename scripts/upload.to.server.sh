@@ -120,10 +120,10 @@ function upload_release {
     #* 2. Create new timespamped dir in $REMOTE_RELEASES
     ssh "$MY_SSH" "mkdir -p $remote_version_dir"
 
-    #* 3. Copy dist/, backend/, and Poetry files to new dir
+    #* 3. Copy dist/, backend/, alembic/, and Poetry files to new dir
     echo "Copying files to remote..." >&2
     rsync -az --delete --exclude='__pycache__' --exclude='*.pyc' \
-        "$REPO_ROOT"/{dist,backend,pyproject.toml,poetry.lock} \
+        "$REPO_ROOT"/{dist,backend,alembic,alembic.ini,pyproject.toml,poetry.lock} \
         "$MY_SSH:$remote_version_dir/"
     
     #* 4. Set permissions
@@ -134,6 +134,8 @@ function upload_release {
         find $remote_version_dir -type d -exec chmod 750 {} +
         find $remote_version_dir/dist/ -type f -not -type l -exec chmod 640 {} +
         chmod -R 750 $remote_version_dir/backend/
+        chmod -R 750 $remote_version_dir/alembic/
+        chmod 640 $remote_version_dir/alembic.ini
         ln -sfn $REMOTE_ROOT/.env $remote_version_dir/.env
         ln -sfn $REMOTE_ROOT/var $remote_version_dir/var
     "
@@ -196,6 +198,8 @@ function update_beta_symlinks {
         set -e
         ln -sfn $remote_version_dir/backend $REMOTE_BETA/backend
         ln -sfn $remote_version_dir/dist $REMOTE_BETA/dist
+        ln -sfn $remote_version_dir/alembic $REMOTE_BETA/alembic
+        ln -sfn $remote_version_dir/alembic.ini $REMOTE_BETA/alembic.ini
         ln -sfn $remote_version_dir/pyproject.toml $REMOTE_BETA/pyproject.toml
         ln -sfn $remote_version_dir/poetry.lock $REMOTE_BETA/poetry.lock
         cd $REMOTE_BETA && VIRTUAL_ENV=venv $POETRY sync --no-root
@@ -204,11 +208,52 @@ function update_beta_symlinks {
     echo "Beta symlinks updated." >&2
 }
 
-function restart_service {
+function run_migrations {
+    # Run alembic migrations with backup
+    # Args: $1 = working directory (contains var/), $2 = venv path
+    local work_dir=$1
+    local venv_path=$2
+    local backup_name
+    backup_name=$(date "+%Y-%m-%d_%H-%M-%S")_db.premigration.sqlite
+
+    echo "Running database migrations..." >&2
+    ssh "$MY_SSH" "
+        set -e
+        cd $work_dir
+        db_path=var/database/db.sqlite
+        backup_path=var/backups/$backup_name
+
+        # Check if alembic is initialized
+        if ! sqlite3 \$db_path \"SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';\" | grep -q alembic_version; then
+            echo 'ERROR: Alembic not initialized. Run: alembic stamp head' >&2
+            echo 'Skipping migrations.' >&2
+            exit 0
+        fi
+
+        # Backup database
+        if [ -f \$db_path ]; then
+            cp \$db_path \$backup_path
+            echo \"Database backed up to \$backup_path\"
+        fi
+        # Run migrations
+        ROOT_DIR=$work_dir $venv_path/bin/alembic upgrade head
+        echo 'Migrations complete.'
+    "
+    echo "Database migrations finished." >&2
+}
+
+function stop_service {
     local name=$1
-    echo "Restarting $name service..." >&2
-    ssh "$MY_SSH" "sudo systemctl restart $service_name"
-    echo "${name^} service restarted." >&2
+    echo "Stopping $name service..." >&2
+    ssh "$MY_SSH" "sudo systemctl stop $service_name"
+    echo "${name^} service stopped." >&2
+}
+
+function start_service {
+    local name=$1
+    echo "Starting $name service..." >&2
+    ssh "$MY_SSH" "sudo systemctl start $service_name"
+    echo "${name^} service started." >&2
 }
 
 #* Main script logic
@@ -236,9 +281,15 @@ fi
 if "$do_install"; then
     if [ "$mode" = "live" ]; then
         install_green_venv
+        stop_service "$mode"
         update_production_symlinks
+        # Note: migrations use the newly swapped venv ($REMOTE_ROOT/venv)
+        run_migrations "$REMOTE_CURRENT" "$REMOTE_ROOT/venv"
+        start_service "$mode"
     else
+        stop_service "$mode"
         update_beta_symlinks
+        run_migrations "$REMOTE_BETA" "$REMOTE_BETA/venv"
+        start_service "$mode"
     fi
-    restart_service "$mode"
 fi

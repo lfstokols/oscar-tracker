@@ -110,7 +110,6 @@ export function catssByGrouping(
   categories: Category[],
   // grouping?: Grouping,
 ): Record<Grouping, Category[]> {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
   const result: Record<Grouping, Category[]> = {} as Record<
     Grouping,
     Category[]

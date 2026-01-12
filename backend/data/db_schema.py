@@ -190,9 +190,10 @@ class User(Base):
     __tablename__ = "users"
     user_id: Mapped[UserID] = mapped_column(UserID_SQL, primary_key=True)
     username: Mapped[str] = mapped_column(sa.String)
-    letterboxd: Mapped[str] = mapped_column(sa.String)
-    email: Mapped[EmailStr] = mapped_column(Email_SQL)
-    last_letterboxd_check: Mapped[datetime] = mapped_column(sa.DateTime)
+    letterboxd: Mapped[str | None] = mapped_column(sa.String, nullable=True)
+    email: Mapped[EmailStr | None] = mapped_column(Email_SQL, nullable=True)
+    last_letterboxd_check: Mapped[datetime | None] = mapped_column(
+        sa.DateTime, nullable=True)
 
     watchnotices = orm.relationship(
         "Watchnotice", back_populates="user", viewonly=True)

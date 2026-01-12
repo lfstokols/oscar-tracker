@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie, Nomination, User, Watchnotice
 from backend.data.utils import create_unique_movie_id, create_unique_user_id
-from backend.types.api_schemas import CategoryID, MovieID, UserID
+from backend.types.api_schemas import MovieID, UserID
 from backend.types.api_validators import MovieValidator
 from backend.types.my_types import *
 
@@ -148,7 +148,7 @@ def update_movie(
 ):
     movieId = movie
     try:
-        MovieValidator(movie=movieId)
+        _ = MovieValidator(movie=movieId)
     except Exception as e:
         logging.error(f"update_movie() got invalid movie id '{movieId}'. {e}")
         raise Exception(
