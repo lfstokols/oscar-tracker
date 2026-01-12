@@ -105,6 +105,29 @@ case $mode in
 esac
 remote_version_dir="$REMOTE_RELEASES/$release_name"
 
+function check_workspace_state {
+    # Remember we're definitely in the repo root
+    # Check if working dir is clean, otherwise warn and exit 1
+    if ! git diff-index --quiet HEAD -- && [[ $ALLOW_DIRTY != "true" ]]; then
+        echo "WARNING: Working directory is not clean. Please commit or stash your changes before uploading." >&2
+        git status
+        exit 1
+    fi
+    # Make sure alembic is up to date
+    if [[ $ALLOW_STALE_ALEMBIC != "true" ]]; then
+        alembic upgrade head >/dev/null 2>&1 || {
+            echo "WARNING: Database upgrade failed. Please run 'alembic upgrade head' and fix the issue before uploading." >&2
+            exit 1
+        }
+        alembic check || {
+            echo "WARNING: Alembic check failed. Your current ORM state has not been synced with alembic." >&2
+            exit 1
+        }
+    fi
+    # Build the project
+    npm run build:prod
+}
+
 function upload_release {
     echo "Beginning upload process..." >&2
     #* 1. Build the project, if user request it or times out
@@ -224,7 +247,8 @@ function run_migrations {
         backup_path=var/backups/$backup_name
 
         # Check if alembic is initialized
-        if ! sqlite3 \$db_path \"SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';\" | grep -q alembic_version; then
+        current_rev=\$(ROOT_DIR=$work_dir $venv_path/bin/alembic current 2>/dev/null)
+        if [ -z \"\$current_rev\" ]; then
             echo 'ERROR: Alembic not initialized. Run: alembic stamp head' >&2
             echo 'Skipping migrations.' >&2
             exit 0
@@ -274,6 +298,7 @@ if ! "$skip_confirmation"; then
 fi
 
 if "$do_upload"; then
+    check_workspace_state
     upload_release
     echo "Upload complete." >&2
 fi
