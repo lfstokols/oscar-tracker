@@ -4,6 +4,7 @@ import {API_BASE_URL} from '../config/GlobalConstants';
 import {
   CategoryCompletionSchema,
   CategoryListSchema,
+  MovieId,
   MovieListSchema,
   MyUserDataSchema,
   NomListSchema,
@@ -13,6 +14,7 @@ import {
 } from '../types/APIDataSchema';
 import {Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
+import {TMDBMovie} from '../types/TMDBTypes';
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -106,6 +108,24 @@ export function categoryCompletionOptions(year: number | string) {
       CategoryCompletionSchema.parse,
     ),
     retry: retryFunction,
+  });
+}
+
+// * TMDB // *
+export function tmdbMovieOptions(movieId: MovieId) {
+  return queryOptions({
+    queryKey: ['tmdb', movieId],
+    queryFn: async (): Promise<TMDBMovie> => {
+      const response = await fetch(
+        `${API_BASE_URL}/forward/tmdb/movie/by_movie_id/${movieId}`,
+      );
+      if (!response.ok) {
+        throw new Error(`TMDB fetch failed: ${response.status}`);
+      }
+      return response.json() as Promise<TMDBMovie>;
+    },
+    retry: retryFunction,
+    staleTime: Infinity, // TMDB data doesn't change
   });
 }
 

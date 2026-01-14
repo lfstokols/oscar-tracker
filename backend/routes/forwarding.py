@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Any, Literal
 
 import httpx
 from fastapi import APIRouter
@@ -6,8 +6,15 @@ from fastapi import APIRouter
 from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
-from backend.routing_lib.error_handling import APIArgumentError
+from backend.routing_lib.error_handling import APIArgumentError, externalAPIError
 from backend.types.api_schemas import MovieID, Primitive
+import backend.utils.env_reader as env
+
+TMDB_API_BASE = "https://api.themoviedb.org/3"
+TMDB_HEADERS = {
+    "Authorization": f"Bearer {env.TMDB_API_KEY}",
+    "accept": "application/json",
+}
 
 router = APIRouter()
 
@@ -65,3 +72,40 @@ async def serve_moviedb() -> str:
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
     return response.text
+
+
+@router.get("/tmdb/movie/{tmdb_id}")
+async def get_tmdb_movie(tmdb_id: int) -> dict[str, Any]:
+    """
+    Proxy for TMDB movie details API.
+    Returns movie details including overview, genres, cast, crew, etc.
+    """
+    endpoint = f"{TMDB_API_BASE}/movie/{tmdb_id}"
+    params = {"append_to_response": "credits,watch/providers"}
+    async with httpx.AsyncClient() as client:
+        response = await client.get(endpoint, headers=TMDB_HEADERS, params=params)
+    if response.status_code != 200:
+        raise externalAPIError(f"TMDB API error: {response.status_code}")
+    return response.json()
+
+
+@router.get("/tmdb/movie/by_movie_id/{movie_id}")
+async def get_tmdb_movie_by_movie_id(movie_id: MovieID) -> dict[str, Any]:
+    """
+    Proxy for TMDB movie details API, accepting our internal movie_id.
+    Looks up the TMDB ID from the database, then fetches from TMDB.
+    """
+    with Session() as session:
+        movie = (
+            session.query(Movie.movie_db_id)
+            .filter(Movie.movie_id == movie_id)
+            .first()
+        )
+        if movie is None:
+            raise APIArgumentError(f"Movie not found: {movie_id}", [("movie_id", "path")])
+        if movie[0] is None:
+            raise APIArgumentError(
+                f"Movie {movie_id} has no TMDB ID", [("movie_id", "path")]
+            )
+        tmdb_id = int(movie[0])
+    return await get_tmdb_movie(tmdb_id)

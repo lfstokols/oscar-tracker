@@ -1,7 +1,10 @@
 import ErrorIcon from '@mui/icons-material/DoNotDisturbAlt';
 import {Box, Skeleton} from '@mui/material';
 import {useState} from 'react';
-import {MovieDb_POSTER_URL} from '../../../config/GlobalConstants';
+import {
+  MovieDb_POSTER_URL,
+  MovieDb_POSTER_URL_XL,
+} from '../../../config/GlobalConstants';
 import {Movie} from '../../../types/APIDataSchema';
 
 type PosterImageProps = {
@@ -85,7 +88,7 @@ export default function PosterImage({
             alt={movie.mainTitle}
             onError={() => setHasError(true)}
             onLoad={() => setHasLoaded(true)}
-            src={MovieDb_POSTER_URL + movie.posterPath}
+            src={(width > 185 ? MovieDb_POSTER_URL_XL : MovieDb_POSTER_URL) + movie.posterPath}
             style={{
               width: '100%',
               height: '100%',

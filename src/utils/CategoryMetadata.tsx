@@ -4,6 +4,7 @@ import musicVideos from '../assets/musicVideos.json';
 const countryCodes: {name: string; flag: string; code: string}[] = countries;
 const songUrls: {title: string; url: string}[] = musicVideos;
 import 'flag-icons/css/flag-icons.min.css';
+import {Grouping} from '../types/Enums';
 
 export function getFlag(country: string): React.ReactNode {
   //* Convert country names to 2-letter ISO country codes
@@ -35,4 +36,25 @@ export function getSong(song: string): React.ReactNode {
       {song}
     </a>
   );
+}
+
+export function getGroupingMarker(grouping: Grouping): React.ReactNode {
+  switch (grouping) {
+    case Grouping.big_three:
+      return '⭐';
+    case Grouping.acting:
+      return '🎭';
+    case Grouping.art:
+      return '🎨';
+    case Grouping.audio:
+      return '🎧';
+    case Grouping.filmkraft:
+      return '🎞️';
+    case Grouping.best_in_class:
+      return '🥇';
+    case Grouping.short:
+      return '↔️';
+    default:
+      return '';
+  }
 }

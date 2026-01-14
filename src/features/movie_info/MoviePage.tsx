@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import {useSuspenseQueries} from '@tanstack/react-query';
+import {useQuery, useSuspenseQueries} from '@tanstack/react-query';
 import {Suspense} from 'react';
 import {z} from 'zod';
 import imdbIcon from '../../assets/IMDb_Logo_Rectangle_Gold.png';
@@ -18,6 +18,7 @@ import {WatchlistCell} from '../../features/legacy_table/cells/WatchlistCell';
 import {
   categoryOptions,
   nomOptions,
+  tmdbMovieOptions,
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
@@ -28,6 +29,7 @@ import {
 } from '../../providers/NotificationContext';
 import {Movie, MovieId} from '../../types/APIDataSchema';
 import {WatchStatus} from '../../types/Enums';
+import {TMDBCrewMember} from '../../types/TMDBTypes';
 import {errorToConsole} from '../../utils/Logger';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
@@ -84,6 +86,8 @@ function MoviePageContent({movie}: Props): React.ReactElement {
 
       <Grid2 sx={{width: '100%'}}>
         <Stack spacing={3} sx={{width: '100%'}}>
+          <MovieDetailsCard movieId={movie.id} />
+
           <Card sx={{width: '100%'}}>
             <CardContent sx={{width: '100%'}}>
               <Typography sx={{fontWeight: 'bold', mb: 2}} variant="h6">
@@ -350,6 +354,73 @@ function MovieTitleSection({movie}: {movie: Movie}): React.ReactElement {
         />
       </Stack>
     </Box>
+  );
+}
+
+function MovieDetailsCard({movieId}: {movieId: MovieId}): React.ReactElement {
+  const {data: tmdbData, isPending, isError} = useQuery(tmdbMovieOptions(movieId));
+
+  if (isPending) {
+    return (
+      <Card sx={{width: '100%'}}>
+        <CardContent>
+          <Typography color="text.secondary">
+            Loading movie details...
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return <Card sx={{display: 'none'}} />;
+  }
+
+  const directors =
+    tmdbData.credits?.crew.filter(
+      (c: TMDBCrewMember) => c.job === 'Director',
+    ) ?? [];
+  const topCast = tmdbData.credits?.cast.slice(0, 5) ?? [];
+
+  return (
+    <Card sx={{width: '100%'}}>
+      <CardContent>
+        {tmdbData.tagline ? (
+          <Typography
+            color="text.secondary"
+            sx={{fontStyle: 'italic', mb: 2}}
+            variant="body1">
+            &ldquo;{tmdbData.tagline}&rdquo;
+          </Typography>
+        ) : null}
+
+        {tmdbData.overview ? (
+          <Typography sx={{mb: 2}} variant="body2">
+            {tmdbData.overview}
+          </Typography>
+        ) : null}
+
+        {tmdbData.genres.length > 0 && (
+          <Stack direction="row" flexWrap="wrap" gap={1} sx={{mb: 2}}>
+            {tmdbData.genres.map(genre => (
+              <Chip key={genre.id} label={genre.name} size="small" />
+            ))}
+          </Stack>
+        )}
+
+        {directors.length > 0 && (
+          <Typography color="text.secondary" variant="body2">
+            <strong>Director:</strong> {directors.map(d => d.name).join(', ')}
+          </Typography>
+        )}
+
+        {topCast.length > 0 && (
+          <Typography color="text.secondary" variant="body2">
+            <strong>Cast:</strong> {topCast.map(c => c.name).join(', ')}
+          </Typography>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

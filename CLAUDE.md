@@ -21,7 +21,11 @@ npm run format:check # Check formatting without changes
 ### Backend Development
 ```bash
 python backend/devserver.py  # Start FastAPI dev server (port 4876)
+
+# For quick import checks or running backend code outside devserver:
+ROOT_DIR=$(pwd) poetry run python -c "from backend.module import thing"
 ```
+The backend requires `ROOT_DIR` env var to be set (devserver.py sets this automatically).
 
 ### Database Migrations
 Alembic is configured for SQLAlchemy migrations. Migration files are in `alembic/versions/`.
