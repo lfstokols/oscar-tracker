@@ -1,4 +1,5 @@
 import {Navigate, Route, Routes} from 'react-router-dom';
+import AppErrorScreen from '../components/AppErrorScreen';
 import {
   BY_CATEGORY_URL,
   BY_USER_URL,
@@ -43,6 +44,7 @@ export default function Routing() {
       />
       <Route element={<App />}>
         {Object.entries(TAB_MAPS).map(([url, tab]) => routeFills(url, tab))}
+        <Route element={<AppErrorScreen isFullScreen />} path="*" />
       </Route>
     </Routes>
   );
