@@ -6,8 +6,6 @@ from pathlib import Path
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
-from fastapi.responses import FileResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import (
     SessionMiddleware as StarletteSessionMiddleware,
 )
@@ -32,13 +30,6 @@ DEVSERVER_PORT = env.DEVSERVER_PORT  # ! Gunicorn breaks without this!!!
 logging.info(f"The port should be {DEVSERVER_PORT}.")
 
 
-if not env.STATIC_PATH.exists():
-    logging.error(
-        f"The static folder {env.STATIC_PATH} does not exist, cannot start devserver."
-    )
-    raise FileNotFoundError(
-        f"The static folder {env.STATIC_PATH} does not exist.")
-
 # Setup scheduler
 scheduler = AsyncIOScheduler()
 register_jobs(scheduler)
@@ -58,20 +49,6 @@ app = FastAPI(lifespan=lifespan)
 # Include the API routes
 app.include_router(oscars_router, prefix="/api")
 
-# Mount static files
-app.mount("/", StaticFiles(directory=str(env.STATIC_PATH),
-          html=True), name="static")
-
-
-@app.get("/jokes")
-async def serve_joke():
-    return HTMLResponse("<h1>It's a joke!</h1>")
-
-
-@app.get("/favicon.ico")
-async def favicon():
-    return FileResponse("../public/favicon.ico", media_type="image/vnd.microsoft.icon")
-
 
 # Middleware runs in REVERSE order of registration
 # StarletteSessionMiddleware must run first to create request.session
@@ -82,30 +59,6 @@ app.add_middleware(
     max_age=7 * 24 * 60 * 60,  # 7 days
     same_site="lax",
 )
-
-
-# @app.middleware("http")
-# async def before_request(request: Request):
-#     login = request.cookies.get("activeUserId")
-#     request.state.initial_user_id_value = login
-#     if login is None or login == "":
-#         return
-#     #! From here, assume cookie is _intended_ to have valid UserID
-#     id, code = validate_user_id(login)
-
-#     if code != 0:
-#         logging.error(f"[before_request()] Invalid user id {login} found in cookie.")
-#         UserSession.end()
-#         request.state.should_delete_cookie = True
-#         return
-
-#     if UserSession.id_matches_session(id):
-#         UserSession.log_activity()
-#     else:
-#         UserSession.start_new(id)
-
-#     if UserSession.is_time_to_update():
-#         update_user_watchlist(id)
 
 
 apply_error_handling(app)
