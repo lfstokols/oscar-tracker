@@ -10,12 +10,9 @@ import {
   Stack,
   Typography,
 } from '@mui/material';
-import {useSuspenseQueries} from '@tanstack/react-query';
-import {Suspense, isValidElement} from 'react';
-import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
-import {useOscarAppContext} from '../../providers/AppContext';
-import {Movie} from '../../types/APIDataSchema';
-import NominationsCell from '../legacy_table/cells/NominationsCell';
+import { Suspense, isValidElement } from 'react';
+import { Movie } from '../../types/APIDataSchema';
+import QuickNominations from './QuickNominations';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
 import WatchlistFooter from './common/WatchlistFooter';
@@ -59,7 +56,7 @@ export function GenericMovieCard({
             }
           : {},
       }}>
-      <CardContent sx={{display: 'flex', flexDirection: 'row', gap: 1}}>
+      <CardContent sx={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
         {image}
         <InfoBlock
           extras={metadata}
@@ -95,7 +92,7 @@ export default function MovieCard({
 }: Props & {onClick?: () => void}): React.ReactElement {
   return (
     <GenericMovieCard
-      details={<NominationsBlock movie={movie} />}
+      details={<QuickNominations movie={movie} />}
       footer={<WatchlistFooter movieId={movie.id} />}
       image={<MoviePoster movie={movie} />}
       metadata={[<RuntimeChip key="runtime" movie={movie} />]}
@@ -193,19 +190,19 @@ function InfoBlock({
 //   );
 // }
 
-function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
-  const {year} = useOscarAppContext();
-  const [nominationsQ, categoriesQ] = useSuspenseQueries({
-    queries: [nomOptions(year), categoryOptions()],
-  });
-  const categories = categoriesQ.data;
-  const nominations = nominationsQ.data;
-  return (
-    <NominationsCell
-      categories={categories}
-      movieId={movie.id}
-      nominations={nominations}
-      putInCell={false}
-    />
-  );
-}
+// function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
+//   const {year} = useOscarAppContext();
+//   const [nominationsQ, categoriesQ] = useSuspenseQueries({
+//     queries: [nomOptions(year), categoryOptions()],
+//   });
+//   const categories = categoriesQ.data;
+//   const nominations = nominationsQ.data;
+//   return (
+//     <NominationsCell
+//       categories={categories}
+//       movieId={movie.id}
+//       nominations={nominations}
+//       putInCell={false}
+//     />
+//   );
+// }

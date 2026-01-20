@@ -1,17 +1,9 @@
 import {z} from 'zod';
-import {WatchStatus} from './Enums';
+import {Grouping, WatchStatus} from './Enums';
 
 // * Primitive Schemas
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
-export const GroupingSchema = z.enum([
-  'big_three',
-  'acting',
-  'filmkraft',
-  'art',
-  'audio',
-  'best_in_class',
-  'short',
-]);
+export const GroupingSchema = z.nativeEnum(Grouping);
 export const MovieIdSchema = z
   .string()
   .regex(/^mov_[a-zA-Z0-9]{6}$/)
