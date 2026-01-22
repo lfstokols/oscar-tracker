@@ -2,6 +2,7 @@ import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
 import {Grouping, WatchStatus} from '../types/Enums';
 import {warnToConsole} from './Logger';
+import {objectFromEntries} from './objectUtils';
 
 export function getMovieWatchStatusForUser(
   userId: UserId,
@@ -110,14 +111,10 @@ export function catssByGrouping(
   categories: Category[],
   // grouping?: Grouping,
 ): Record<Grouping, Category[]> {
-  const result: Record<Grouping, Category[]> = {} as Record<
-    Grouping,
-    Category[]
-  >;
-  for (const grouping of Object.values(Grouping)) {
-    result[grouping] = categories.filter(
-      cat => cat.grouping === grouping.toString(),
-    );
-  }
-  return result;
+  return objectFromEntries(
+    Object.values(Grouping).map(grouping => [
+      grouping,
+      categories.filter(cat => cat.grouping === grouping),
+    ]),
+  );
 }

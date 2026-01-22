@@ -9,10 +9,18 @@ import {
   Paper,
   Skeleton,
   Stack,
+  SxProps,
   Typography,
 } from '@mui/material';
+import {useSuspenseQueries} from '@tanstack/react-query';
 import {Suspense, cloneElement, isValidElement} from 'react';
-import {Movie} from '../../types/APIDataSchema';
+import {
+  BEST_PICTURE_COLOR,
+  HIGHLIGHT_ANIMATED_COLOR,
+} from '../../config/StyleChoices';
+import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {CategoryIdSchema, Movie} from '../../types/APIDataSchema';
 import QuickNominations from './QuickNominations';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
@@ -30,6 +38,7 @@ type GenericMovieCardProps = {
   metadata?: React.ReactElement[];
   footer?: React.ReactElement;
   onClick?: () => void;
+  borderSx?: SxProps;
 };
 
 export function GenericMovieCard({
@@ -40,11 +49,13 @@ export function GenericMovieCard({
   metadata,
   footer,
   onClick,
+  borderSx = {},
 }: GenericMovieCardProps): React.ReactElement {
   return (
     <Card
       onClick={onClick}
       sx={{
+        ...borderSx,
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
@@ -89,10 +100,47 @@ export function GenericMovieCard({
   );
 }
 
+type ImportantCategories = {
+  isBestPic: boolean;
+  isBestAnimated: boolean;
+};
+
+function useGetImportantCategories(movie: Movie): ImportantCategories {
+  const {year} = useOscarAppContext();
+  const [nominationsQ] = useSuspenseQueries({
+    queries: [nomOptions(year), categoryOptions()],
+  });
+  const nominations = nominationsQ.data;
+  const bestAnimatedCategoryId = CategoryIdSchema.parse('cat_anim');
+  const isBestAnimatedNominee = nominations
+    .filter(nom => nom.categoryId === bestAnimatedCategoryId)
+    .map(nom => nom.movieId)
+    .includes(movie.id);
+
+  const bestPicCategoryId = CategoryIdSchema.parse('cat_pict');
+  const isBestPicNominee = nominations
+    .filter(nom => nom.categoryId === bestPicCategoryId)
+    .map(nom => nom.movieId)
+    .includes(movie.id);
+
+  return {
+    isBestAnimated: isBestAnimatedNominee,
+    isBestPic: isBestPicNominee,
+  };
+}
+
 export default function MovieCard({
   movie,
   onClick,
 }: Props & {onClick?: () => void}): React.ReactElement {
+  const {preferences} = useOscarAppContext();
+  const importantCategories = useGetImportantCategories(movie);
+  const borderSx =
+    preferences.highlightAnimated && importantCategories.isBestAnimated
+      ? {borderColor: HIGHLIGHT_ANIMATED_COLOR, borderWidth: '0px 0px 0px 2px', borderStyle: 'solid'}
+      : importantCategories.isBestPic
+        ? {borderColor: BEST_PICTURE_COLOR, borderWidth: 3, borderStyle: 'groove'}
+        : undefined;
   const metadata = (
     <Stack direction="row" flexWrap="wrap" gap={0.5}>
       <NomCountChip key="nom-count" movie={movie} />
@@ -101,6 +149,7 @@ export default function MovieCard({
   );
   return (
     <GenericMovieCard
+      borderSx={borderSx}
       details={<QuickNominations movie={movie} />}
       footer={<WatchlistFooter movieId={movie.id} />}
       image={<MoviePoster movie={movie} />}
