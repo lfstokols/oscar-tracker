@@ -392,3 +392,11 @@ def get_categories() -> list[dict[str, Any]]:
             )
         )
         return result_to_dict(result)
+
+
+def get_years() -> list[int]:
+    with Session() as session:
+        result = session.execute(
+            sa.select(Nomination.year).distinct()
+        )
+        return [year for year, in result]

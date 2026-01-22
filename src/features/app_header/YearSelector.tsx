@@ -5,11 +5,13 @@ import {
   Select,
   SelectChangeEvent,
 } from '@mui/material';
-import {AVAILABLE_YEARS} from '../../config/GlobalConstants';
+import {useSuspenseQuery} from '@tanstack/react-query';
+import {yearsOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 
 export default function YearSelector() {
   const {year, setYear} = useOscarAppContext();
+  const {data: availableYears} = useSuspenseQuery(yearsOptions());
   const handleYearSelect = (event: SelectChangeEvent) => {
     setYear(parseInt(event.target.value));
   };
@@ -27,7 +29,7 @@ export default function YearSelector() {
         onChange={handleYearSelect}
         size="small"
         value={year.toString()}>
-        {AVAILABLE_YEARS.map(aYear => (
+        {availableYears.map(aYear => (
           <MenuItem key={aYear} value={aYear}>
             {aYear}
           </MenuItem>

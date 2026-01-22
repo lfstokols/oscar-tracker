@@ -23,6 +23,8 @@ export enum DataFlavor {
 }
 
 export enum Endpoints {
+  years = 'years',
+  defaultYear = 'years/default',
   movies = 'movies',
   users = 'users',
   myUserData = 'users/my_data',

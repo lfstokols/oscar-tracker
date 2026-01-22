@@ -39,6 +39,17 @@ router.include_router(hooks_router, prefix="/hooks")
 
 
 # Serve data
+@router.get("/years", response_model=list[int])
+async def serve_years() -> list[int]:
+    return qu.get_years()
+
+
+@router.get("/years/default", response_model=int)
+async def serve_default_year() -> int:
+    available_years = qu.get_years()
+    return max(available_years)
+
+
 @router.get("/nominations", response_model=list[api_Nom])
 async def serve_noms(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
     return qu.get_noms(year)
@@ -115,13 +126,15 @@ async def serve_users_PUT(
 async def serve_users_DELETE(request: Request) -> list[dict[str, Primitive]]:
     body = await request.json()
     if body is None:
-        raise APIArgumentError("No body provided", [("anythng json-y", "body")])
+        raise APIArgumentError("No body provided", [
+                               ("anythng json-y", "body")])
     cookie_id = parser.get_active_user_id(request)
     param_id = request.query_params.get("userId")
     body_id = body.get("userId")
     if not (body.get("forRealsies") and body.get("delete")):
         raise APIArgumentError(
-            "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
+            "Must confirm user deletion", [
+                ("forRealsies", "body"), ("delete", "body")]
         )
     if not (cookie_id == param_id and cookie_id == body_id):
         raise APIArgumentError(

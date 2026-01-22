@@ -17,6 +17,28 @@ import {
 import {Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
 import {TMDBMovie} from '../types/TMDBTypes';
+
+// * Years // *
+const zYear = z.number().int().gt(1927).lte(new Date().getFullYear());
+
+export function yearsOptions() {
+  return queryOptions({
+    queryKey: ['years'],
+    queryFn: qFunction(Endpoints.years, {}, z.array(zYear).parse),
+    retry: retryFunction,
+    staleTime: new Date() < new Date(2026, 1, 23) ? 60 * 1000 : 1000 * 60 * 60,
+  });
+}
+
+export function defaultYearOptions() {
+  return queryOptions({
+    queryKey: ['defaultYear'],
+    queryFn: qFunction(Endpoints.defaultYear, {}, zYear.parse),
+    retry: retryFunction,
+    staleTime: new Date() < new Date(2026, 1, 23) ? 60 * 1000 : 1000 * 60 * 60,
+  });
+}
+
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({

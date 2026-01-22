@@ -1,17 +1,20 @@
+import {useQuery} from '@tanstack/react-query';
 import {useEffect, useState} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {AVAILABLE_YEARS, DEFAULT_YEAR} from '../config/GlobalConstants';
+import {defaultYearOptions, yearsOptions} from './dataOptions';
 
 export default function useYearState(): [number, (year: number) => void] {
   const navigate = useNavigate();
   const urlParams = useParams();
+  const {data: dynamicDefaultYear} = useQuery(defaultYearOptions());
+  const {data: availableYears} = useQuery(yearsOptions());
 
   const [year, setYear] = useState<number>(() => {
     const urlYear = parseInt(urlParams.year ?? '');
-    if (urlYear && AVAILABLE_YEARS.includes(urlYear)) {
+    if (urlYear && availableYears?.includes(urlYear)) {
       return urlYear;
     }
-    return DEFAULT_YEAR;
+    return dynamicDefaultYear ?? 0;
   });
 
   //* Set a new version of setYear that also updates the URL
@@ -20,11 +23,13 @@ export default function useYearState(): [number, (year: number) => void] {
   useEffect(() => {
     if (urlParams.year) {
       const parsedYear = parseInt(urlParams.year);
-      if (AVAILABLE_YEARS.includes(parsedYear)) {
+      if (availableYears?.includes(parsedYear)) {
         setYear(parsedYear);
       }
+    } else if (dynamicDefaultYear) {
+      setYear(dynamicDefaultYear);
     }
-  }, [urlParams.year]);
+  }, [urlParams.year, dynamicDefaultYear, availableYears]);
 
   return [year, newSetYear];
 }
@@ -43,7 +48,10 @@ function upgradeSetYear(
         replace: true,
       });
     } else {
-      void navigate(`/${year}`, {replace: true});
+      const cleanPath = currentPath.endsWith('/')
+        ? currentPath.slice(0, -1)
+        : currentPath;
+      void navigate(`${cleanPath}/${year}`, {replace: true});
     }
   };
 }
