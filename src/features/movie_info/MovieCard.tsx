@@ -137,9 +137,17 @@ export default function MovieCard({
   const importantCategories = useGetImportantCategories(movie);
   const borderSx =
     preferences.highlightAnimated && importantCategories.isBestAnimated
-      ? {borderColor: HIGHLIGHT_ANIMATED_COLOR, borderWidth: '0px 0px 0px 2px', borderStyle: 'solid'}
+      ? {
+          borderColor: HIGHLIGHT_ANIMATED_COLOR,
+          borderWidth: '0px 0px 0px 2px',
+          borderStyle: 'solid',
+        }
       : importantCategories.isBestPic
-        ? {borderColor: BEST_PICTURE_COLOR, borderWidth: 3, borderStyle: 'groove'}
+        ? {
+            borderColor: BEST_PICTURE_COLOR,
+            borderWidth: 3,
+            borderStyle: 'groove',
+          }
         : undefined;
   const metadata = (
     <Stack direction="row" flexWrap="wrap" gap={0.5}>

@@ -1,4 +1,4 @@
-import { Add as AddIcon,Error as ErrorIcon } from '@mui/icons-material';
+import {Add as AddIcon, Error as ErrorIcon} from '@mui/icons-material';
 import {LinearProgress, TableCell, Typography} from '@mui/material';
 import {
   useMutation,
@@ -127,18 +127,6 @@ export function MyFill({
   handleInteract,
   disabled,
 }: FillProps): React.ReactElement {
-  const backgroundColor =
-    watchstate === WatchStatus.blank
-      ? NO_STATUS_COLOR
-      : watchstate === WatchStatus.seen
-        ? SEEN_COLOR
-        : TODO_COLOR;
-  const textColor =
-    watchstate === WatchStatus.blank
-      ? NO_STATUS_CONTRAST_COLOR
-      : watchstate === WatchStatus.seen
-        ? SEEN_CONTRAST_COLOR
-        : TODO_CONTRAST_COLOR;
   const backgroundColor =
     watchstate === WatchStatus.blank
       ? NO_STATUS_COLOR
