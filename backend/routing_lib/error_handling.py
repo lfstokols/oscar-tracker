@@ -156,7 +156,8 @@ def apply_error_handling(app: FastAPI):
             )
             return JSONResponse(
                 status_code=423,
-                content={"error": "File is locked, please try again later", "retryable": "true"},
+                content={
+                    "error": "File is locked, please try again later", "retryable": "true"},
             )
         raise exc
 
@@ -168,7 +169,8 @@ def apply_error_handling(app: FastAPI):
             )
             return JSONResponse(
                 status_code=423,
-                content={"error": "File is locked, please try again later", "retryable": "true"},
+                content={
+                    "error": "File is locked, please try again later", "retryable": "true"},
             )
         raise exc
 
@@ -180,7 +182,8 @@ def apply_error_handling(app: FastAPI):
             f"Missing data: {exc.missing_data}",
             f"Malformed data: {exc.malformed_data}",
         )
-        should_delete_cookie = getattr(request.state, "should_delete_cookie", False)
+        should_delete_cookie = getattr(
+            request.state, "should_delete_cookie", False)
         body: dict[str, Any] = {
             "error": exc.message,
             "missing_data": exc.missing_data,
@@ -188,7 +191,8 @@ def apply_error_handling(app: FastAPI):
         }
         if should_delete_cookie:
             # Announce before doing
-            initial_user_id = getattr(request.state, "initial_user_id_value", "unknown")
+            initial_user_id = getattr(
+                request.state, "initial_user_id_value", "unknown")
             logging.info(
                 f"Deleting malformed activeUserId cookie. Active user id was <{initial_user_id}>"
             )
@@ -198,3 +202,13 @@ def apply_error_handling(app: FastAPI):
         if should_delete_cookie:
             response.delete_cookie("activeUserId")
         return response
+
+    @app.exception_handler(Exception)
+    async def generic_exception_handler(request: Request, exc: Exception):
+        logging.error(
+            f"Unhandled exception in {request.method} {request.url.path}: "
+            f"{type(exc).__name__}: {exc}",
+            exc_info=True  # This includes the traceback
+        )
+        # Re-raise to let FastAPI handle the response, or return a 500 response
+        raise exc

@@ -5,7 +5,7 @@ import httpx
 from rapidfuzz import fuzz
 
 import backend.utils.env_reader as env
-from backend.intake.schemas import EnrichmentResult
+from backend.intake.schemas import SearchResult
 from backend.types.api_schemas import MovieID
 
 TMDB_API_BASE = "https://api.themoviedb.org/3"
@@ -93,22 +93,21 @@ def calculate_confidence(
     return 0.6 * title_score + 0.3 * year_score + 0.1 * runtime_score
 
 
-async def enrich_movie(
+async def search_movie_tmdb_id(
     movie_id: MovieID,
     title: str,
     year: int,
-) -> EnrichmentResult:
+) -> SearchResult:
     """
-    Attempt to enrich a movie with TMDB data.
+    Search TMDB for a movie and return the best matching TMDB ID.
 
-    Returns an EnrichmentResult with status and details.
+    Returns a SearchResult with the TMDB ID and confidence score.
     """
     try:
-        # Search for the movie
         results = await search_tmdb_movie(title, year)
 
         if not results:
-            return EnrichmentResult(
+            return SearchResult(
                 movie_id=movie_id,
                 title=title,
                 status="not_found",
@@ -120,7 +119,6 @@ async def enrich_movie(
 
         for result in results[:5]:  # Check top 5 results
             tmdb_title = result.get("title", "")
-            # Parse year from release_date (format: "YYYY-MM-DD")
             release_date = result.get("release_date", "")
             tmdb_year = int(release_date[:4]) if release_date else None
 
@@ -129,7 +127,7 @@ async def enrich_movie(
                 local_year=year,
                 tmdb_title=tmdb_title,
                 tmdb_year=tmdb_year,
-                tmdb_runtime=None,  # Not available in search results
+                tmdb_runtime=None,
             )
 
             if confidence > best_confidence:
@@ -137,50 +135,23 @@ async def enrich_movie(
                 best_match = result
 
         if best_match is None or best_confidence < 0.5:
-            return EnrichmentResult(
+            return SearchResult(
                 movie_id=movie_id,
                 title=title,
                 status="not_found",
             )
 
-        # Get detailed info for the best match
-        tmdb_id = best_match["id"]
-        details = await get_tmdb_movie_details(tmdb_id)
-
-        if details is None:
-            return EnrichmentResult(
-                movie_id=movie_id,
-                title=title,
-                tmdb_id=tmdb_id,
-                confidence=best_confidence,
-                status="error",
-                error="Failed to fetch TMDB details",
-            )
-
-        # Recalculate confidence with runtime info
-        release_date = details.get("release_date", "")
-        tmdb_year = int(release_date[:4]) if release_date else None
-        runtime = details.get("runtime")
-
-        final_confidence = calculate_confidence(
-            local_title=title,
-            local_year=year,
-            tmdb_title=details.get("title", ""),
-            tmdb_year=tmdb_year,
-            tmdb_runtime=runtime,
-        )
-
-        return EnrichmentResult(
+        return SearchResult(
             movie_id=movie_id,
             title=title,
-            tmdb_id=tmdb_id,
-            confidence=final_confidence,
-            status="success",
+            tmdb_id=best_match["id"],
+            confidence=best_confidence,
+            status="found",
         )
 
     except Exception as e:
-        logging.exception(f"Error enriching movie {movie_id}: {e}")
-        return EnrichmentResult(
+        logging.exception(f"Error searching TMDB for movie {movie_id}: {e}")
+        return SearchResult(
             movie_id=movie_id,
             title=title,
             status="error",

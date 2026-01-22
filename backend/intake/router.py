@@ -7,12 +7,15 @@ from backend.data.utils import create_unique_movie_id
 from backend.intake.schemas import (
     EnrichRequest,
     EnrichResponse,
-    EnrichmentResult,
+    HydrateResult,
+    ImportWarning,
     MovieToCreate,
     NominationImportResponse,
     NominationPreviewRequest,
     NominationPreviewResponse,
+    SearchResult,
     SimilarTitleWarning,
+    SpellingVariationWarning,
 )
 from backend.intake.title_matching import (
     find_similar_titles,
@@ -20,9 +23,9 @@ from backend.intake.title_matching import (
     group_by_normalized_title,
 )
 from backend.intake.tmdb_enrichment import (
-    enrich_movie,
     extract_enrichment_data,
     get_tmdb_movie_details,
+    search_movie_tmdb_id,
 )
 from backend.types.api_schemas import MovieID
 
@@ -55,7 +58,7 @@ async def preview_nominations(request: NominationPreviewRequest) -> NominationPr
         )
 
     # Find similar titles to warn about
-    warnings: list[SimilarTitleWarning] = []
+    warnings: list[ImportWarning] = []
     normalized_titles = list(groups.keys())
     similar_pairs = find_similar_titles(normalized_titles)
 
@@ -69,6 +72,17 @@ async def preview_nominations(request: NominationPreviewRequest) -> NominationPr
                 message=f"These titles are similar ({score:.0f}% match) but will be treated as different movies",
             )
         )
+
+    # Warn about spelling variations that will be merged
+    for movie in movies_to_create:
+        if len(movie.original_titles) > 1:
+            warnings.append(
+                SpellingVariationWarning(
+                    titles=movie.original_titles,
+                    chosen_title=movie.original_titles[0],
+                    message=f"Multiple spellings found - will use \"{movie.original_titles[0]}\"",
+                )
+            )
 
     return NominationPreviewResponse(
         movies_to_create=movies_to_create,
@@ -134,57 +148,107 @@ async def import_nominations(request: NominationPreviewRequest) -> NominationImp
 @router.post("/enrich", response_model=EnrichResponse)
 async def enrich_movies(request: EnrichRequest) -> EnrichResponse:
     """
-    Batch fill TMDB data for movies missing movie_db_id.
+    Enrich movies with TMDB data. Two operations available:
 
-    If force=True, re-enrich all movies for the year, even if they already have TMDB data.
+    - search: Find TMDB IDs for movies by searching by title
+    - hydrate: Fetch metadata (poster, runtime, etc.) for movies that have TMDB IDs
+
+    By default, both operations run and only process movies missing the relevant data.
+    Use force_search/force_hydrate to reprocess all movies.
     """
-    # Get movies that need enrichment
-    with Session() as session:
-        query = sa.select(Movie.movie_id, Movie.title).where(Movie.year == request.year)
-        if not request.force:
-            query = query.where(Movie.movie_db_id.is_(None))
-        result = session.execute(query)
-        movies_to_enrich = result.fetchall()
+    response = EnrichResponse()
 
-    results: list[EnrichmentResult] = []
-    enriched = 0
-    skipped = 0
-    not_found = 0
-    errors = 0
+    # Step 1: Search for TMDB IDs
+    if request.search:
+        with Session() as session:
+            query = sa.select(Movie.movie_id, Movie.title).where(
+                Movie.year == request.year
+            )
+            if not request.force_search:
+                query = query.where(Movie.movie_db_id.is_(None))
+            result = session.execute(query)
+            movies_to_search = result.fetchall()
 
-    for movie_id, title in movies_to_enrich:
-        # Call TMDB to find and enrich the movie
-        enrichment_result = await enrich_movie(movie_id, title, request.year)
-        results.append(enrichment_result)
+        for movie_id, title in movies_to_search:
+            search_result = await search_movie_tmdb_id(movie_id, title, request.year)
+            response.search_results.append(search_result)
 
-        if enrichment_result.status == "success" and enrichment_result.tmdb_id:
-            # Fetch full details and save to database
-            details = await get_tmdb_movie_details(enrichment_result.tmdb_id)
-            if details:
-                update_data = extract_enrichment_data(details)
+            if search_result.status == "found" and search_result.tmdb_id:
+                # Save the TMDB ID to database
                 with Session() as session:
                     _ = session.execute(
                         sa.update(Movie)
                         .where(Movie.movie_id == movie_id)
-                        .values(**update_data)
+                        .values(movie_db_id=str(search_result.tmdb_id))
                     )
                     session.commit()
-                enriched += 1
+                response.search_found += 1
+            elif search_result.status == "not_found":
+                response.search_not_found += 1
+            elif search_result.status == "error":
+                response.search_errors += 1
             else:
-                errors += 1
-                enrichment_result.status = "error"
-                enrichment_result.error = "Failed to fetch details after successful search"
-        elif enrichment_result.status == "not_found":
-            not_found += 1
-        elif enrichment_result.status == "error":
-            errors += 1
-        else:
-            skipped += 1
+                response.search_skipped += 1
 
-    return EnrichResponse(
-        enriched=enriched,
-        skipped=skipped,
-        not_found=not_found,
-        errors=errors,
-        results=results,
-    )
+    # Step 2: Hydrate metadata for movies with TMDB IDs
+    if request.hydrate:
+        with Session() as session:
+            query = sa.select(Movie.movie_id, Movie.title, Movie.movie_db_id).where(
+                Movie.year == request.year,
+                Movie.movie_db_id.isnot(None),
+            )
+            if not request.force_hydrate:
+                # Only hydrate movies missing metadata (poster_path as proxy)
+                query = query.where(Movie.poster_path.is_(None))
+            result = session.execute(query)
+            movies_to_hydrate = result.fetchall()
+
+        for movie_id, title, movie_db_id in movies_to_hydrate:
+            try:
+                tmdb_id = int(movie_db_id)
+                details = await get_tmdb_movie_details(tmdb_id)
+
+                if details:
+                    update_data = extract_enrichment_data(details)
+                    # Don't overwrite movie_db_id since it's already set
+                    del update_data["movie_db_id"]
+
+                    with Session() as session:
+                        _ = session.execute(
+                            sa.update(Movie)
+                            .where(Movie.movie_id == movie_id)
+                            .values(**update_data)
+                        )
+                        session.commit()
+
+                    response.hydrate_results.append(
+                        HydrateResult(
+                            movie_id=movie_id,
+                            title=title,
+                            status="success",
+                        )
+                    )
+                    response.hydrate_success += 1
+                else:
+                    response.hydrate_results.append(
+                        HydrateResult(
+                            movie_id=movie_id,
+                            title=title,
+                            status="error",
+                            error="Failed to fetch TMDB details",
+                        )
+                    )
+                    response.hydrate_errors += 1
+
+            except Exception as e:
+                response.hydrate_results.append(
+                    HydrateResult(
+                        movie_id=movie_id,
+                        title=title,
+                        status="error",
+                        error=str(e),
+                    )
+                )
+                response.hydrate_errors += 1
+
+    return response

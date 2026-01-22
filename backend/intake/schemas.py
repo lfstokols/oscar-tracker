@@ -30,10 +30,22 @@ class SimilarTitleWarning(BaseModel):
     message: str
 
 
+class SpellingVariationWarning(BaseModel):
+    """Warning about different spellings that will be merged into one movie."""
+    type: str = "spelling_variation"
+    titles: list[str]
+    chosen_title: str
+    message: str
+
+
+# Union type for all warning types
+ImportWarning = SimilarTitleWarning | SpellingVariationWarning
+
+
 class NominationPreviewResponse(BaseModel):
     """Response from the nominations preview endpoint."""
     movies_to_create: list[MovieToCreate]
-    warnings: list[SimilarTitleWarning]
+    warnings: list[ImportWarning]
     nomination_count: int
 
 
@@ -45,25 +57,49 @@ class NominationImportResponse(BaseModel):
 
 
 class EnrichRequest(BaseModel):
-    """Request body for the TMDB enrichment endpoint."""
+    """
+    Request body for the TMDB enrichment endpoint.
+
+    Operations:
+    - search: Find TMDB IDs for movies by searching by title
+    - hydrate: Fetch metadata (poster, runtime, etc.) for movies that have TMDB IDs
+
+    By default, both operations only process movies missing the relevant data.
+    Use force_search/force_hydrate to reprocess all movies.
+    """
     year: int = Field(ge=1927, le=2100)
-    force: bool = False
+    search: bool = True
+    force_search: bool = False
+    hydrate: bool = True
+    force_hydrate: bool = False
 
 
-class EnrichmentResult(BaseModel):
-    """Result of enriching a single movie."""
+class SearchResult(BaseModel):
+    """Result of searching for a single movie's TMDB ID."""
     movie_id: MovieID
     title: str
     tmdb_id: int | None = None
     confidence: float | None = None
-    status: str  # "success", "not_found", "error"
+    status: str  # "found", "not_found", "skipped", "error"
+    error: str | None = None
+
+
+class HydrateResult(BaseModel):
+    """Result of hydrating a single movie's metadata."""
+    movie_id: MovieID
+    title: str
+    status: str  # "success", "skipped", "error"
     error: str | None = None
 
 
 class EnrichResponse(BaseModel):
     """Response from the TMDB enrichment endpoint."""
-    enriched: int
-    skipped: int
-    not_found: int
-    errors: int
-    results: list[EnrichmentResult]
+    search_found: int = 0
+    search_not_found: int = 0
+    search_skipped: int = 0
+    search_errors: int = 0
+    search_results: list[SearchResult] = []
+    hydrate_success: int = 0
+    hydrate_skipped: int = 0
+    hydrate_errors: int = 0
+    hydrate_results: list[HydrateResult] = []
