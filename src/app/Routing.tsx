@@ -3,7 +3,6 @@ import AppErrorScreen from '../components/AppErrorScreen';
 import {
   BY_CATEGORY_URL,
   BY_USER_URL,
-  DEFAULT_YEAR,
   HOME_URL,
   LEGACY_URL,
   MOVIES_URL,
@@ -27,21 +26,14 @@ function routeFills(
 ): React.ReactElement[] {
   return [
     <Route key={url + '_year'} element={<Tab />} path={`/${url}/:year`} />,
-    <Route
-      key={url + '_no_year'}
-      element={<Navigate to={`/${url}/${DEFAULT_YEAR}`} />}
-      path={`/${url}`}
-    />,
+    <Route key={url + '_no_year'} element={<Tab />} path={`/${url}`} />,
   ];
 }
 
 export default function Routing() {
   return (
     <Routes>
-      <Route
-        element={<Navigate to={`/${HOME_URL}/${DEFAULT_YEAR}`} />}
-        path="/"
-      />
+      <Route element={<Navigate to={`/${HOME_URL}`} />} path="/" />
       <Route element={<App />}>
         {Object.entries(TAB_MAPS).map(([url, tab]) => routeFills(url, tab))}
         <Route element={<AppErrorScreen isFullScreen />} path="*" />

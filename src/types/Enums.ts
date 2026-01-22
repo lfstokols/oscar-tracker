@@ -23,6 +23,8 @@ export enum DataFlavor {
 }
 
 export enum Endpoints {
+  years = 'years',
+  defaultYear = 'years/default',
   movies = 'movies',
   users = 'users',
   myUserData = 'users/my_data',
@@ -33,6 +35,7 @@ export enum Endpoints {
   byUser = 'by_user',
   byCategory = 'by_category',
   letterboxdSearch = 'letterboxd/search',
+  nextKeyDate = 'next_key_date',
 }
 
 export enum Grouping {

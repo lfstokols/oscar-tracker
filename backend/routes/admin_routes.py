@@ -1,12 +1,13 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter
-from fastapi.responses import HTMLResponse
 import sqlalchemy as sa
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import HTMLResponse
 
 from backend.data.db_connections import Session
-from backend.data.db_schema import Category, Movie, Nomination
+from backend.data.db_schema import Category, KeyDates, Movie, Nomination
 from backend.types.api_schemas import MovieID
 
 router = APIRouter()
@@ -53,7 +54,8 @@ async def update_admin_movie(movie_id: MovieID, data: dict[str, Any]) -> dict[st
 
     with Session() as session:
         _ = session.execute(
-            sa.update(Movie).where(Movie.movie_id == movie_id).values(**update_data)
+            sa.update(Movie).where(Movie.movie_id ==
+                                   movie_id).values(**update_data)
         )
         session.commit()
 
@@ -142,3 +144,91 @@ async def get_admin_categories() -> list[dict[str, Any]]:
             {"category_id": c.category_id, "short_name": c.short_name}
             for c in categories
         ]
+
+
+@router.get("/key-dates")
+async def get_admin_key_dates() -> list[dict[str, Any]]:
+    """Get all key dates for admin editing."""
+    with Session() as session:
+        key_dates = session.execute(
+            sa.select(KeyDates).order_by(KeyDates.timestamp)
+        ).scalars().all()
+        return [
+            {"key_date_id": k.key_date_id,
+                "timestamp": k.timestamp, "description": k.description}
+            for k in key_dates
+        ]
+
+
+@router.post("/key-dates")
+async def create_admin_key_date(data: dict[str, Any]) -> dict[str, Any]:
+    """Create a new key date."""
+    # Expect 'date' (YYYY-MM-DD or ISO) and 'description'
+    date_str = data.get("date")
+    description = data.get("description", "")
+
+    if not isinstance(date_str, str):
+        raise HTTPException(
+            status_code=400, detail="Date is required and must be a string")
+
+    try:
+        timestamp = datetime.fromisoformat(date_str)
+    except (ValueError, TypeError):
+        # Fallback for simple date string if fromisoformat is strict or fails
+        try:
+            timestamp = datetime.strptime(date_str, "%Y-%m-%d")
+        except:
+            raise HTTPException(status_code=400, detail="Invalid date format")
+
+    with Session() as session:
+        new_kd = KeyDates(timestamp=timestamp, description=str(description))
+        session.add(new_kd)
+        session.commit()
+        session.refresh(new_kd)
+        return {
+            "key_date_id": new_kd.key_date_id,
+            "timestamp": new_kd.timestamp,
+            "description": new_kd.description
+        }
+
+
+@router.put("/key-dates/{key_date_id}")
+async def update_admin_key_date(
+    key_date_id: int, data: dict[str, Any]
+) -> dict[str, Any]:
+    """Update a key date."""
+    updates = {}
+    if "description" in data:
+        updates["description"] = data["description"]
+
+    if "date" in data:
+        date_str = data["date"]
+        if isinstance(date_str, str):
+            try:
+                updates["timestamp"] = datetime.fromisoformat(date_str)
+            except (ValueError, TypeError):
+                try:
+                    updates["timestamp"] = datetime.strptime(
+                        date_str, "%Y-%m-%d")
+                except:
+                    pass
+
+    if not updates:
+        return {}  # or error
+
+    with Session() as session:
+        _ = session.execute(
+            sa.update(KeyDates)
+            .where(KeyDates.key_date_id == key_date_id)
+            .values(**updates)
+        )
+        session.commit()
+
+        kd = session.execute(
+            sa.select(KeyDates).where(KeyDates.key_date_id == key_date_id)
+        ).scalar_one()
+        return {
+            "key_date_id": kd.key_date_id,
+            "timestamp": kd.timestamp,
+            "description": kd.description
+        }

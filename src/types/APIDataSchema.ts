@@ -161,3 +161,10 @@ export const CategoryCompletionSchema = z.record(
 );
 
 export type CategoryCompletionData = z.infer<typeof CategoryCompletionSchema>;
+
+// * Next Key Date Schema (for countdown)
+export const NextKeyDateSchema = z.object({
+  timestamp: z.string().transform(str => new Date(str)),
+  description: z.string().nullable(),
+});
+export type NextKeyDate = z.infer<typeof NextKeyDateSchema>;

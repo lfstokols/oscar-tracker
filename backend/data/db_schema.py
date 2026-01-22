@@ -383,3 +383,14 @@ class Watchnotice(Base):
 
     # Add index on user_id column
     __table_args__ = (Index("idx_watchlist_user", "user_id"),)
+
+
+class KeyDates(Base):
+    __tablename__ = "key_dates"
+    key_date_id: Mapped[int] = mapped_column(
+        sa.Integer, primary_key=True, autoincrement=True)
+    timestamp: Mapped[datetime] = mapped_column(sa.DateTime, nullable=False)
+    description: Mapped[str] = mapped_column(sa.String, nullable=True)
+
+    # Add index on timestamp column
+    __table_args__ = (Index("idx_key_dates_timestamp", "timestamp"),)

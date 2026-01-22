@@ -7,6 +7,7 @@ import {
   MovieId,
   MovieListSchema,
   MyUserDataSchema,
+  NextKeyDateSchema,
   NomListSchema,
   UserId,
   UserListSchema,
@@ -17,6 +18,28 @@ import {
 import {Endpoints} from '../types/Enums';
 import LockError from '../types/LockErorr';
 import {TMDBMovie} from '../types/TMDBTypes';
+
+// * Years // *
+const zYear = z.number().int().gt(1927).lte(new Date().getFullYear());
+
+export function yearsOptions() {
+  return queryOptions({
+    queryKey: ['years'],
+    queryFn: qFunction(Endpoints.years, {}, z.array(zYear).parse),
+    retry: retryFunction,
+    staleTime: new Date() < new Date(2026, 1, 23) ? 60 * 1000 : 1000 * 60 * 60,
+  });
+}
+
+export function defaultYearOptions() {
+  return queryOptions({
+    queryKey: ['defaultYear'],
+    queryFn: qFunction(Endpoints.defaultYear, {}, zYear.parse),
+    retry: retryFunction,
+    staleTime: new Date() < new Date(2026, 1, 23) ? 60 * 1000 : 1000 * 60 * 60,
+  });
+}
+
 // * Nominations // *
 export function nomOptions(year: number) {
   return queryOptions({
@@ -125,6 +148,21 @@ export function categoryCompletionOptions(year: number | string) {
   });
 }
 
+// * Next Key Date (for countdown) // *
+const NullableNextKeyDateSchema = NextKeyDateSchema.nullable();
+export function nextKeyDateOptions() {
+  return queryOptions({
+    queryKey: ['nextKeyDate'],
+    queryFn: qFunction(
+      Endpoints.nextKeyDate,
+      {},
+      NullableNextKeyDateSchema.parse,
+    ),
+    retry: retryFunction,
+    staleTime: 1000 * 60 * 60, // 1 hour - this data doesn't change often
+  });
+}
+
 // * TMDB // *
 export function tmdbMovieOptions(movieId: MovieId) {
   return queryOptions({
@@ -194,28 +232,3 @@ function retryFunction(failureCount: number, error: Error): boolean {
   }
   return false;
 }
-
-//const flavorToParams = (dFlavor: DataFlavor): Record<string, string> => {
-//	  case DataFlavor.movies: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString()};
-//	  }
-//	  case DataFlavor.users: {
-//		return {};
-//	  }
-//	  case DataFlavor.nominations: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString()};
-//	  }
-//	  case DataFlavor.categories: {
-//		return {};
-//	  }
-//	  case DataFlavor.watchlist: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString(), justMe: 'false'};
-//	  }
-//	  default: {
-//		throw new Error(`Unknown data flavor: ${dFlavor}`);
-//	  }
-//	}
-//  };

@@ -1,41 +1,97 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Admin</title>
   <style>
-    body { font-family: monospace; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
-    th { background: #eee; }
-    tr:hover { background: #f5f5f5; }
-    tr.selected { background: #cde; }
-    .panels { display: flex; gap: 20px; }
-    .panel { flex: 1; max-height: 70vh; overflow: auto; }
-    button { margin: 2px; }
-    input, select { margin: 2px; }
-    .editable:hover { background: #ffc; cursor: pointer; }
-    #error { color: red; }
-    #success { color: green; }
+    body {
+      font-family: monospace;
+      margin: 20px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 10px 0;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      padding: 4px 8px;
+      text-align: left;
+    }
+
+    th {
+      background: #eee;
+    }
+
+    tr:hover {
+      background: #f5f5f5;
+    }
+
+    tr.selected {
+      background: #cde;
+    }
+
+    .panels {
+      display: flex;
+      gap: 20px;
+    }
+
+    .panel {
+      flex: 1;
+      max-height: 70vh;
+      overflow: auto;
+    }
+
+    button {
+      margin: 2px;
+    }
+
+    input,
+    select {
+      margin: 2px;
+    }
+
+    .editable:hover {
+      background: #ffc;
+      cursor: pointer;
+    }
+
+    #error {
+      color: red;
+    }
+
+    #success {
+      color: green;
+    }
   </style>
 </head>
+
 <body>
   <h2>Admin</h2>
 
   <div>
     <label>Year: <select id="year" onchange="loadData()">
-      <option value="2024">2024</option>
-      <option value="2023">2023</option>
-    </select></label>
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+      </select></label>
 
     <button onclick="showTab('movies')">Movies</button>
     <button onclick="showTab('nominations')">Nominations</button>
+    <button onclick="showTab('key-dates')">Key Dates</button>
+    <button id="add-btn" style="display:none" onclick="addItem()">+ Add</button>
     <span id="error"></span>
     <span id="success"></span>
   </div>
 
   <div class="panels">
     <div class="panel">
-      <table id="list"><tbody></tbody></table>
+      <table id="list">
+        <tbody></tbody>
+      </table>
     </div>
     <div class="panel">
       <div id="detail">Select an item to edit</div>
@@ -44,6 +100,7 @@
 
   <script>
     let currentTab = 'movies';
+    let keyDates = [];
     let movies = [];
     let nominations = [];
     let categories = [];
@@ -52,14 +109,16 @@
     async function loadData() {
       const year = document.getElementById('year').value;
       try {
-        const [mRes, nRes, cRes] = await Promise.all([
+        const [mRes, nRes, cRes, kRes] = await Promise.all([
           fetch(`/api/admin/movies?year=${year}`),
           fetch(`/api/admin/nominations?year=${year}`),
-          fetch(`/api/admin/categories`)
+          fetch(`/api/admin/categories`),
+          fetch(`/api/admin/key-dates`)
         ]);
         movies = await mRes.json();
         nominations = await nRes.json();
         categories = await cRes.json();
+        keyDates = await kRes.json();
         selected = null;
         render();
       } catch (e) {
@@ -70,7 +129,32 @@
     function showTab(tab) {
       currentTab = tab;
       selected = null;
+      document.getElementById('add-btn').style.display = tab === 'key-dates' ? 'inline' : 'none';
       render();
+    }
+
+    function addItem() {
+      if (currentTab === 'key-dates') addKeyDate();
+    }
+
+    async function addKeyDate() {
+      const date = prompt("Date (YYYY-MM-DDTHH:MM:SS):");
+      if (!date) return;
+      const desc = prompt("Description:");
+      if (!desc) return;
+
+      try {
+        const res = await fetch('/api/admin/key-dates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: date, description: desc })
+        });
+        if (!res.ok) throw new Error('Create failed');
+        // reload data
+        loadData();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e;
+      }
     }
 
     function render() {
@@ -104,6 +188,30 @@
           `;
         } else {
           detail.innerHTML = 'Select a movie';
+        }
+      } else if (currentTab === 'key-dates') {
+        list.innerHTML = '<tr><th>ID</th><th>Date</th><th>Description</th></tr>' +
+          keyDates.map((k, i) =>
+            `<tr class="${selected === i ? 'selected' : ''}" onclick="selectItem(${i})">
+              <td>${k.key_date_id}</td>
+              <td>${k.timestamp}</td>
+              <td>${k.description}</td>
+            </tr>`
+          ).join('');
+
+        if (selected !== null) {
+          const k = keyDates[selected];
+          const dateStr = k.timestamp;
+          detail.innerHTML = `
+            <h3>${k.description}</h3>
+            <table>
+              <tr><td>ID</td><td>${k.key_date_id}</td></tr>
+              <tr><td>Date</td><td class="editable" onclick="editField('date', '${dateStr}')">${k.timestamp}</td></tr>
+              <tr><td>Description</td><td class="editable" onclick="editField('description', '${esc(k.description)}')">${k.description}</td></tr>
+            </table>
+          `;
+        } else {
+          detail.innerHTML = 'Select a key date';
         }
       } else {
         list.innerHTML = '<tr><th>Category</th><th>Movie</th><th>Note</th></tr>' +
@@ -155,8 +263,12 @@
 
       if (currentTab === 'movies') {
         saveMovieField(field, newValue);
-      } else {
+      } else if (currentTab === 'key-dates') {
+        saveKeyDateField(field, newValue);
+      } else if (currentTab === 'nominations') {
         saveNomField(field, newValue);
+      } else {
+        throw new Error('Invalid tab');
       }
     }
 
@@ -170,8 +282,8 @@
       try {
         const res = await fetch(`/api/admin/movies/${m.movie_id}`, {
           method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({[field]: sendValue})
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: sendValue })
         });
         if (!res.ok) throw new Error('Save failed');
         const updated = await res.json();
@@ -191,8 +303,8 @@
       try {
         const res = await fetch(`/api/admin/nominations/${n.nomination_id}`, {
           method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({[field]: sendValue})
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: sendValue })
         });
         if (!res.ok) throw new Error('Save failed');
         const updated = await res.json();
@@ -205,7 +317,29 @@
       }
     }
 
+    async function saveKeyDateField(field, value) {
+      const k = keyDates[selected];
+      const sendValue = value === '' ? null : value;
+
+      try {
+        const res = await fetch(`/api/admin/key-dates/${k.key_date_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: sendValue })
+        });
+        if (!res.ok) throw new Error('Save failed');
+        const updated = await res.json();
+        keyDates[selected] = updated;
+        document.getElementById('success').textContent = 'Saved!';
+        setTimeout(() => document.getElementById('success').textContent = '', 2000);
+        render();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e;
+      }
+    }
+
     loadData();
   </script>
 </body>
+
 </html>

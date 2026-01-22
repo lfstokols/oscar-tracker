@@ -1,7 +1,3 @@
-// Default year in year selector
-export const DEFAULT_YEAR = 2024; // ? How ought this be set?
-export const AVAILABLE_YEARS = [2023, 2024];
-
 //* Cookie expiration time in days
 //* I just set it to a little over a year to be safe, whatever
 export const EXPIRATION_DAYS = 400;
@@ -51,4 +47,4 @@ export const HOME_URL = MOVIES_URL; // Used when you want to return the home pag
 export const COOKIE_NULL_VALUE = 'null';
 
 //* Upcoming Oscar date
-export const UPCOMING_OSCAR_DATE = new Date('2025-03-03T00:00:00Z'); // Idk where to get this from except hardcoding
+export const UPCOMING_OSCAR_DATE = new Date('2026-03-15T23:00:00Z'); // Idk where to get this from except hardcoding

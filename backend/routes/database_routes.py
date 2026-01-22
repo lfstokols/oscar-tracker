@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request
 
 import backend.data.mutations as mu
 import backend.data.queries as qu
 import backend.routing_lib.request_parser as parser
+from backend.intake.router import router as intake_router
 from backend.routes.admin_routes import router as admin_router
 from backend.routes.forwarding import router as forwarding_router
 from backend.routes.hooks import router as hooks_router
@@ -20,6 +22,7 @@ from backend.types.api_schemas import (
     api_MyUserData,
     api_NewUserResponse,
     api_NewWatchlistRequest,
+    api_NextKeyDate,
     api_Nom,
     api_User,
     api_UserStats,
@@ -32,11 +35,23 @@ from backend.types.my_types import *
 router = APIRouter()
 
 router.include_router(admin_router, prefix="/admin")
+router.include_router(intake_router, prefix="/admin/intake")
 router.include_router(forwarding_router, prefix="/forward")
 router.include_router(hooks_router, prefix="/hooks")
 
 
 # Serve data
+@router.get("/years", response_model=list[int])
+async def serve_years() -> list[int]:
+    return qu.get_years()
+
+
+@router.get("/years/default", response_model=int)
+async def serve_default_year() -> int:
+    available_years = qu.get_years()
+    return max(available_years)
+
+
 @router.get("/nominations", response_model=list[api_Nom])
 async def serve_noms(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
     return qu.get_noms(year)
@@ -113,13 +128,15 @@ async def serve_users_PUT(
 async def serve_users_DELETE(request: Request) -> list[dict[str, Primitive]]:
     body = await request.json()
     if body is None:
-        raise APIArgumentError("No body provided", [("anythng json-y", "body")])
+        raise APIArgumentError("No body provided", [
+                               ("anythng json-y", "body")])
     cookie_id = parser.get_active_user_id(request)
     param_id = request.query_params.get("userId")
     body_id = body.get("userId")
     if not (body.get("forRealsies") and body.get("delete")):
         raise APIArgumentError(
-            "Must confirm user deletion", [("forRealsies", "body"), ("delete", "body")]
+            "Must confirm user deletion", [
+                ("forRealsies", "body"), ("delete", "body")]
         )
     if not (cookie_id == param_id and cookie_id == body_id):
         raise APIArgumentError(
@@ -171,6 +188,21 @@ async def serve_by_category(
     year: parser.ActiveYear,
 ) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
     return qu.get_category_completion_dict(year)
+
+
+@router.get("/next_key_date")
+async def serve_next_key_date() -> api_NextKeyDate | None:
+    key_dates = qu.get_key_dates()
+    key_dates = sorted(list(key_dates), key=lambda x: x[0])
+    next_date, next_description = None, None
+    for date, description in key_dates:
+        if date > datetime.now():
+            next_date = date
+            next_description = description
+            break
+    if next_date is None:
+        return None
+    return api_NextKeyDate(timestamp=next_date, description=next_description)
 
 
 if __name__ == "__main__":

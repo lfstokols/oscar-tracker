@@ -1,3 +1,4 @@
+from datetime import datetime
 from enum import Enum
 from typing import Annotated, Literal, Optional, Union
 
@@ -61,12 +62,14 @@ class api_Movie(BaseModel):
     mainTitle: str = Field(validation_alias="main_title")
     subtitle: str
     ImdbId: Optional[str] = Field(default=None, validation_alias="imdb_id")
-    movieDbId: Optional[int] = Field(default=None, validation_alias="movie_db_id")
+    movieDbId: Optional[int] = Field(
+        default=None, validation_alias="movie_db_id")
     runtime_hours: Optional[str] = None
     runtime_minutes: Optional[int] = None
     numNoms: int = Field(ge=1, validation_alias="num_noms")
     isShort: bool = Field(validation_alias="is_short")
-    posterPath: Optional[str] = Field(default=None, validation_alias="poster_path")
+    posterPath: Optional[str] = Field(
+        default=None, validation_alias="poster_path")
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -145,3 +148,8 @@ class api_NewWatchlistRequest(BaseModel):
     year: int
     movieIds: list[MovieID]
     status: my_types.WatchStatus
+
+
+class api_NextKeyDate(BaseModel):
+    timestamp: datetime
+    description: str | None = None
