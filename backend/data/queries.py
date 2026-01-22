@@ -1,4 +1,6 @@
 import logging
+from collections.abc import Sequence
+from datetime import datetime
 from typing import Any, cast
 
 import httpx
@@ -9,7 +11,14 @@ from typing_extensions import Literal
 
 import backend.data.derived_values as dv
 from backend.data.db_connections import Session
-from backend.data.db_schema import Category, Movie, Nomination, User, Watchnotice
+from backend.data.db_schema import (
+    Category,
+    KeyDates,
+    Movie,
+    Nomination,
+    User,
+    Watchnotice,
+)
 from backend.data.utils import result_to_dict
 from backend.types.api_schemas import CategoryCompletionKey, MovieID, UserID, countTypes
 from backend.types.my_types import Grouping, WatchStatus
@@ -400,3 +409,12 @@ def get_years() -> list[int]:
             sa.select(Nomination.year).distinct()
         )
         return [year for year, in result]
+
+
+def get_key_dates() -> Sequence[tuple[datetime, str]]:
+    with Session() as session:
+        result = session.execute(
+            sa.select(KeyDates.timestamp, KeyDates.description)
+            .order_by(KeyDates.timestamp)
+        )
+        return [tuple(row) for row in result.all()]

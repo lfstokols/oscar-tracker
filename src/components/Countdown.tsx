@@ -1,8 +1,13 @@
+// import {useSuspenseQuery} from '@tanstack/react-query';
 import {useEffect, useState} from 'react';
 import {UPCOMING_OSCAR_DATE} from '../config/GlobalConstants';
+// import {nextKeyDateOptions} from '../hooks/dataOptions';
 
 export default function Countdown(): React.ReactElement {
   const [now, setNow] = useState(new Date());
+  // const nextKeyDate = useSuspenseQuery(nextKeyDateOptions()).data;
+  // const oscarDate = nextKeyDate?.timestamp;
+  const oscarDate = UPCOMING_OSCAR_DATE;
 
   const timeDelta = Math.floor(Date.now() - now.getTime());
 
@@ -13,12 +18,16 @@ export default function Countdown(): React.ReactElement {
     return () => clearInterval(interval);
   }, [timeDelta]);
 
-  return <Clock now={Date.now()} />;
+  // if (!oscarDate) {
+  //   return TillNextYearMessage();
+  // }
+
+  const upcomingKeyDate = oscarDate.getTime();
+  return <Clock now={Date.now()} then={upcomingKeyDate} />;
 }
 
-function Clock({now}: {now: number}): React.ReactElement {
-  const oscarDate = UPCOMING_OSCAR_DATE;
-  const diffTime = oscarDate.getTime() - now;
+function Clock({now, then}: {now: number; then: number}): React.ReactElement {
+  const diffTime = then - now;
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   const diffHours = Math.floor(
     (diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),

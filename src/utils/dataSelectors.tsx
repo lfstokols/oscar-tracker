@@ -115,9 +115,7 @@ export function catssByGrouping(
     Category[]
   >;
   for (const grouping of Object.values(Grouping)) {
-    result[grouping] = categories.filter(
-      cat => cat.grouping === grouping.toString(),
-    );
+    result[grouping] = categories.filter(cat => cat.grouping === grouping);
   }
   return result;
 }

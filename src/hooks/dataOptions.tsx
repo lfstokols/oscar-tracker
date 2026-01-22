@@ -7,6 +7,7 @@ import {
   MovieId,
   MovieListSchema,
   MyUserDataSchema,
+  NextKeyDateSchema,
   NomListSchema,
   UserId,
   UserListSchema,
@@ -147,6 +148,21 @@ export function categoryCompletionOptions(year: number | string) {
   });
 }
 
+// * Next Key Date (for countdown) // *
+const NullableNextKeyDateSchema = NextKeyDateSchema.nullable();
+export function nextKeyDateOptions() {
+  return queryOptions({
+    queryKey: ['nextKeyDate'],
+    queryFn: qFunction(
+      Endpoints.nextKeyDate,
+      {},
+      NullableNextKeyDateSchema.parse,
+    ),
+    retry: retryFunction,
+    staleTime: 1000 * 60 * 60, // 1 hour - this data doesn't change often
+  });
+}
+
 // * TMDB // *
 export function tmdbMovieOptions(movieId: MovieId) {
   return queryOptions({
@@ -216,28 +232,3 @@ function retryFunction(failureCount: number, error: Error): boolean {
   }
   return false;
 }
-
-//const flavorToParams = (dFlavor: DataFlavor): Record<string, string> => {
-//	  case DataFlavor.movies: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString()};
-//	  }
-//	  case DataFlavor.users: {
-//		return {};
-//	  }
-//	  case DataFlavor.nominations: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString()};
-//	  }
-//	  case DataFlavor.categories: {
-//		return {};
-//	  }
-//	  case DataFlavor.watchlist: {
-//		const {year} = useOscarAppContext();
-//		return {year: year.toString(), justMe: 'false'};
-//	  }
-//	  default: {
-//		throw new Error(`Unknown data flavor: ${dFlavor}`);
-//	  }
-//	}
-//  };

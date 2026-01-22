@@ -47,4 +47,4 @@ export const HOME_URL = MOVIES_URL; // Used when you want to return the home pag
 export const COOKIE_NULL_VALUE = 'null';
 
 //* Upcoming Oscar date
-export const UPCOMING_OSCAR_DATE = new Date('2025-03-03T00:00:00Z'); // Idk where to get this from except hardcoding
+export const UPCOMING_OSCAR_DATE = new Date('2026-03-15T23:00:00Z'); // Idk where to get this from except hardcoding

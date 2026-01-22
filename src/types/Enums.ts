@@ -35,6 +35,7 @@ export enum Endpoints {
   byUser = 'by_user',
   byCategory = 'by_category',
   letterboxdSearch = 'letterboxd/search',
+  nextKeyDate = 'next_key_date',
 }
 
 export enum Grouping {

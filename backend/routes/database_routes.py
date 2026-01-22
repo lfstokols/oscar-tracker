@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Request
 
@@ -21,6 +22,7 @@ from backend.types.api_schemas import (
     api_MyUserData,
     api_NewUserResponse,
     api_NewWatchlistRequest,
+    api_NextKeyDate,
     api_Nom,
     api_User,
     api_UserStats,
@@ -186,6 +188,21 @@ async def serve_by_category(
     year: parser.ActiveYear,
 ) -> dict[UserID, dict[CategoryCompletionKey, dict[countTypes, int]]]:
     return qu.get_category_completion_dict(year)
+
+
+@router.get("/next_key_date")
+async def serve_next_key_date() -> api_NextKeyDate | None:
+    key_dates = qu.get_key_dates()
+    key_dates = sorted(list(key_dates), key=lambda x: x[0])
+    next_date, next_description = None, None
+    for date, description in key_dates:
+        if date > datetime.now():
+            next_date = date
+            next_description = description
+            break
+    if next_date is None:
+        return None
+    return api_NextKeyDate(timestamp=next_date, description=next_description)
 
 
 if __name__ == "__main__":
