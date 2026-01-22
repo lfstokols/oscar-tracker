@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {Grouping, WatchStatus} from './Enums';
+import {CategoryType, Grouping, WatchStatus} from './Enums';
 
 // * Primitive Schemas
 export const RawWatchStatusSchema = z.enum(['seen', 'todo']);
@@ -12,10 +12,7 @@ export const UserIdSchema = z
   .string()
   .regex(/usr_[a-zA-Z0-9]{6}/)
   .brand<'UserId'>();
-export const CategoryIdSchema = z
-  .string()
-  .regex(/cat_[a-z]{4}/)
-  .brand<'CategoryId'>();
+export const CategoryIdSchema = z.nativeEnum(CategoryType);
 
 // * Primitive Types
 export type MovieId = z.infer<typeof MovieIdSchema>;

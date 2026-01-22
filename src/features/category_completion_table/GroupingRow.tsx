@@ -7,6 +7,7 @@ import * as React from 'react';
 import {useRef} from 'react';
 import {CategoryCompletionData, UserId} from '../../types/APIDataSchema';
 import {Grouping, grouping_display_names} from '../../types/Enums';
+import {getGroupingColor} from '../../utils/CategoryMetadata';
 import {Hypotheticality} from '../userStatsTable/Enums';
 import {get_num, get_total, make_fraction_display} from './utils';
 
@@ -56,7 +57,7 @@ export default function GroupingRow({
         {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
       </TableCell>
       <TableCell>
-        <Typography variant="h6">{grouping_display_names[grouping]}</Typography>
+        <Typography color={getGroupingColor(grouping)} variant="h6">{grouping_display_names[grouping]}</Typography>
       </TableCell>
       {userList.map(user => (
         <TableCell key={user} align="center">

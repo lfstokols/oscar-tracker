@@ -1,4 +1,3 @@
-import LaunchIcon from '@mui/icons-material/Launch';
 import {
   IconButton,
   Stack,
@@ -17,6 +16,7 @@ import {
   UserId,
   WatchList,
 } from '../../types/APIDataSchema';
+import { getCategoryIcon } from '../../utils/CategoryMetadata';
 import {Hypotheticality} from '../userStatsTable/Enums';
 import CategoryTooltip from './CategoryTooltip';
 import {get_num, get_total, make_fraction_display} from './utils';
@@ -72,9 +72,8 @@ export default function CategoryRow({
         },
       }}>
       <TableCell />
-      <TableCell sx={{paddingLeft: '50px'}}>
+      <TableCell sx={{paddingLeft: '14px'}}>
         <Stack alignItems="center" direction="row" spacing={1}>
-          <Typography variant="h6">{category.fullName}</Typography>
           <IconButton
             onClick={() => {
               navigateToFilterState({
@@ -82,8 +81,9 @@ export default function CategoryRow({
                 watchstatus: [],
               });
             }}>
-            <LaunchIcon fontSize="small" />
+            {getCategoryIcon(category, 'medium')}
           </IconButton>
+              <Typography variant="h6">{category.fullName}</Typography>
         </Stack>
       </TableCell>
       {userList.map(user => (

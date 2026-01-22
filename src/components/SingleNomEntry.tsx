@@ -1,28 +1,8 @@
-import {Typography} from '@mui/material';
+import {Stack, Typography} from '@mui/material';
 import {CategoryList, Nom} from '../types/APIDataSchema';
-import {Grouping} from '../types/Enums';
-import {getFlag, getSong} from '../utils/CategoryMetadata';
+import {CategoryType} from '../types/Enums';
+import {getCategoryIcon, getFlag, getSong} from '../utils/CategoryMetadata';
 
-function getGroupingMarker(grouping: Grouping) {
-  switch (grouping) {
-    case Grouping.big_three:
-      return '⭐';
-    case Grouping.acting:
-      return '🎭';
-    case Grouping.art:
-      return '🎨';
-    case Grouping.audio:
-      return '🎧';
-    case Grouping.filmkraft:
-      return '🎞️';
-    case Grouping.best_in_class:
-      return '🥇';
-    case Grouping.short:
-      return '↔️';
-    default:
-      return '';
-  }
-}
 
 export default function Entry({
   nom,
@@ -30,12 +10,14 @@ export default function Entry({
   includeNote = true,
   repeated = 1,
   longName = false,
+  compact = false,
 }: {
   nom: Nom;
   categories: CategoryList;
   includeNote?: boolean;
   repeated?: number;
   longName?: boolean;
+  compact?: boolean;
 }): React.ReactElement | null {
   if (repeated < 1) {
     return null;
@@ -45,11 +27,11 @@ export default function Entry({
     return <Typography variant="body2">???</Typography>;
   }
   const formattedNote = includeNote ? (
-    category.id === 'cat_frgn' ? (
+    category.id === CategoryType.foreign_film ? (
       <em>
         {getFlag(nom.note ?? '')} {nom.note ?? ''}
       </em>
-    ) : category.id === 'cat_song' ? (
+    ) : category.id === CategoryType.original_song ? (
       <>{getSong(nom.note ?? '')}</>
     ) : (
       <i>{nom.note}</i>
@@ -59,12 +41,22 @@ export default function Entry({
   ) : null;
   const hasNote = formattedNote !== null;
   const name = longName ? category.fullName : category.shortName;
-  return (
-    <>
-      {getGroupingMarker(Grouping[category.grouping])}
+  if (compact) {
+    return (
+      <>
+      {getCategoryIcon(category)}
       {name + (hasNote ? ': ' : '')}
       {formattedNote}
       <br />
     </>
+    );
+  }
+  return (
+    <Stack alignItems="center" direction="row" flexWrap="wrap" gap={0.5}>
+      {getCategoryIcon(category)}
+      {name + (hasNote ? ': ' : '')}
+      {formattedNote}
+      <br />
+    </Stack>
   );
 }

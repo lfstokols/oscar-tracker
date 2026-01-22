@@ -1,23 +1,23 @@
 
 import AlbumTwoToneIcon from '@mui/icons-material/AlbumTwoTone';
-import ArchitectureTwoToneIcon from '@mui/icons-material/ArchitectureTwoTone';
 import ArticleTwoToneIcon from '@mui/icons-material/ArticleTwoTone';
 import AutoAwesomeTwoToneIcon from '@mui/icons-material/AutoAwesomeTwoTone';
-import BrushTwoToneIcon from '@mui/icons-material/BrushTwoTone';
+import CameraTwoToneIcon from '@mui/icons-material/CameraTwoTone';
 import CheckroomTwoToneIcon from '@mui/icons-material/CheckroomTwoTone';
 import ContentCutTwoToneIcon from '@mui/icons-material/ContentCutTwoTone';
+import DrawTwoToneIcon from '@mui/icons-material/DrawTwoTone';
 import EqualizerTwoToneIcon from '@mui/icons-material/EqualizerTwoTone';
-import Face4TwoToneIcon from '@mui/icons-material/Face4TwoTone';
+import MakeupFaceTwoToneIcon from '@mui/icons-material/Face2TwoTone';
+import FemaleFaceTwoToneIcon from '@mui/icons-material/Face3TwoTone';
 import FaceTwoToneIcon from '@mui/icons-material/FaceTwoTone';
 import GroupTwoToneIcon from '@mui/icons-material/GroupTwoTone';
 import LanguageTwoToneIcon from '@mui/icons-material/LanguageTwoTone';
 import MovieTwoToneIcon from '@mui/icons-material/MovieTwoTone';
 import MusicNoteTwoToneIcon from '@mui/icons-material/MusicNoteTwoTone';
-import SmartToyTwoToneIcon from '@mui/icons-material/SmartToyTwoTone';
-import StarTwoToneIcon from '@mui/icons-material/StarTwoTone';
+import SatelliteTwoToneIcon from '@mui/icons-material/SatelliteTwoTone';
+import StarTwoToneIcon from '@mui/icons-material/StarRateTwoTone';
 import TravelExploreTwoToneIcon from '@mui/icons-material/TravelExploreTwoTone';
 import VideoLibraryTwoToneIcon from '@mui/icons-material/VideoLibraryTwoTone';
-import VideocamTwoToneIcon from '@mui/icons-material/VideocamTwoTone';
 import SvgIcon from '@mui/material/SvgIcon/SvgIcon';
 import type {SvgIconProps} from '@mui/material/SvgIcon/SvgIcon';
 import countries from '../assets/countries.json';
@@ -84,7 +84,7 @@ export function getCategoryIcon(
   );
 }
 
-function getGroupingColor(grouping: Grouping): string {
+export function getGroupingColor(grouping: Grouping): string {
   switch (grouping) {
     case Grouping.big_three:
       return BIG_THREE_GROUPING_COLOR;
@@ -118,7 +118,7 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
     case CategoryType.best_actor:
       return FaceTwoToneIcon;
     case CategoryType.best_actress:
-      return Face4TwoToneIcon;
+      return FemaleFaceTwoToneIcon;
     case CategoryType.supporting_actor:
     case CategoryType.supporting_actress:
       return GroupTwoToneIcon;
@@ -127,9 +127,9 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
     case CategoryType.costumes:
       return CheckroomTwoToneIcon;
     case CategoryType.makeup_and_hair:
-      return BrushTwoToneIcon;
+      return MakeupFaceTwoToneIcon;
     case CategoryType.production_design:
-      return ArchitectureTwoToneIcon;
+      return SatelliteTwoToneIcon;
     case CategoryType.visual_effects:
       return AutoAwesomeTwoToneIcon;
 
@@ -143,13 +143,13 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
 
     // Filmkraft
     case CategoryType.cinematography:
-      return VideocamTwoToneIcon;
+      return CameraTwoToneIcon;
     case CategoryType.editing:
       return ContentCutTwoToneIcon;
 
     // Best in Class
     case CategoryType.animated_feature:
-      return SmartToyTwoToneIcon;
+      return DrawTwoToneIcon;
     case CategoryType.foreign_film:
       return LanguageTwoToneIcon;
     case CategoryType.documentary:
