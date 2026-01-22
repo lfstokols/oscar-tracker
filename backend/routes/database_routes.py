@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 import backend.data.mutations as mu
 import backend.data.queries as qu
 import backend.routing_lib.request_parser as parser
+from backend.intake.router import router as intake_router
 from backend.routes.admin_routes import router as admin_router
 from backend.routes.forwarding import router as forwarding_router
 from backend.routes.hooks import router as hooks_router
@@ -32,6 +33,7 @@ from backend.types.my_types import *
 router = APIRouter()
 
 router.include_router(admin_router, prefix="/admin")
+router.include_router(intake_router, prefix="/admin/intake")
 router.include_router(forwarding_router, prefix="/forward")
 router.include_router(hooks_router, prefix="/hooks")
 
