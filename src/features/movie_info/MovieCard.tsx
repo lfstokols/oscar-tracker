@@ -223,6 +223,6 @@ function InfoBlock({
 }
 
 function NomCountChip({movie}: {movie: Movie}): React.ReactElement | null {
-  const text = `${movie.numNoms} Nomination${movie.numNoms > 1 ? 's' : ''}`;
+  const text = `${movie.numNoms} Nom${movie.numNoms > 1 ? 's' : ''}`;
   return <Chip label={text} size="small" variant="outlined" />;
 }
