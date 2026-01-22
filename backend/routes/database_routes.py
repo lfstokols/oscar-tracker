@@ -190,6 +190,13 @@ async def serve_by_category(
     return qu.get_category_completion_dict(year)
 
 
+@router.post("/log-error")
+async def log_frontend_error(request: Request):
+    body = await request.json()
+    logging.error(f"[FRONTEND] {body}")
+    return {"ok": True}
+
+
 @router.get("/next_key_date")
 async def serve_next_key_date() -> api_NextKeyDate | None:
     key_dates = qu.get_key_dates()

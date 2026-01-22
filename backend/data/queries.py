@@ -290,13 +290,18 @@ def format_category_completion_dict(
     output: dict[UserID, dict[CategoryCompletionKey,
                               dict[countTypes, int]]] = {}
     for user_id in result:
+        # Use "total" as the key source since it's always present (Cartesian product)
+        # "seen" and "todo" may be missing for new users with no watch data
+        total_keys = result[user_id].get("total", {})
+        seen_keys = result[user_id].get("seen", {})
+        todo_keys = result[user_id].get("todo", {})
         output[user_id] = {
             key: {
-                "seen": result[user_id]["seen"][key],
-                "todo": result[user_id]["todo"][key],
-                "total": result[user_id]["total"][key],
+                "seen": seen_keys.get(key, 0),
+                "todo": todo_keys.get(key, 0),
+                "total": total_keys.get(key, 0),
             }
-            for key in result[user_id]["seen"]
+            for key in total_keys
         }
     return output
 
