@@ -9,16 +9,21 @@ const logError = (data: Record<string, unknown>) => {
   fetch('/api/log-error', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({...data, url: location.href, timestamp: new Date().toISOString()}),
+    body: JSON.stringify({
+      ...data,
+      url: location.href,
+      timestamp: new Date().toISOString(),
+    }),
   }).catch(() => {});
 };
 
-window.addEventListener('error', (e) => {
-  const stack = 'stack' in e.error ? (e.error as {'stack': unknown}).stack : undefined;  
+window.addEventListener('error', e => {
+  const stack =
+    'stack' in e.error ? (e.error as {stack: unknown}).stack : undefined;
   logError({type: 'error', message: e.message, stack: stack});
 });
 
-window.addEventListener('unhandledrejection', (e) => {
+window.addEventListener('unhandledrejection', e => {
   logError({type: 'unhandledrejection', message: String(e.reason)});
 });
 
