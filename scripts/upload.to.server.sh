@@ -198,6 +198,7 @@ function upload_release {
         chmod 640 $remote_version_dir/alembic.ini
         ln -sfn $REMOTE_ROOT/.env $remote_version_dir/.env
         ln -sfn $REMOTE_ROOT/var $remote_version_dir/var
+        ln -sfn $REMOTE_ROOT/asgi.py $remote_version_dir/asgi.py
     "
 }
 
@@ -236,6 +237,8 @@ function install_green_venv {
         $(set_venv_permissions "$REMOTE_ROOT/$target_venv")
     "
     echo "Production dependencies installed." >&2
+    # Return the venv we just installed
+    echo "$target_venv"
 }
 
 
@@ -269,10 +272,11 @@ function update_beta_symlinks {
 }
 
 function run_migrations {
-    # Run alembic migrations with backup
-    # Args: $1 = working directory (contains var/), $2 = venv path
+    # Run alembic migrations with backup and rollback on failure
+    # Args: $1 = working directory (contains var/), $2 = venv path, $3 = service name to restart on failure
     local work_dir=$1
     local venv_path=$2
+    local rollback_service=${3:-}
     local backup_name
     backup_name=$(date "+%Y-%m-%d_%H-%M-%S")_db.premigration.sqlite
 
@@ -291,13 +295,38 @@ function run_migrations {
             exit 0
         fi
 
-        # Backup database
+        # Backup database using sqlite3 .backup (safe for WAL mode)
         if [ -f \$db_path ]; then
-            cp \$db_path \$backup_path
+            mkdir -p var/backups
+            sqlite3 \$db_path \".backup '\$backup_path'\"
             echo \"Database backed up to \$backup_path\"
         fi
-        # Run migrations
-        ROOT_DIR=$work_dir $venv_path/bin/alembic upgrade head
+
+        # Run migrations with rollback on failure
+        if ! ROOT_DIR=$work_dir $venv_path/bin/alembic upgrade head; then
+            echo 'ERROR: Migration failed!' >&2
+
+            # Stash the broken database for debugging
+            if [ -f \$db_path ]; then
+                failed_path=var/backups/\$(date '+%Y-%m-%d_%H-%M-%S')_db.failed.sqlite
+                mv \$db_path \$failed_path
+                echo \"Broken database stashed at \$failed_path\" >&2
+            fi
+
+            # Restore from backup
+            if [ -f \$backup_path ]; then
+                cp \$backup_path \$db_path
+                echo 'Database restored from backup.' >&2
+            fi
+
+            # Restart service if provided (symlinks haven't changed yet)
+            if [ -n \"$rollback_service\" ]; then
+                echo 'Restarting service after rollback...' >&2
+                sudo systemctl start $rollback_service
+            fi
+
+            exit 1
+        fi
         echo 'Migrations complete.'
     "
     echo "Database migrations finished." >&2
@@ -342,16 +371,18 @@ fi
 
 if "$do_install"; then
     if [ "$mode" = "live" ]; then
-        install_green_venv
+        new_venv=$(install_green_venv)
         stop_service "$mode"
+        # Note: migrations use the newly installed venv ($REMOTE_ROOT/$new_venv)
+        # Pass service name for rollback - if migration fails, restart service before exiting
+        run_migrations "$REMOTE_CURRENT" "$REMOTE_ROOT/$new_venv" "$service_name"
         update_production_symlinks
-        # Note: migrations use the newly swapped venv ($REMOTE_ROOT/venv)
-        run_migrations "$REMOTE_CURRENT" "$REMOTE_ROOT/venv"
         start_service "$mode"
     else
         stop_service "$mode"
         update_beta_symlinks
-        run_migrations "$REMOTE_BETA" "$REMOTE_BETA/venv"
+        # Pass service name for rollback - if migration fails, restart service before exiting
+        run_migrations "$REMOTE_BETA" "$REMOTE_BETA/venv" "$service_name"
         start_service "$mode"
     fi
 fi

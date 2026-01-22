@@ -12,7 +12,7 @@ backend/backups/
 Playground.ipynb
 var/database/db.sqlite-wal
 var/database/db.sqlite-shm
-
+fyi/big
 
 # For keeping empty directories git-tracked
-!**/.gitkeep
+!.gitkeep
