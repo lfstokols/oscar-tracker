@@ -25,6 +25,7 @@ function print_help {
     echo "  --name | -n <release_name>: Specify a release name (full directory name)"
     echo "  --deploy-live | --live: Deploy the current release to the live environment"
     echo "  --deploy-beta | --beta: Deploy the current release to the beta environment"
+    echo "  --promote-beta: Deploy the current beta release to live"
     echo "  --help | -h: Print this help message"
     echo "Note: No action is taken by default."
     echo "  Use --upload to upload a new release without deploying it."
@@ -38,6 +39,7 @@ do_install=false
 release_name=
 mode=beta
 skip_confirmation=false
+promote_beta=false
 
 while [[ $# -gt 0 ]]; do
     arg=$1
@@ -58,6 +60,10 @@ while [[ $# -gt 0 ]]; do
         --deploy-beta|--beta)
             mode=beta
             do_install=true
+            shift 1
+            ;;
+        --promote-beta)
+            promote_beta=true
             shift 1
             ;;
         -y)
@@ -84,6 +90,37 @@ declare -r DAEMON_GROUP="$DAEMON_GROUP"
 declare -r SERVICE_NAME="$SERVICE_NAME"
 declare -r BETA_SERVICE_NAME="$BETA_SERVICE_NAME"
 declare -r POETRY="$POETRY"
+ALEMBIC="$REPO_ROOT/.venv/bin/alembic"
+
+
+if "$promote_beta"; then
+    echo "Resolving current beta release..." >&2
+    # Check if backend symlink exists and resolve it
+    # We use readlink -f to get the canonical path
+    beta_target=$(ssh "$MY_SSH" "readlink -f $REMOTE_BETA/backend" || echo "")
+    
+    if [[ -z "$beta_target" ]]; then
+        echo "Error: Could not resolve link $REMOTE_BETA/backend. Is beta deployed?" >&2
+        exit 1
+    fi
+    
+    # Target should be .../releases/<release_name>/backend
+    # We want <release_name>
+    found_release_dir=$(dirname "$beta_target")
+    release_name=$(basename "$found_release_dir")
+    
+    if [[ -z "$release_name" ]] || [[ "$release_name" == "." ]] || [[ "$release_name" == "/" ]]; then
+         echo "Error: Could not extract release name from $beta_target" >&2
+         exit 1
+    fi
+
+    echo "Found beta release: $release_name" >&2
+    
+    # Set mode to live, install=true, upload=false
+    mode=live
+    do_install=true
+    do_upload=false
+fi
 
 if "$do_install" && [[ -z "$release_name" ]]; then
     # Told to install but no release name provided, so implicitly upload a new release.
@@ -108,18 +145,18 @@ remote_version_dir="$REMOTE_RELEASES/$release_name"
 function check_workspace_state {
     # Remember we're definitely in the repo root
     # Check if working dir is clean, otherwise warn and exit 1
-    if ! git diff-index --quiet HEAD -- && [[ $ALLOW_DIRTY != "true" ]]; then
+    if ! git diff-index --quiet HEAD -- && [[ ${ALLOW_DIRTY:-} != "true" ]]; then
         echo "WARNING: Working directory is not clean. Please commit or stash your changes before uploading." >&2
         git status
         exit 1
     fi
     # Make sure alembic is up to date
-    if [[ $ALLOW_STALE_ALEMBIC != "true" ]]; then
-        alembic upgrade head >/dev/null 2>&1 || {
+    if [[ ${ALLOW_STALE_ALEMBIC-} != "true" ]]; then
+        ROOT_DIR=$REPO_ROOT $ALEMBIC upgrade head >/dev/null 2>&1 || {
             echo "WARNING: Database upgrade failed. Please run 'alembic upgrade head' and fix the issue before uploading." >&2
             exit 1
         }
-        alembic check || {
+        ROOT_DIR=$REPO_ROOT $ALEMBIC check || {
             echo "WARNING: Alembic check failed. Your current ORM state has not been synced with alembic." >&2
             exit 1
         }
