@@ -26,6 +26,7 @@ export enum Endpoints {
   movies = 'movies',
   users = 'users',
   myUserData = 'users/my_data',
+  userProfile = 'users/profile',
   nominations = 'nominations',
   categories = 'categories',
   watchlist = 'watchlist',

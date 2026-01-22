@@ -13,6 +13,10 @@ export default defineConfig(({mode}) => {
           target: `http://127.0.0.1:${env.DEVSERVER_PORT}`,
           changeOrigin: true,
         },
+        '/admin/': {
+          target: `http://127.0.0.1:${env.DEVSERVER_PORT}`,
+          changeOrigin: true,
+        },
       },
     },
   };

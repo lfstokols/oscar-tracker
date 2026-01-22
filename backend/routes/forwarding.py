@@ -1,14 +1,17 @@
+import asyncio
 from typing import Any, Literal
 
+import cloudscraper
 import httpx
 from fastapi import APIRouter
+from fastapi.responses import HTMLResponse
 
+import backend.utils.env_reader as env
 from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
 from backend.routing_lib.error_handling import APIArgumentError, externalAPIError
 from backend.types.api_schemas import MovieID, Primitive
-import backend.utils.env_reader as env
 
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_HEADERS = {
@@ -18,9 +21,19 @@ TMDB_HEADERS = {
 
 router = APIRouter()
 
+# Reusable cloudscraper instance for Cloudflare-protected sites
+_letterboxd_scraper = cloudscraper.create_scraper()
+
+
+def _fetch_letterboxd(url: str) -> str:
+    """Synchronous fetch using cloudscraper to bypass Cloudflare."""
+    response = _letterboxd_scraper.get(url)
+    response.raise_for_status()
+    return response.text
+
 
 @router.get("/letterboxd/search")
-async def serve_letterboxd_search(searchTerm: str):
+async def serve_letterboxd_search(searchTerm: str) -> HTMLResponse:
     """
     Just a proxy for letterboxd.com search
     The search term is passed as a query parameter,
@@ -29,9 +42,8 @@ async def serve_letterboxd_search(searchTerm: str):
     The results come in as html and are returned as html.
     """
     url = f"https://letterboxd.com/s/search/members/{searchTerm}"
-    async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-    return response.text
+    html = await asyncio.to_thread(_fetch_letterboxd, url)
+    return HTMLResponse(content=html)
 
 
 @router.get("/get_link")
@@ -39,10 +51,6 @@ async def serve_get_link(id: MovieID, service: Literal["justwatch", "imdb"]) -> 
     """
     Returns a link to the service for the given movie_id and service.
     """
-    if service not in ["justwatch", "imdb"]:
-        raise APIArgumentError(
-            f"Invalid service: {service}", [("service", "query params")]
-        )
     with Session() as session:
         movie = (
             session.query(Movie.movie_db_id, Movie.movie_id)
@@ -64,14 +72,14 @@ async def serve_get_link(id: MovieID, service: Literal["justwatch", "imdb"]) -> 
 
 
 @router.get("/moviedb")
-async def serve_moviedb() -> str:
+async def serve_moviedb() -> HTMLResponse:
     """
     Just a proxy for moviedb.org
     """
     url = "https://www.moviedb.org/"
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-    return response.text
+    return HTMLResponse(content=response.text)
 
 
 @router.get("/tmdb/movie/{tmdb_id}")
@@ -102,7 +110,8 @@ async def get_tmdb_movie_by_movie_id(movie_id: MovieID) -> dict[str, Any]:
             .first()
         )
         if movie is None:
-            raise APIArgumentError(f"Movie not found: {movie_id}", [("movie_id", "path")])
+            raise APIArgumentError(f"Movie not found: {movie_id}", [
+                                   ("movie_id", "path")])
         if movie[0] is None:
             raise APIArgumentError(
                 f"Movie {movie_id} has no TMDB ID", [("movie_id", "path")]

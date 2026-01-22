@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin</title>
+  <style>
+    body { font-family: monospace; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    th, td { border: 1px solid #ccc; padding: 4px 8px; text-align: left; }
+    th { background: #eee; }
+    tr:hover { background: #f5f5f5; }
+    tr.selected { background: #cde; }
+    .panels { display: flex; gap: 20px; }
+    .panel { flex: 1; max-height: 70vh; overflow: auto; }
+    button { margin: 2px; }
+    input, select { margin: 2px; }
+    .editable:hover { background: #ffc; cursor: pointer; }
+    #error { color: red; }
+    #success { color: green; }
+  </style>
+</head>
+<body>
+  <h2>Admin</h2>
+
+  <div>
+    <label>Year: <select id="year" onchange="loadData()">
+      <option value="2024">2024</option>
+      <option value="2023">2023</option>
+    </select></label>
+
+    <button onclick="showTab('movies')">Movies</button>
+    <button onclick="showTab('nominations')">Nominations</button>
+    <span id="error"></span>
+    <span id="success"></span>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <table id="list"><tbody></tbody></table>
+    </div>
+    <div class="panel">
+      <div id="detail">Select an item to edit</div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'movies';
+    let movies = [];
+    let nominations = [];
+    let categories = [];
+    let selected = null;
+
+    async function loadData() {
+      const year = document.getElementById('year').value;
+      try {
+        const [mRes, nRes, cRes] = await Promise.all([
+          fetch(`/api/admin/movies?year=${year}`),
+          fetch(`/api/admin/nominations?year=${year}`),
+          fetch(`/api/admin/categories`)
+        ]);
+        movies = await mRes.json();
+        nominations = await nRes.json();
+        categories = await cRes.json();
+        selected = null;
+        render();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Load failed: ' + e;
+      }
+    }
+
+    function showTab(tab) {
+      currentTab = tab;
+      selected = null;
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('list');
+      const detail = document.getElementById('detail');
+
+      if (currentTab === 'movies') {
+        list.innerHTML = '<tr><th>Title</th><th>IMDB</th><th>Runtime</th></tr>' +
+          movies.map((m, i) =>
+            `<tr class="${selected === i ? 'selected' : ''}" onclick="selectItem(${i})">
+              <td>${m.title}</td>
+              <td>${m.imdb_id || '-'}</td>
+              <td>${m.runtime || '-'}</td>
+            </tr>`
+          ).join('');
+
+        if (selected !== null) {
+          const m = movies[selected];
+          detail.innerHTML = `
+            <h3>${m.title}</h3>
+            <table>
+              <tr><td>ID</td><td>${m.movie_id}</td></tr>
+              <tr><td>Year</td><td>${m.year}</td></tr>
+              <tr><td>Title</td><td class="editable" onclick="editField('title', '${esc(m.title)}')">${m.title}</td></tr>
+              <tr><td>IMDB ID</td><td class="editable" onclick="editField('imdb_id', '${esc(m.imdb_id)}')">${m.imdb_id || '<em>null</em>'}</td></tr>
+              <tr><td>TMDB ID</td><td class="editable" onclick="editField('movie_db_id', '${esc(m.movie_db_id)}')">${m.movie_db_id || '<em>null</em>'}</td></tr>
+              <tr><td>Runtime</td><td class="editable" onclick="editField('runtime', '${m.runtime || ''}')">${m.runtime || '<em>null</em>'}</td></tr>
+              <tr><td>Poster Path</td><td class="editable" onclick="editField('poster_path', '${esc(m.poster_path)}')">${m.poster_path || '<em>null</em>'}</td></tr>
+              <tr><td>Subtitle Pos</td><td class="editable" onclick="editField('subtitle_position', '${m.subtitle_position || ''}')">${m.subtitle_position || '<em>null</em>'}</td></tr>
+            </table>
+          `;
+        } else {
+          detail.innerHTML = 'Select a movie';
+        }
+      } else {
+        list.innerHTML = '<tr><th>Category</th><th>Movie</th><th>Note</th></tr>' +
+          nominations.map((n, i) =>
+            `<tr class="${selected === i ? 'selected' : ''}" onclick="selectItem(${i})">
+              <td>${n.category_name}</td>
+              <td>${n.movie_title}</td>
+              <td>${n.note || '-'}</td>
+            </tr>`
+          ).join('');
+
+        if (selected !== null) {
+          const n = nominations[selected];
+          const catOptions = categories.map(c =>
+            `<option value="${c.category_id}" ${c.category_id === n.category_id ? 'selected' : ''}>${c.short_name}</option>`
+          ).join('');
+          const movieOptions = movies.map(m =>
+            `<option value="${m.movie_id}" ${m.movie_id === n.movie_id ? 'selected' : ''}>${m.title}</option>`
+          ).join('');
+
+          detail.innerHTML = `
+            <h3>${n.category_name}: ${n.movie_title}</h3>
+            <table>
+              <tr><td>ID</td><td>${n.nomination_id}</td></tr>
+              <tr><td>Year</td><td>${n.year}</td></tr>
+              <tr><td>Movie</td><td><select onchange="saveNomField('movie_id', this.value)">${movieOptions}</select></td></tr>
+              <tr><td>Category</td><td><select onchange="saveNomField('category_id', this.value)">${catOptions}</select></td></tr>
+              <tr><td>Note</td><td class="editable" onclick="editField('note', '${esc(n.note)}')">${n.note || '<em>null</em>'}</td></tr>
+            </table>
+          `;
+        } else {
+          detail.innerHTML = 'Select a nomination';
+        }
+      }
+    }
+
+    function esc(s) {
+      return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function selectItem(i) {
+      selected = i;
+      render();
+    }
+
+    function editField(field, currentValue) {
+      const newValue = prompt(`Edit ${field}:`, currentValue === 'null' ? '' : currentValue);
+      if (newValue === null) return;
+
+      if (currentTab === 'movies') {
+        saveMovieField(field, newValue);
+      } else {
+        saveNomField(field, newValue);
+      }
+    }
+
+    async function saveMovieField(field, value) {
+      const m = movies[selected];
+      let sendValue = value === '' ? null : value;
+      if (['runtime', 'subtitle_position'].includes(field) && value !== '') {
+        sendValue = parseInt(value, 10);
+      }
+
+      try {
+        const res = await fetch(`/api/admin/movies/${m.movie_id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({[field]: sendValue})
+        });
+        if (!res.ok) throw new Error('Save failed');
+        const updated = await res.json();
+        movies[selected] = updated;
+        document.getElementById('success').textContent = 'Saved!';
+        setTimeout(() => document.getElementById('success').textContent = '', 2000);
+        render();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e;
+      }
+    }
+
+    async function saveNomField(field, value) {
+      const n = nominations[selected];
+      const sendValue = value === '' ? null : value;
+
+      try {
+        const res = await fetch(`/api/admin/nominations/${n.nomination_id}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({[field]: sendValue})
+        });
+        if (!res.ok) throw new Error('Save failed');
+        const updated = await res.json();
+        nominations[selected] = updated;
+        document.getElementById('success').textContent = 'Saved!';
+        setTimeout(() => document.getElementById('success').textContent = '', 2000);
+        render();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e;
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

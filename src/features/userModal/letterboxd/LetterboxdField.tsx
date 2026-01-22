@@ -1,6 +1,7 @@
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import {
   useMutation,
   useQueryClient,
@@ -143,6 +144,9 @@ function EditableLetterboxdField({
             Cancel
           </Button>
         </Stack>
+        <Typography fontStyle="italic" variant="caption">
+          Other users may be able to see your letterboxd username.
+        </Typography>
       </Stack>
     </Card>
   );

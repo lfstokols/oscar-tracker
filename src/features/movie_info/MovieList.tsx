@@ -25,7 +25,7 @@ function GridItem({
   onCardClick: (movie: Movie) => void;
 }): React.ReactElement {
   return (
-    <Grid key={movie.id} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+    <Grid key={movie.id} size={{xs: 12, sm: 12, md: 6, lg: 4, xl: 3}}>
       <MovieCard movie={movie} onClick={() => onCardClick(movie)} />
     </Grid>
   );
@@ -147,7 +147,7 @@ function shortsSection(
 ): React.ReactElement[] {
   if (shortsAreOneFilm) {
     return [
-      <Grid key={type} size={{xs: 12, sm: 6, md: 4, lg: 3, xl: 2}}>
+      <Grid key={type} size={{xs: 12, sm: 12, md: 6, lg: 4, xl: 3}}>
         <ShortsCard
           movies={movies}
           onClick={() => {

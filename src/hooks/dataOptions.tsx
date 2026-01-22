@@ -8,7 +8,9 @@ import {
   MovieListSchema,
   MyUserDataSchema,
   NomListSchema,
+  UserId,
   UserListSchema,
+  UserProfileSchema,
   UserStatsListSchema,
   WatchListSchema,
 } from '../types/APIDataSchema';
@@ -44,6 +46,18 @@ export function myUserDataOptions(userId: UserId) {
       Endpoints.myUserData,
       {userId: userId.toString()},
       MyUserDataSchema.parse,
+    ),
+    retry: retryFunction,
+  });
+}
+
+export function userProfileOptions(userId: UserId) {
+  return queryOptions({
+    queryKey: ['userProfile', userId],
+    queryFn: qFunction(
+      Endpoints.userProfile,
+      {userId: userId.toString()},
+      UserProfileSchema.parse,
     ),
     retry: retryFunction,
   });

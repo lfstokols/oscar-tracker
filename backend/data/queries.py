@@ -94,6 +94,30 @@ async def get_my_user_data(userId: UserID) -> dict[str, Any]:
     return data
 
 
+async def get_user_profile(userId: UserID) -> dict[str, Any]:
+    """Get public profile data for any user, including profile picture."""
+    query = sa.select(
+        User.user_id.label("id"),
+        User.username,
+        User.letterboxd,
+    ).select_from(User)
+    query = query.where(User.user_id == userId)
+    with Session() as session:
+        result = session.execute(query)
+        data = result_to_dict(result)
+    if data is None or len(data) == 0:
+        logging.error(
+            f"User with id {userId} not found @ qu.get_user_profile({userId})"
+        )
+        raise Exception(
+            f"User with id {userId} not found @ qu.get_user_profile({userId})"
+        )
+    data = data[0]
+    letterboxd = data.pop("letterboxd")  # Don't expose letterboxd username
+    data["propic"] = await get_user_propic(letterboxd)
+    return data
+
+
 async def get_user_propic(letterboxd_username: str | None) -> str | None:
     if letterboxd_username is None:
         return None

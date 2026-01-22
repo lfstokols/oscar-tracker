@@ -5,13 +5,14 @@ import {
   Card,
   CardActions,
   CardContent,
+  Chip,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
-import { Suspense, isValidElement } from 'react';
-import { Movie } from '../../types/APIDataSchema';
+import {Suspense, cloneElement, isValidElement} from 'react';
+import {Movie} from '../../types/APIDataSchema';
 import QuickNominations from './QuickNominations';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
@@ -56,14 +57,16 @@ export function GenericMovieCard({
             }
           : {},
       }}>
-      <CardContent sx={{display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-        {image}
-        <InfoBlock
-          extras={metadata}
-          mainData={details}
-          subtitle={subtitle}
-          title={title}
-        />
+      <CardContent sx={{p: 1.5, '&:last-child': {pb: 1.5}}}>
+        <Stack direction="row" gap={1.5}>
+          {image}
+          <InfoBlock
+            extras={metadata}
+            mainData={details}
+            subtitle={subtitle}
+            title={title}
+          />
+        </Stack>
       </CardContent>
       <CardActions
         onClick={e => {
@@ -90,12 +93,18 @@ export default function MovieCard({
   movie,
   onClick,
 }: Props & {onClick?: () => void}): React.ReactElement {
+  const metadata = (
+    <Stack direction="row" flexWrap="wrap" gap={0.5}>
+      <NomCountChip key="nom-count" movie={movie} />
+      <RuntimeChip key="runtime" movie={movie} />
+    </Stack>
+  );
   return (
     <GenericMovieCard
       details={<QuickNominations movie={movie} />}
       footer={<WatchlistFooter movieId={movie.id} />}
       image={<MoviePoster movie={movie} />}
-      metadata={[<RuntimeChip key="runtime" movie={movie} />]}
+      metadata={[metadata]}
       onClick={onClick}
       subtitle={movie.subtitle}
       title={movie.mainTitle}
@@ -122,9 +131,19 @@ function InfoBlock({
   mainData: React.ReactElement | React.ReactElement[];
   extras?: React.ReactElement | React.ReactElement[];
 }): React.ReactElement {
-  const mainDataElements = Array.isArray(mainData) ? mainData : [mainData];
+  const mainDataElements = Array.isArray(mainData)
+    ? mainData.map((el, i) =>
+        isValidElement(el) && el.key == null
+          ? cloneElement(el, {key: `main-data-${i}`})
+          : el,
+      )
+    : [
+        isValidElement(mainData) && mainData.key == null
+          ? cloneElement(mainData, {key: 'main-data-0'})
+          : mainData,
+      ];
   return (
-    <CardContent sx={{p: 0, flex: 1, minWidth: 0}}>
+    <Box sx={{flex: 1, minWidth: 0}}>
       <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
         {title}
       </Typography>
@@ -153,56 +172,11 @@ function InfoBlock({
         })}
         {extras}
       </Stack>
-    </CardContent>
+    </Box>
   );
 }
 
-// function MovieInfo({movie}: {movie: Movie}): React.ReactElement {
-//   return (
-//     <InfoBlock
-//       extras={<RuntimeChip movie={movie} />}
-//       mainData={<NominationsBlock movie={movie} />}
-//       subtitle={movie.subtitle}
-//       title={movie.mainTitle}
-//     />
-//   );
-// }
-//   return (
-//     <CardContent sx={{p: 0, flex: 1, minWidth: 0}}>
-//       <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
-//         {movie.mainTitle}
-//       </Typography>
-//       {!!movie.subtitle && (
-//         <Typography color="text.secondary" noWrap variant="body2">
-//           <i>{movie.subtitle}</i>
-//         </Typography>
-//       )}
-//       <Stack
-//         direction="column"
-//         flexWrap="wrap"
-//         gap={0.5}
-//         sx={{mt: 1}}
-//         useFlexGap>
-//         <NominationsBlock movie={movie} />
-//         <RuntimeChip movie={movie} />
-//       </Stack>
-//     </CardContent>
-//   );
-// }
-
-// function NominationsBlock({movie}: {movie: Movie}): React.ReactElement {
-//   const {year} = useOscarAppContext();
-//   const [nominationsQ, categoriesQ] = useSuspenseQueries({
-//     queries: [nomOptions(year), categoryOptions()],
-//   });
-//   const categories = categoriesQ.data;
-//   const nominations = nominationsQ.data;
-//   return (
-//     <NominationsCell
-//       categories={categories}
-//       movieId={movie.id}
-//       nominations={nominations}
-//       putInCell={false}
-//     />
-//   );
-// }
+function NomCountChip({movie}: {movie: Movie}): React.ReactElement | null {
+  const text = `${movie.numNoms} Nomination${movie.numNoms > 1 ? 's' : ''}`;
+  return <Chip label={text} size="small" variant="outlined" />;
+}

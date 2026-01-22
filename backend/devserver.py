@@ -11,6 +11,7 @@ from starlette.middleware.sessions import (
 )
 
 import backend.utils.env_reader as env
+from backend.routes.admin_routes import page_router as admin_page_router
 from backend.routes.database_routes import router as oscars_router
 from backend.routing_lib.error_handling import apply_error_handling
 from backend.routing_lib.user_session import SessionMiddleware as MySessionMiddleware
@@ -48,6 +49,7 @@ app = FastAPI(lifespan=lifespan)
 
 # Include the API routes
 app.include_router(oscars_router, prefix="/api")
+app.include_router(admin_page_router, prefix="/admin")
 
 
 # Middleware runs in REVERSE order of registration

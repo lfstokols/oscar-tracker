@@ -30,6 +30,7 @@ export default function HomeTab(): React.ReactElement {
           <TableControls
             filterState={filterState}
             setFilterState={setFilterState}
+            type="cards"
           />
           <MovieList filterState={filterState} />
         </DefaultTabContainer>

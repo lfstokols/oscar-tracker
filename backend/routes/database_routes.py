@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 import backend.data.mutations as mu
 import backend.data.queries as qu
 import backend.routing_lib.request_parser as parser
+from backend.routes.admin_routes import router as admin_router
 from backend.routes.forwarding import router as forwarding_router
 from backend.routes.hooks import router as hooks_router
 from backend.routing_lib.error_handling import APIArgumentError
@@ -30,6 +31,7 @@ from backend.types.my_types import *
 
 router = APIRouter()
 
+router.include_router(admin_router, prefix="/admin")
 router.include_router(forwarding_router, prefix="/forward")
 router.include_router(hooks_router, prefix="/hooks")
 
@@ -56,6 +58,15 @@ async def serve_users_GET() -> list[dict[str, Primitive]]:
 @router.get("/users/my_data", response_model=api_MyUserData)
 async def serve_my_user_data(userId: parser.ActiveUserID) -> dict[str, Primitive]:
     return await qu.get_my_user_data(userId)
+
+
+@router.get("/users/profile", response_model=api_User)
+async def serve_user_profile(userId: str) -> dict[str, Primitive]:
+    """Get public profile data (including profile picture) for any user."""
+    validated_id, code = validate_user_id(userId)
+    if code != 0:
+        raise APIArgumentError("Invalid user id", [("userId", "query params")])
+    return await qu.get_user_profile(validated_id)
 
 
 @router.post("/users", response_model=api_NewUserResponse)

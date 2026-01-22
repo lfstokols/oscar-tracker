@@ -3,7 +3,7 @@ import {useSuspenseQuery} from '@tanstack/react-query';
 import {Suspense} from 'react';
 
 import {ErrorBoundary} from 'react-error-boundary';
-import {myUserDataOptions} from '../hooks/dataOptions';
+import {userProfileOptions} from '../hooks/dataOptions';
 
 export default function UserAvatarWrapper({
   userId,
@@ -34,7 +34,7 @@ export function UserAvatar({
   userId: UserId;
   username: string;
 }) {
-  const response = useSuspenseQuery(myUserDataOptions(userId));
+  const response = useSuspenseQuery(userProfileOptions(userId));
   const propic = response.data.propic;
   if (!propic) {
     return <Avatar>{username.charAt(0).toUpperCase()}</Avatar>;

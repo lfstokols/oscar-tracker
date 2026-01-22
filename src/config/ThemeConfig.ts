@@ -1,5 +1,5 @@
 import {createTheme} from '@mui/material/styles';
-import { SEEN_COLOR, TODO_COLOR, TODO_CONTRAST_COLOR } from './StyleChoices';
+import {SEEN_COLOR, TODO_COLOR, TODO_CONTRAST_COLOR} from './StyleChoices';
 declare module '@mui/material/styles' {
   interface Palette {
     seen: Palette['primary'];
@@ -27,7 +27,7 @@ export default {
     // error: {
     //   main: red.A400,
     // },
-    seen: {main: SEEN_COLOR, },
+    seen: {main: SEEN_COLOR},
     todo: {main: TODO_COLOR, contrastText: TODO_CONTRAST_COLOR},
   },
   components: {

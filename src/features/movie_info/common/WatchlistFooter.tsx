@@ -1,7 +1,7 @@
 import {Chip, Stack, Typography} from '@mui/material';
 import {useSuspenseQuery} from '@tanstack/react-query';
-import { ClickableTooltip } from '../../../components/ClickableTooltip';
-import { SEEN_ICON, TODO_ICON } from '../../../components/Icons';
+import {ClickableTooltip} from '../../../components/ClickableTooltip';
+import {SEEN_ICON, TODO_ICON} from '../../../components/Icons';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {WatchStatus} from '../../../types/Enums';
@@ -13,7 +13,6 @@ declare module '@mui/material/Chip' {
     todo: true;
   }
 }
-
 
 export default function WatchlistFooter({
   movieId,
@@ -64,7 +63,15 @@ function OtherUsersWatchSummaryItem({
   text: string;
 }): React.ReactElement {
   // const numberText = <Typography color = {color} >{count}</Typography>;
-  const chip = <Chip color = {color} icon={icon} label={count}  size="small" variant="outlined"/>;
+  const chip = (
+    <Chip
+      color={color}
+      icon={icon}
+      label={count}
+      size="small"
+      variant="outlined"
+    />
+  );
 
   return (
     <ClickableTooltip popup={`${count} other users ${text} this movie`}>
@@ -82,8 +89,18 @@ function OtherUsersWatchSummary({
 }): React.ReactElement {
   return (
     <Stack direction="row" gap={1}>
-        <OtherUsersWatchSummaryItem color="seen" count={seenCount} icon={SEEN_ICON} text="have seen" />
-        <OtherUsersWatchSummaryItem color="todo" count={todoCount} icon={TODO_ICON} text="plan to watch" />
+      <OtherUsersWatchSummaryItem
+        color="seen"
+        count={seenCount}
+        icon={SEEN_ICON}
+        text="have seen"
+      />
+      <OtherUsersWatchSummaryItem
+        color="todo"
+        count={todoCount}
+        icon={TODO_ICON}
+        text="plan to watch"
+      />
     </Stack>
   );
 }

@@ -29,6 +29,10 @@ export const UserSchema = z.object({
   username: z.string(),
 });
 
+export const UserProfileSchema = UserSchema.extend({
+  propic: z.string().url().nullable(),
+});
+
 export const MovieSchema = z
   .object({
     id: MovieIdSchema,
@@ -82,6 +86,7 @@ export const WatchNoticeSchema = z.object({
 // * Object Types
 export type WatchNotice = z.infer<typeof WatchNoticeSchema>;
 export type User = z.infer<typeof UserSchema>;
+export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type Movie = z.infer<typeof MovieSchema>;
 export type Nom = z.infer<typeof NomSchema>;
 export type Category = z.infer<typeof CategorySchema>;

@@ -32,6 +32,7 @@ export default function FilterRowsWidget({
   isMobile,
   filterState,
   setFilterState,
+  noun,
 }: {
   isMobile: boolean;
   filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
@@ -39,6 +40,7 @@ export default function FilterRowsWidget({
     watchstatus: WatchStatus[];
     categories: CategoryId[];
   }) => void;
+  noun: string;
 }): React.ReactElement {
   const [isOpen, menuPosition, handleClick, handleClose] = useMenuState();
 
@@ -87,7 +89,7 @@ export default function FilterRowsWidget({
         reset={() => {
           setFilterState({watchstatus: [], categories: []});
         }}
-        text="Filter Rows"
+        text={`Filter ${noun}`}
       />
       {!!isOpen && (
         <SelectionMenu

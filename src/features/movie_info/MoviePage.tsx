@@ -358,7 +358,11 @@ function MovieTitleSection({movie}: {movie: Movie}): React.ReactElement {
 }
 
 function MovieDetailsCard({movieId}: {movieId: MovieId}): React.ReactElement {
-  const {data: tmdbData, isPending, isError} = useQuery(tmdbMovieOptions(movieId));
+  const {
+    data: tmdbData,
+    isPending,
+    isError,
+  } = useQuery(tmdbMovieOptions(movieId));
 
   if (isPending) {
     return (

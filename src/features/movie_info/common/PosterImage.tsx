@@ -88,7 +88,10 @@ export default function PosterImage({
             alt={movie.mainTitle}
             onError={() => setHasError(true)}
             onLoad={() => setHasLoaded(true)}
-            src={(width > 185 ? MovieDb_POSTER_URL_XL : MovieDb_POSTER_URL) + movie.posterPath}
+            src={
+              (width > 185 ? MovieDb_POSTER_URL_XL : MovieDb_POSTER_URL) +
+              movie.posterPath
+            }
             style={{
               width: '100%',
               height: '100%',
