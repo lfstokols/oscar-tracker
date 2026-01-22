@@ -13,3 +13,12 @@ export const NO_STATUS_COLOR = 'grey';
 export const SEEN_CONTRAST_COLOR = '#fffde7';
 export const TODO_CONTRAST_COLOR = '#4a2c00';
 export const NO_STATUS_CONTRAST_COLOR = '#e8e8e8';
+
+// Nomination Grouping Colors
+export const BIG_THREE_GROUPING_COLOR = "#FFEB3B";
+export const ACTING_GROUPING_COLOR = "#E53935";
+export const ART_GROUPING_COLOR = '#673AB7';
+export const AUDIO_GROUPING_COLOR = "#2196F3";
+export const FILMKRAFT_GROUPING_COLOR = "#FF5722";
+export const BEST_IN_CLASS_GROUPING_COLOR = "#4CAF50";
+export const SHORT_GROUPING_COLOR = "#9C27B0";

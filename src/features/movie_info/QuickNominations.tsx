@@ -4,8 +4,9 @@ import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {Movie} from '../../types/APIDataSchema';
-import {getGroupingMarker} from '../../utils/CategoryMetadata';
+import {getCategoryIcon} from '../../utils/CategoryMetadata';
 import {getCategoryFromID} from '../../utils/dataSelectors';
+import { CategoryType } from '../../types/Enums';
 
 type CategoryWithNote = Category & {
   note: string | null;
@@ -29,9 +30,11 @@ export default function QuickNominations({
       if (cat === undefined) return undefined;
       return {...cat, note: nom.note};
     })
-    .filter((cat): cat is CategoryWithNote => cat !== undefined);
+    .filter((cat): cat is CategoryWithNote => cat !== undefined)
+    .sort((a, b) => Object.values(CategoryType).indexOf(a.id as CategoryType) - Object.values(CategoryType).indexOf(b.id as CategoryType));
+
   return (
-    <Stack direction="row" flexWrap="wrap" gap={0.5}>
+    <Stack direction="row" flexWrap="wrap" gap={0.5} marginTop={0.5} marginLeft={0.5}>
       {myNomCategories.map(cat => (
         <NominationToken key={cat.id + (cat.note ?? '')} category={cat} />
       ))}
@@ -45,7 +48,7 @@ function NominationToken({category}: {category: Category}): React.ReactElement {
   );
   return (
     <ClickableTooltip popup={popupContent}>
-      {getGroupingMarker(category.grouping)}
+      {getCategoryIcon(category)}
     </ClickableTooltip>
   );
 }

@@ -188,17 +188,17 @@ function InfoBlock({
   mainData: React.ReactElement | React.ReactElement[];
   extras?: React.ReactElement | React.ReactElement[];
 }): React.ReactElement {
-  const mainDataElements = Array.isArray(mainData)
-    ? mainData.map((el, i) =>
-        isValidElement(el) && el.key == null
-          ? cloneElement(el, {key: `main-data-${i}`})
-          : el,
-      )
-    : [
-        isValidElement(mainData) && mainData.key == null
-          ? cloneElement(mainData, {key: 'main-data-0'})
-          : mainData,
-      ];
+  // const mainDataElements = Array.isArray(mainData)
+  //   ? mainData.map((el, i) =>
+  //       isValidElement(el) && el.key == null
+  //         ? cloneElement(el, {key: `main-data-${i}`})
+  //         : el,
+  //     )
+  //   : [
+  //       isValidElement(mainData) && mainData.key == null
+  //         ? cloneElement(mainData, {key: 'main-data-0'})
+  //         : mainData,
+  //     ];
   return (
     <Box sx={{flex: 1, minWidth: 0}}>
       <Typography sx={{fontWeight: 'bold', lineHeight: 1.2}} variant="body1">
@@ -215,19 +215,8 @@ function InfoBlock({
         gap={0.5}
         sx={{mt: 1}}
         useFlexGap>
-        {mainDataElements.map((element, index) => {
-          // Use element's key if available, otherwise use index as fallback
-          const elementKey =
-            isValidElement(element) && element.key != null
-              ? element.key
-              : `main-data-${index}`;
-          return (
-            <Paper key={elementKey} elevation={3}>
-              {element}
-            </Paper>
-          );
-        })}
-        {extras}
+        <Paper elevation={3}>{mainData}</Paper>
+        <Stack paddingTop={0.5}>{extras}</Stack>
       </Stack>
     </Box>
   );
