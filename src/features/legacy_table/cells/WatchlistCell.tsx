@@ -1,4 +1,5 @@
 import {Error as ErrorIcon} from '@mui/icons-material';
+import {Add} from '@mui/icons-material';
 import {LinearProgress, TableCell, Typography} from '@mui/material';
 import {
   useMutation,
@@ -10,8 +11,11 @@ import {Suspense} from 'react';
 import {ClickableTooltip} from '../../../components/ClickableTooltip';
 import {
   NO_STATUS_COLOR,
+  NO_STATUS_CONTRAST_COLOR,
   SEEN_COLOR,
+  SEEN_CONTRAST_COLOR,
   TODO_COLOR,
+  TODO_CONTRAST_COLOR,
 } from '../../../config/StyleChoices';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {
@@ -104,12 +108,12 @@ function createStatusSwitcher(
   };
 }
 
-function display(watchstate: WatchStatus): string {
+function display(watchstate: WatchStatus): React.ReactNode {
   return watchstate === WatchStatus.seen
     ? 'Seen'
     : watchstate === WatchStatus.todo
       ? 'To-Do'
-      : '\u00A0';
+      : <Add />; //'\u00A0';
 }
 
 type FillProps = {
@@ -122,17 +126,24 @@ export function MyFill({
   handleInteract,
   disabled,
 }: FillProps): React.ReactElement {
+  const backgroundColor = watchstate === WatchStatus.blank
+    ? NO_STATUS_COLOR
+    : watchstate === WatchStatus.seen
+      ? SEEN_COLOR
+      : TODO_COLOR;
+  const textColor = watchstate === WatchStatus.blank
+    ? NO_STATUS_CONTRAST_COLOR
+    : watchstate === WatchStatus.seen
+      ? SEEN_CONTRAST_COLOR
+      : TODO_CONTRAST_COLOR;
   return (
     <Typography
       onClick={handleInteract}
       sx={{
         cursor: disabled ? 'not-allowed' : 'pointer',
-        backgroundColor:
-          watchstate === WatchStatus.blank
-            ? NO_STATUS_COLOR
-            : watchstate === WatchStatus.seen
-              ? SEEN_COLOR
-              : TODO_COLOR,
+        backgroundColor,
+        color: textColor,
+        fontWeight: 600,
         opacity: disabled ? 0.7 : 1,
         minHeight: '32px',
         width: '60px',
@@ -143,8 +154,20 @@ export function MyFill({
         justifyContent: 'center',
         userSelect: 'none',
         lineHeight: 1,
+        borderTop: '2px solid rgba(255,255,255,0.4)',
+        borderLeft: '2px solid rgba(255,255,255,0.4)',
+        borderBottom: '2px solid rgba(0,0,0,0.2)',
+        borderRight: '2px solid rgba(0,0,0,0.2)',
+        '&:active': disabled
+          ? {}
+          : {
+              borderTop: '2px solid rgba(0,0,0,0.2)',
+              borderLeft: '2px solid rgba(0,0,0,0.2)',
+              borderBottom: '2px solid rgba(255,255,255,0.4)',
+              borderRight: '2px solid rgba(255,255,255,0.4)',
+            },
       }}
-      variant="body2">
+      variant="body1">
       {display(watchstate)}
     </Typography>
   );

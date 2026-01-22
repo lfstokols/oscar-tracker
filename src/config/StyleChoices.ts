@@ -9,5 +9,7 @@ export const BACKGROUND_COLOR = 'background';
 
 export const SEEN_COLOR = 'green';
 export const TODO_COLOR = 'orange';
-export const NO_STATUS_COLOR = 'lightgrey';
-export const TODO_CONTRAST_COLOR = 'white';
+export const NO_STATUS_COLOR = 'grey';
+export const SEEN_CONTRAST_COLOR = '#fffde7';
+export const TODO_CONTRAST_COLOR = '#4a2c00';
+export const NO_STATUS_CONTRAST_COLOR = '#e8e8e8';
