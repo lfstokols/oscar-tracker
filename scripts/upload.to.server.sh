@@ -168,14 +168,14 @@ function check_workspace_state {
 function upload_release {
     echo "Beginning upload process..." >&2
     #* 1. Build the project, if user request it or times out
-    read -t 4 -p "Do we need to rebuild dist? (Y/n) " -n 1 -r BUILD_PROJECT || BUILD_PROJECT="Y"
-    echo # Add newline after prompt
-    if [ "$BUILD_PROJECT" = "N" ] || [ "$BUILD_PROJECT" = "n" ]; then
-        echo "Skipping build..." >&2
-    else
-        echo "Building project..." >&2
-        npm run build:prod
-    fi
+    # read -t 4 -p "Do we need to rebuild dist? (Y/n) " -n 1 -r BUILD_PROJECT || BUILD_PROJECT="Y"
+    # echo # Add newline after prompt
+    # if [ "$BUILD_PROJECT" = "N" ] || [ "$BUILD_PROJECT" = "n" ]; then
+    #     echo "Skipping build..." >&2
+    # else
+    #     echo "Building project..." >&2
+    #     npm run build:prod
+    # fi
 
     #* 2. Create new timespamped dir in $REMOTE_RELEASES
     ssh "$MY_SSH" "mkdir -p $remote_version_dir"
@@ -235,7 +235,7 @@ function install_green_venv {
         set -e
         VIRTUAL_ENV=$REMOTE_ROOT/$target_venv $POETRY install --sync --no-root --directory $remote_version_dir &&
         $(set_venv_permissions "$REMOTE_ROOT/$target_venv")
-    "
+    " >&2
     echo "Production dependencies installed." >&2
     # Return the venv we just installed
     echo "$target_venv"

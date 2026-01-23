@@ -3,7 +3,7 @@ import * as React from 'react';
 import {Suspense, useEffect, useRef, useState} from 'react';
 import {ErrorBoundary} from 'react-error-boundary';
 import AppErrorScreen from '../components/AppErrorScreen';
-import {LoadScreen} from '../components/LoadScreen';
+import {InvisibleFallback} from '../components/LoadScreen';
 import AppHeader from '../features/app_header/AppHeader';
 import {useIsMobile} from '../hooks/useIsMobile';
 import AppContent from './AppContent';
@@ -24,7 +24,7 @@ export default function App(): React.ReactElement {
 
   return (
     <ErrorBoundary fallback={<AppErrorScreen isFullScreen />}>
-      <Suspense fallback={<LoadScreen />}>
+      <Suspense fallback={<InvisibleFallback />}>
         <AppProvider>
           <ReactQueryDevtools />
           <div
