@@ -16,7 +16,7 @@ export const NO_STATUS_CONTRAST_COLOR = '#e8e8e8';
 
 // Nomination Grouping Colors
 const _pink = '#fc03c2';
-const _orange = '#FF5722';
+const _orange = '#FF5722'; // #FF7043 ?
 const _red = '#E53935';
 const _violet ='#673AB7';
 const _blue = '#2196F3';

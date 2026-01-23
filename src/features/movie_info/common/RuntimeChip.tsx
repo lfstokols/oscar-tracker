@@ -1,7 +1,7 @@
 import {Chip} from '@mui/material';
 import {Movie} from '../../../types/APIDataSchema';
 
-function formatRuntime(
+export function formatRuntime(
   hours: string | null,
   minutes: number | null,
 ): string | null {

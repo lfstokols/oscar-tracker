@@ -23,7 +23,7 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {CategoryIdSchema, Movie} from '../../types/APIDataSchema';
 import QuickNominations from './QuickNominations';
 import PosterImage from './common/PosterImage';
-import RuntimeChip from './common/RuntimeChip';
+import RuntimeChip, { formatRuntime } from './common/RuntimeChip';
 import WatchlistFooter from './common/WatchlistFooter';
 
 type Props = {
@@ -53,6 +53,7 @@ export function GenericMovieCard({
 }: GenericMovieCardProps): React.ReactElement {
   return (
     <Card
+      raised={true}
       onClick={onClick}
       sx={{
         ...borderSx,
@@ -71,15 +72,29 @@ export function GenericMovieCard({
       <CardContent sx={{p: 1.5, '&:last-child': {pb: 1.5}}}>
         <Stack direction="row" gap={1.5}>
           {image}
-          <InfoBlock
-            extras={metadata}
-            mainData={details}
-            subtitle={subtitle}
-            title={title}
-          />
+          <Stack direction="column" gap={1} width="100%">
+            <InfoBlock
+              extras={metadata}
+              mainData={details}
+              subtitle={subtitle}
+              title={title}
+              />
+            <Stack
+              direction="row"
+              alignItems="end"
+              justifyContent="space-between"
+              onClick={e => {
+                // Prevent card click when clicking on footer actions
+                e.stopPropagation();
+              }}>
+              <Suspense fallback={<Skeleton height={32} width={120} />}>
+                {footer}
+              </Suspense>
+            </Stack>
+          </Stack>
         </Stack>
       </CardContent>
-      <CardActions
+      {/* <CardActions
         onClick={e => {
           // Prevent card click when clicking on footer actions
           e.stopPropagation();
@@ -95,7 +110,7 @@ export function GenericMovieCard({
         <Suspense fallback={<Skeleton height={32} width={120} />}>
           {footer}
         </Suspense>
-      </CardActions>
+      </CardActions> */}
     </Card>
   );
 }
@@ -145,16 +160,20 @@ export default function MovieCard({
       : importantCategories.isBestPic
         ? {
             borderColor: BEST_PICTURE_COLOR,
-            borderWidth: 3,
-            borderStyle: 'groove',
+            borderWidth: '0px 0px 0px 2px',
+            borderStyle: 'solid',
           }
         : undefined;
+
+  const runtimeText = getRuntimeText(movie);
+
   const metadata = (
-    <Stack direction="row" flexWrap="wrap" gap={0.5}>
-      <NomCountChip key="nom-count" movie={movie} />
-      <RuntimeChip key="runtime" movie={movie} />
-    </Stack>
+    <Typography variant="caption">
+      {getNomCountText(movie)}
+      {runtimeText != null ? ` • ${runtimeText}` : ''}
+    </Typography>
   );
+
   return (
     <GenericMovieCard
       borderSx={borderSx}
@@ -213,16 +232,18 @@ function InfoBlock({
         direction="column"
         flexWrap="wrap"
         gap={0.5}
-        sx={{mt: 1}}
         useFlexGap>
+        <Stack>{extras}</Stack>
         <Paper elevation={3}>{mainData}</Paper>
-        <Stack paddingTop={0.5}>{extras}</Stack>
       </Stack>
     </Box>
   );
 }
 
-function NomCountChip({movie}: {movie: Movie}): React.ReactElement | null {
-  const text = `${movie.numNoms} Nom${movie.numNoms > 1 ? 's' : ''}`;
-  return <Chip label={text} size="small" variant="outlined" />;
+function getNomCountText(movie: Movie): string {
+  return `${movie.numNoms} nom${movie.numNoms > 1 ? 's' : ''}`;
+}
+
+function getRuntimeText(movie: Movie): string | null {
+  return formatRuntime(movie.runtime_hours, movie.runtime_minutes);
 }
