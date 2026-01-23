@@ -1,5 +1,5 @@
 import {Chip, Stack, Typography} from '@mui/material';
-import {useSuspenseQueries, useSuspenseQuery} from '@tanstack/react-query';
+import {useSuspenseQueries} from '@tanstack/react-query';
 import {ClickableTooltip} from '../../../components/ClickableTooltip';
 import {SEEN_ICON, TODO_ICON} from '../../../components/Icons';
 import {userOptions, watchlistOptions} from '../../../hooks/dataOptions';
@@ -32,12 +32,8 @@ export default function WatchlistFooter({
 
   // Count other users' statuses
   const otherUsersWatches = movieWatches.filter(w => w.userId !== activeUserId);
-  const seenList = otherUsersWatches.filter(
-    w => w.status === WatchStatus.seen,
-  );
-  const todoList = otherUsersWatches.filter(
-    w => w.status === WatchStatus.todo,
-  );
+  const seenList = otherUsersWatches.filter(w => w.status === WatchStatus.seen);
+  const todoList = otherUsersWatches.filter(w => w.status === WatchStatus.todo);
 
   return (
     <>
@@ -48,7 +44,11 @@ export default function WatchlistFooter({
           Log in to track
         </Typography>
       )}
-      <OtherUsersWatchSummary seenList={seenList} todoList={todoList} users={usersQ.data} />
+      <OtherUsersWatchSummary
+        seenList={seenList}
+        todoList={todoList}
+        users={usersQ.data}
+      />
     </>
   );
 }
@@ -82,11 +82,12 @@ function OtherUsersWatchSummaryItem({
     .filter(user => watchedUserIds.includes(user.id))
     .map(user => user.username);
 
-  const usernamesString = userNames.length === 0
-    ? '0 users'
-    : userNames.length === 1
-      ? userNames[0]
-      : `${userNames.slice(0, -1).join(', ')}, and ${userNames.slice(-1)[0]}`;
+  const usernamesString =
+    userNames.length === 0
+      ? '0 users'
+      : userNames.length === 1
+        ? userNames[0]
+        : `${userNames.slice(0, -1).join(', ')}, and ${userNames.slice(-1)[0]}`;
 
   return (
     <ClickableTooltip popup={`${text} ${usernamesString}`}>
@@ -108,17 +109,17 @@ function OtherUsersWatchSummary({
     <Stack direction="row" gap={1}>
       <OtherUsersWatchSummaryItem
         color="seen"
-        watches={seenList}
-        users={users}
         icon={SEEN_ICON}
         text="Seen by"
+        users={users}
+        watches={seenList}
       />
       <OtherUsersWatchSummaryItem
         color="todo"
-        watches={todoList}
-        users={users}
         icon={TODO_ICON}
         text="Todo for"
+        users={users}
+        watches={todoList}
       />
     </Stack>
   );

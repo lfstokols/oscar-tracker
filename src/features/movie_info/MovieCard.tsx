@@ -3,9 +3,7 @@
 import {
   Box,
   Card,
-  CardActions,
   CardContent,
-  Chip,
   Paper,
   Skeleton,
   Stack,
@@ -21,9 +19,9 @@ import {
 import {categoryOptions, nomOptions} from '../../hooks/dataOptions';
 import {useOscarAppContext} from '../../providers/AppContext';
 import {CategoryIdSchema, Movie} from '../../types/APIDataSchema';
+import {formatRuntime} from '../../utils/formatRuntime';
 import QuickNominations from './QuickNominations';
 import PosterImage from './common/PosterImage';
-import RuntimeChip, { formatRuntime } from './common/RuntimeChip';
 import WatchlistFooter from './common/WatchlistFooter';
 
 type Props = {
@@ -53,8 +51,8 @@ export function GenericMovieCard({
 }: GenericMovieCardProps): React.ReactElement {
   return (
     <Card
-      raised={true}
       onClick={onClick}
+      raised={true}
       sx={{
         ...borderSx,
         display: 'flex',
@@ -78,10 +76,10 @@ export function GenericMovieCard({
               mainData={details}
               subtitle={subtitle}
               title={title}
-              />
+            />
             <Stack
-              direction="row"
               alignItems="end"
+              direction="row"
               justifyContent="space-between"
               onClick={e => {
                 // Prevent card click when clicking on footer actions
@@ -228,11 +226,7 @@ function InfoBlock({
           <i>{subtitle}</i>
         </Typography>
       )}
-      <Stack
-        direction="column"
-        flexWrap="wrap"
-        gap={0.5}
-        useFlexGap>
+      <Stack direction="column" flexWrap="wrap" gap={0.5} useFlexGap>
         <Stack>{extras}</Stack>
         <Paper elevation={3}>{mainData}</Paper>
       </Stack>

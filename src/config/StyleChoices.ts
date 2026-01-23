@@ -18,7 +18,7 @@ export const NO_STATUS_CONTRAST_COLOR = '#e8e8e8';
 const _pink = '#fc03c2';
 const _orange = '#FF5722'; // #FF7043 ?
 const _red = '#E53935';
-const _violet ='#673AB7';
+const _violet = '#673AB7';
 const _blue = '#2196F3';
 const _green = '#4CAF50';
 const _purple = '#9C27B0';
@@ -30,4 +30,3 @@ export const AUDIO_GROUPING_COLOR = 'silver';
 export const FILMKRAFT_GROUPING_COLOR = 'brown';
 export const BEST_IN_CLASS_GROUPING_COLOR = _purple;
 export const SHORT_GROUPING_COLOR = _violet;
-

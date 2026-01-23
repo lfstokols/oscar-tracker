@@ -39,10 +39,15 @@ export default function QuickNominations({
 
   return (
     <Typography variant="subtitle2">
-      <Stack direction="row" flexWrap="wrap" gap={0.5} marginTop={0.5} marginLeft={0.5}>
-          {myNomCategories.map(cat => (
-            <NominationToken key={cat.id + (cat.note ?? '')} category={cat} />
-          ))}
+      <Stack
+        direction="row"
+        flexWrap="wrap"
+        gap={0.5}
+        marginLeft={0.5}
+        marginTop={0.5}>
+        {myNomCategories.map(cat => (
+          <NominationToken key={cat.id + (cat.note ?? '')} category={cat} />
+        ))}
       </Stack>
     </Typography>
   );

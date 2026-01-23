@@ -10,7 +10,7 @@ import backend.utils.env_reader as env
 from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
-from backend.routing_lib.error_handling import APIArgumentError, externalAPIError
+from backend.routing_lib.error_handling import APIArgumentError
 from backend.types.api_schemas import MovieID, Primitive
 
 TMDB_API_BASE = "https://api.themoviedb.org/3"
@@ -91,9 +91,8 @@ async def get_tmdb_movie(tmdb_id: int) -> dict[str, Any]:
     endpoint = f"{TMDB_API_BASE}/movie/{tmdb_id}"
     params = {"append_to_response": "credits,watch/providers"}
     async with httpx.AsyncClient() as client:
-        response = await client.get(endpoint, headers=TMDB_HEADERS, params=params)
-    if response.status_code != 200:
-        raise externalAPIError(f"TMDB API error: {response.status_code}")
+        response = (await client.get(endpoint, headers=TMDB_HEADERS, params=params)).\
+            raise_for_status()
     return response.json()
 
 

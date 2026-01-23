@@ -16,7 +16,7 @@ import {
   UserId,
   WatchList,
 } from '../../types/APIDataSchema';
-import { getCategoryIcon } from '../../utils/CategoryMetadata';
+import {getCategoryIcon} from '../../utils/CategoryMetadata';
 import {Hypotheticality} from '../userStatsTable/Enums';
 import CategoryTooltip from './CategoryTooltip';
 import {get_num, get_total, make_fraction_display} from './utils';
@@ -83,7 +83,7 @@ export default function CategoryRow({
             }}>
             {getCategoryIcon(category, 'medium')}
           </IconButton>
-              <Typography variant="h6">{category.fullName}</Typography>
+          <Typography variant="h6">{category.fullName}</Typography>
         </Stack>
       </TableCell>
       {userList.map(user => (

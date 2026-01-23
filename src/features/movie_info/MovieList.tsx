@@ -177,7 +177,7 @@ function shortsSection(
   shortsAreOneFilm: boolean,
   onCardClick: (movie: Movie) => void,
 ): React.ReactElement[] {
-  if (shortsAreOneFilm) {
+  if (shortsAreOneFilm && movies.length > 0) {
     return [
       <Grid key={type} size={{xs: 12, sm: 12, md: 6, lg: 4, xl: 3}}>
         <Suspense fallback={<MovieCardSkeleton />}>
@@ -185,9 +185,8 @@ function shortsSection(
             movies={movies}
             onClick={() => {
               // Open the first movie in the collection
-              if (movies.length > 0) {
-                onCardClick(movies[0]);
-              }
+              const index = Math.floor(Math.random() * movies.length);
+              void onCardClick(movies[index]);
             }}
             type={type}
           />

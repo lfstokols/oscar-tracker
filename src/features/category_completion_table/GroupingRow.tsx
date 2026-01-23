@@ -57,7 +57,9 @@ export default function GroupingRow({
         {isExpanded ? <KeyboardArrowDownIcon /> : <KeyboardArrowRightIcon />}
       </TableCell>
       <TableCell>
-        <Typography color={getGroupingColor(grouping)} variant="h6">{grouping_display_names[grouping]}</Typography>
+        <Typography color={getGroupingColor(grouping)} variant="h6">
+          {grouping_display_names[grouping]}
+        </Typography>
       </TableCell>
       {userList.map(user => (
         <TableCell key={user} align="center">

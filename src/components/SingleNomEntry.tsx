@@ -3,7 +3,6 @@ import {CategoryList, Nom} from '../types/APIDataSchema';
 import {CategoryType} from '../types/Enums';
 import {getCategoryIcon, getFlag, getSong} from '../utils/CategoryMetadata';
 
-
 export default function Entry({
   nom,
   categories,
@@ -44,11 +43,11 @@ export default function Entry({
   if (compact) {
     return (
       <>
-      {getCategoryIcon(category)}
-      {name + (hasNote ? ': ' : '')}
-      {formattedNote}
-      <br />
-    </>
+        {getCategoryIcon(category)}
+        {name + (hasNote ? ': ' : '')}
+        {formattedNote}
+        <br />
+      </>
     );
   }
   return (

@@ -1,4 +1,3 @@
-
 import AlbumIcon from '@mui/icons-material/Album';
 import ArticleIcon from '@mui/icons-material/Article';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
@@ -7,9 +6,9 @@ import CheckroomIcon from '@mui/icons-material/Checkroom';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
 import DrawIcon from '@mui/icons-material/Draw';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
+import FaceIcon from '@mui/icons-material/Face';
 import MakeupFaceIcon from '@mui/icons-material/Face2';
 import FemaleFaceIcon from '@mui/icons-material/Face3';
-import FaceIcon from '@mui/icons-material/Face';
 import GroupIcon from '@mui/icons-material/Group';
 import LanguageIcon from '@mui/icons-material/Language';
 import MovieIcon from '@mui/icons-material/Movie';

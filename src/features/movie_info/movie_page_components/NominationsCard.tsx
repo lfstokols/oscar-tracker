@@ -12,7 +12,7 @@ import {
 import Entry from '../../../components/SingleNomEntry';
 import {useNavigateToFilterState} from '../../../hooks/useFilterState';
 import {CategoryList, NomList} from '../../../types/APIDataSchema';
-import {Grouping, grouping_display_names} from '../../../types/Enums';
+import {CategoryType, Grouping, grouping_display_names} from '../../../types/Enums';
 import {getFlag, getSong} from '../../../utils/CategoryMetadata';
 
 type NominationWithCategory = {
@@ -125,13 +125,13 @@ function NominationNote({
   if (!nom.note) {
     return null;
   }
-  if (category.id === 'cat_frgn') {
+  if (category.id === CategoryType.foreign_film) {
     return (
       <Typography variant="body2">
         {getFlag(nom.note)} {nom.note}
       </Typography>
     );
-  } else if (category.id === 'cat_song') {
+  } else if (category.id === CategoryType.original_song) {
     return <Typography variant="body2">{getSong(nom.note)}</Typography>;
   } else {
     return (
