@@ -153,3 +153,10 @@ class api_NewWatchlistRequest(BaseModel):
 class api_NextKeyDate(BaseModel):
     timestamp: datetime
     description: str | None = None
+
+
+class api_MovieDbRequest(BaseModel):
+    """This will result in a request to api.themoviedb.org/3/{endpoint}?{params}"""
+    endpoint: str
+    """Everything after the 3/"""
+    params: dict[str, str]

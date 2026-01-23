@@ -34,8 +34,9 @@ export enum Endpoints {
   watchlist = 'watchlist',
   byUser = 'by_user',
   byCategory = 'by_category',
-  letterboxdSearch = 'letterboxd/search',
+  letterboxdSearch = 'forward/letterboxd/search',
   nextKeyDate = 'next_key_date',
+  moviedbForward = 'forward/moviedb',
 }
 
 export enum Grouping {

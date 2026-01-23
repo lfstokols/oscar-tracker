@@ -1,4 +1,5 @@
 import {API_BASE_URL} from '../../../config/GlobalConstants';
+import { Endpoints } from '../../../types/Enums';
 
 export interface LProfile {
   username: string;
@@ -9,7 +10,7 @@ export interface LProfile {
 export default async function SearchProfileDatabase(
   snippet: string,
 ): Promise<LProfile[]> {
-  const base_url = `${API_BASE_URL}/forward/letterboxd/search`;
+  const base_url = `${API_BASE_URL}/${Endpoints.letterboxdSearch}`;
   const url = `${base_url}?searchTerm=${snippet}`;
   const response = await fetch(url);
   const html = await response.text();

@@ -11,7 +11,7 @@ from backend.access_external.get_links import get_Imdb, get_justwatch
 from backend.data.db_connections import Session
 from backend.data.db_schema import Movie
 from backend.routing_lib.error_handling import APIArgumentError
-from backend.types.api_schemas import MovieID, Primitive
+from backend.types.api_schemas import MovieID, Primitive, api_MovieDbRequest
 
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_HEADERS = {
@@ -72,14 +72,19 @@ async def serve_get_link(id: MovieID, service: Literal["justwatch", "imdb"]) -> 
 
 
 @router.get("/moviedb")
-async def serve_moviedb() -> HTMLResponse:
+async def serve_moviedb(request: api_MovieDbRequest) -> HTMLResponse:
     """
     Just a proxy for moviedb.org
     """
     url = "https://www.moviedb.org/"
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
-    return HTMLResponse(content=response.text)
+        response = (
+            await client.get(f"{TMDB_API_BASE}/{request.endpoint}",
+                             params=request.params,
+                             headers=TMDB_HEADERS,
+                             )
+        ).raise_for_status()
+    return HTMLResponse(content=response.json())
 
 
 @router.get("/tmdb/movie/{tmdb_id}")
