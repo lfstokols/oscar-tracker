@@ -42,6 +42,7 @@ export default function MovieRows({
             />
             <NominationsCell
               categories={categories}
+              compact={true}
               movieId={movie.id}
               nominations={nominations}
             />

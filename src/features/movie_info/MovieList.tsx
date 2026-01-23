@@ -1,7 +1,9 @@
 // Mobile-friendly list of MovieCards to replace LegacyTable
+import {Card, CardContent, Skeleton, Stack} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {useSuspenseQueries} from '@tanstack/react-query';
 import * as React from 'react';
+import {Suspense} from 'react';
 import {PopupPage} from '../../components/PopupPage';
 import {
   categoryOptions,
@@ -17,6 +19,34 @@ import MovieCard from './MovieCard';
 import MoviePage from './MoviePage';
 import ShortsCard from './ShortsCard';
 
+function MovieCardSkeleton(): React.ReactElement {
+  return (
+    <Card sx={{display: 'flex', flexDirection: 'column', height: '100%'}}>
+      <CardContent sx={{p: 1.5, '&:last-child': {pb: 1.5}}}>
+        <Stack direction="row" gap={1.5}>
+          <Skeleton height={120} variant="rectangular" width={80} />
+          <Stack gap={0.5} sx={{flex: 1}}>
+            <Skeleton height={24} variant="text" width="60%" />
+            <Skeleton height={20} variant="text" width="40%" />
+            <Skeleton height={48} variant="rectangular" width="100%" />
+          </Stack>
+        </Stack>
+      </CardContent>
+      <Stack
+        direction="row"
+        sx={{
+          borderTop: 1,
+          borderColor: 'divider',
+          px: 1.5,
+          py: 1,
+          mt: 'auto',
+        }}>
+        <Skeleton height={32} variant="rectangular" width={120} />
+      </Stack>
+    </Card>
+  );
+}
+
 function GridItem({
   movie,
   onCardClick,
@@ -26,7 +56,9 @@ function GridItem({
 }): React.ReactElement {
   return (
     <Grid key={movie.id} size={{xs: 12, sm: 12, md: 6, lg: 4, xl: 3}}>
-      <MovieCard movie={movie} onClick={() => onCardClick(movie)} />
+      <Suspense fallback={<MovieCardSkeleton />}>
+        <MovieCard movie={movie} onClick={() => onCardClick(movie)} />
+      </Suspense>
     </Grid>
   );
 }
@@ -148,16 +180,18 @@ function shortsSection(
   if (shortsAreOneFilm) {
     return [
       <Grid key={type} size={{xs: 12, sm: 12, md: 6, lg: 4, xl: 3}}>
-        <ShortsCard
-          movies={movies}
-          onClick={() => {
-            // Open the first movie in the collection
-            if (movies.length > 0) {
-              onCardClick(movies[0]);
-            }
-          }}
-          type={type}
-        />
+        <Suspense fallback={<MovieCardSkeleton />}>
+          <ShortsCard
+            movies={movies}
+            onClick={() => {
+              // Open the first movie in the collection
+              if (movies.length > 0) {
+                onCardClick(movies[0]);
+              }
+            }}
+            type={type}
+          />
+        </Suspense>
       </Grid>,
     ];
   }

@@ -1,43 +1,42 @@
-import type { SvgIconProps } from '@mui/material/SvgIcon/SvgIcon';
-import SvgIcon from '@mui/material/SvgIcon/SvgIcon';
 
-import countries from '../assets/countries.json';
-import musicVideos from '../assets/musicVideos.json';
 import AlbumIcon from '@mui/icons-material/Album';
-import ArchitectureIcon from '@mui/icons-material/Architecture';
 import ArticleIcon from '@mui/icons-material/Article';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import BrushIcon from '@mui/icons-material/Brush';
+import CameraIcon from '@mui/icons-material/Camera';
 import CheckroomIcon from '@mui/icons-material/Checkroom';
 import ContentCutIcon from '@mui/icons-material/ContentCut';
+import DrawIcon from '@mui/icons-material/Draw';
 import EqualizerIcon from '@mui/icons-material/Equalizer';
-import Face4Icon from '@mui/icons-material/Face4';
+import MakeupFaceIcon from '@mui/icons-material/Face2';
+import FemaleFaceIcon from '@mui/icons-material/Face3';
 import FaceIcon from '@mui/icons-material/Face';
 import GroupIcon from '@mui/icons-material/Group';
 import LanguageIcon from '@mui/icons-material/Language';
 import MovieIcon from '@mui/icons-material/Movie';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import StarIcon from '@mui/icons-material/Star';
+import SatelliteIcon from '@mui/icons-material/Satellite';
+import StarIcon from '@mui/icons-material/StarRate';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
-import VideocamIcon from '@mui/icons-material/Videocam';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
+import SvgIcon from '@mui/material/SvgIcon/SvgIcon';
+import type {SvgIconProps} from '@mui/material/SvgIcon/SvgIcon';
+import countries from '../assets/countries.json';
+import musicVideos from '../assets/musicVideos.json';
 
 import 'flag-icons/css/flag-icons.min.css';
-import { CategoryType, Grouping } from '../types/Enums';
 import {
-  BIG_THREE_GROUPING_COLOR,
   ACTING_GROUPING_COLOR,
   ART_GROUPING_COLOR,
   AUDIO_GROUPING_COLOR,
-  FILMKRAFT_GROUPING_COLOR,
   BEST_IN_CLASS_GROUPING_COLOR,
+  BIG_THREE_GROUPING_COLOR,
+  FILMKRAFT_GROUPING_COLOR,
   SHORT_GROUPING_COLOR,
 } from '../config/StyleChoices';
+import {CategoryType, Grouping} from '../types/Enums';
 
-const countryCodes: { name: string; flag: string; code: string }[] = countries;
-const songUrls: { title: string; url: string }[] = musicVideos;
-
+const countryCodes: {name: string; flag: string; code: string}[] = countries;
+const songUrls: {title: string; url: string}[] = musicVideos;
 
 export function getFlag(country: string): React.ReactNode {
   //* Convert country names to 2-letter ISO country codes
@@ -62,7 +61,7 @@ export function getSong(song: string): React.ReactNode {
       }}>
       <svg
         height="1.25em"
-        style={{ fill: '#FF0000', position: 'relative', top: '4px' }}
+        style={{fill: '#FF0000', position: 'relative', top: '4px'}}
         viewBox="0 0 24 24">
         <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
       </svg>
@@ -77,10 +76,15 @@ export function getCategoryIcon(
 ): React.ReactNode {
   const Component = getIconNameForCategory(category);
 
-  return <Component htmlColor={getGroupingColor(category.grouping)} fontSize={fontSize} />;
+  return (
+    <Component
+      fontSize={fontSize}
+      htmlColor={getGroupingColor(category.grouping)}
+    />
+  );
 }
 
-function getGroupingColor(grouping: Grouping): string {
+export function getGroupingColor(grouping: Grouping): string {
   switch (grouping) {
     case Grouping.big_three:
       return BIG_THREE_GROUPING_COLOR;
@@ -114,7 +118,7 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
     case CategoryType.best_actor:
       return FaceIcon;
     case CategoryType.best_actress:
-      return Face4Icon;
+      return FemaleFaceIcon;
     case CategoryType.supporting_actor:
     case CategoryType.supporting_actress:
       return GroupIcon;
@@ -123,9 +127,9 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
     case CategoryType.costumes:
       return CheckroomIcon;
     case CategoryType.makeup_and_hair:
-      return BrushIcon;
+      return MakeupFaceIcon;
     case CategoryType.production_design:
-      return ArchitectureIcon;
+      return SatelliteIcon;
     case CategoryType.visual_effects:
       return AutoAwesomeIcon;
 
@@ -139,13 +143,13 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
 
     // Filmkraft
     case CategoryType.cinematography:
-      return VideocamIcon;
+      return CameraIcon;
     case CategoryType.editing:
       return ContentCutIcon;
 
     // Best in Class
     case CategoryType.animated_feature:
-      return SmartToyIcon;
+      return DrawIcon;
     case CategoryType.foreign_film:
       return LanguageIcon;
     case CategoryType.documentary:
@@ -157,4 +161,4 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
     case CategoryType.documentary_short:
       return VideoLibraryIcon;
   }
-} 
+}

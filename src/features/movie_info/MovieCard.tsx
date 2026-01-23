@@ -13,7 +13,7 @@ import {
   Typography,
 } from '@mui/material';
 import {useSuspenseQueries} from '@tanstack/react-query';
-import {Suspense, cloneElement, isValidElement} from 'react';
+import {Suspense} from 'react';
 import {
   BEST_PICTURE_COLOR,
   HIGHLIGHT_ANIMATED_COLOR,

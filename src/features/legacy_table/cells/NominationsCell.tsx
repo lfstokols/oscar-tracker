@@ -15,20 +15,22 @@ export default function NominationsCell({
   categories,
   tableCellProps,
   putInCell = true,
+  compact = false,
 }: {
   movieId: MovieId;
   nominations: NomList;
   categories: CategoryList;
   putInCell?: boolean;
   tableCellProps?: Record<string, unknown>;
+  compact?: boolean;
 }) {
   const [isTruncated, setIsTruncated] = useState(false);
 
   const myNoms = nominations.filter(nom => nom.movieId === movieId);
 
   const entries = putInCell
-    ? decoratedNomEntries({nominations: myNoms, categories})
-    : numberedNomEntries({nominations: myNoms, categories});
+    ? decoratedNomEntries({nominations: myNoms, categories, compact})
+    : numberedNomEntries({nominations: myNoms, categories, compact});
 
   const tooBig = entries.length > maxNomsToShow;
   const remainingEntries = tooBig ? entries.splice(maxNomsToShow - 1) : [];
@@ -76,15 +78,18 @@ export default function NominationsCell({
 function decoratedNomEntries({
   nominations,
   categories,
+  compact = false,
 }: {
   nominations: NomList;
   categories: CategoryList;
   includeNote?: boolean;
+  compact?: boolean;
 }): React.ReactElement[] {
   return nominations.map(nom => (
     <Entry
       key={[nom.categoryId, nom.note].join('|')}
       categories={categories}
+      compact={compact}
       nom={nom}
     />
   ));
@@ -93,9 +98,11 @@ function decoratedNomEntries({
 function numberedNomEntries({
   nominations,
   categories,
+  compact = false,
 }: {
   nominations: NomList;
   categories: CategoryList;
+  compact?: boolean;
 }): React.ReactElement[] {
   type CountedNom = Nom & {repeated: number};
   const countedNominations: CountedNom[] = nominations.reduce((acc, nom) => {
@@ -110,6 +117,7 @@ function numberedNomEntries({
     <Entry
       key={nom.categoryId}
       categories={categories}
+      compact={compact}
       includeNote={false}
       nom={nom}
       repeated={nom.repeated}

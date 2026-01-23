@@ -1,6 +1,6 @@
 import {useCallback, useMemo} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
-import {LEGACY_URL} from '../config/GlobalConstants';
+import {HOME_URL} from '../config/GlobalConstants';
 import {useOscarAppContext} from '../providers/AppContext';
 import {CategoryIdSchema} from '../types/APIDataSchema';
 import {WatchStatus} from '../types/Enums';
@@ -69,7 +69,7 @@ export function useNavigateToFilterState(): (filterState: FilterState) => void {
   return useCallback(
     (filterState: FilterState) => {
       const newSearchParams = createParamsFromFilterState(filterState);
-      void navigate(`/${LEGACY_URL}/${year}/?${newSearchParams.toString()}`);
+      void navigate(`/${HOME_URL}/${year}/?${newSearchParams.toString()}`);
     },
     [navigate, year],
   );
