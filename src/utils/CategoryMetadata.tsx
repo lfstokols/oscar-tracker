@@ -3,25 +3,25 @@ import SvgIcon from '@mui/material/SvgIcon/SvgIcon';
 
 import countries from '../assets/countries.json';
 import musicVideos from '../assets/musicVideos.json';
-import AlbumTwoToneIcon from '@mui/icons-material/AlbumTwoTone';
-import ArchitectureTwoToneIcon from '@mui/icons-material/ArchitectureTwoTone';
-import ArticleTwoToneIcon from '@mui/icons-material/ArticleTwoTone';
-import AutoAwesomeTwoToneIcon from '@mui/icons-material/AutoAwesomeTwoTone';
-import BrushTwoToneIcon from '@mui/icons-material/BrushTwoTone';
-import CheckroomTwoToneIcon from '@mui/icons-material/CheckroomTwoTone';
-import ContentCutTwoToneIcon from '@mui/icons-material/ContentCutTwoTone';
-import EqualizerTwoToneIcon from '@mui/icons-material/EqualizerTwoTone';
-import Face4TwoToneIcon from '@mui/icons-material/Face4TwoTone';
-import FaceTwoToneIcon from '@mui/icons-material/FaceTwoTone';
-import GroupTwoToneIcon from '@mui/icons-material/GroupTwoTone';
-import LanguageTwoToneIcon from '@mui/icons-material/LanguageTwoTone';
-import MovieTwoToneIcon from '@mui/icons-material/MovieTwoTone';
-import MusicNoteTwoToneIcon from '@mui/icons-material/MusicNoteTwoTone';
-import SmartToyTwoToneIcon from '@mui/icons-material/SmartToyTwoTone';
-import StarTwoToneIcon from '@mui/icons-material/StarTwoTone';
-import TravelExploreTwoToneIcon from '@mui/icons-material/TravelExploreTwoTone';
-import VideocamTwoToneIcon from '@mui/icons-material/VideocamTwoTone';
-import VideoLibraryTwoToneIcon from '@mui/icons-material/VideoLibraryTwoTone';
+import AlbumIcon from '@mui/icons-material/Album';
+import ArchitectureIcon from '@mui/icons-material/Architecture';
+import ArticleIcon from '@mui/icons-material/Article';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import BrushIcon from '@mui/icons-material/Brush';
+import CheckroomIcon from '@mui/icons-material/Checkroom';
+import ContentCutIcon from '@mui/icons-material/ContentCut';
+import EqualizerIcon from '@mui/icons-material/Equalizer';
+import Face4Icon from '@mui/icons-material/Face4';
+import FaceIcon from '@mui/icons-material/Face';
+import GroupIcon from '@mui/icons-material/Group';
+import LanguageIcon from '@mui/icons-material/Language';
+import MovieIcon from '@mui/icons-material/Movie';
+import MusicNoteIcon from '@mui/icons-material/MusicNote';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
+import StarIcon from '@mui/icons-material/Star';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import VideocamIcon from '@mui/icons-material/Videocam';
+import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 
 import 'flag-icons/css/flag-icons.min.css';
 import { CategoryType, Grouping } from '../types/Enums';
@@ -73,7 +73,7 @@ export function getSong(song: string): React.ReactNode {
 
 export function getCategoryIcon(
   category: Category,
-  fontSize: SvgIconProps['fontSize'] = 'small',
+  fontSize: SvgIconProps['fontSize'] = 'inherit',
 ): React.ReactNode {
   const Component = getIconNameForCategory(category);
 
@@ -103,58 +103,58 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
   switch (category.id as CategoryType) {
     // Big Three
     case CategoryType.best_picture:
-      return StarTwoToneIcon;
+      return StarIcon;
     case CategoryType.director:
-      return MovieTwoToneIcon;
+      return MovieIcon;
     case CategoryType.original_screenplay:
     case CategoryType.adapted_screenplay:
-      return ArticleTwoToneIcon;
+      return ArticleIcon;
 
     // Acting
     case CategoryType.best_actor:
-      return FaceTwoToneIcon;
+      return FaceIcon;
     case CategoryType.best_actress:
-      return Face4TwoToneIcon;
+      return Face4Icon;
     case CategoryType.supporting_actor:
     case CategoryType.supporting_actress:
-      return GroupTwoToneIcon;
+      return GroupIcon;
 
     // Art
     case CategoryType.costumes:
-      return CheckroomTwoToneIcon;
+      return CheckroomIcon;
     case CategoryType.makeup_and_hair:
-      return BrushTwoToneIcon;
+      return BrushIcon;
     case CategoryType.production_design:
-      return ArchitectureTwoToneIcon;
+      return ArchitectureIcon;
     case CategoryType.visual_effects:
-      return AutoAwesomeTwoToneIcon;
+      return AutoAwesomeIcon;
 
     // Audio
     case CategoryType.score:
-      return MusicNoteTwoToneIcon;
+      return MusicNoteIcon;
     case CategoryType.original_song:
-      return AlbumTwoToneIcon;
+      return AlbumIcon;
     case CategoryType.sound:
-      return EqualizerTwoToneIcon;
+      return EqualizerIcon;
 
     // Filmkraft
     case CategoryType.cinematography:
-      return VideocamTwoToneIcon;
+      return VideocamIcon;
     case CategoryType.editing:
-      return ContentCutTwoToneIcon;
+      return ContentCutIcon;
 
     // Best in Class
     case CategoryType.animated_feature:
-      return SmartToyTwoToneIcon;
+      return SmartToyIcon;
     case CategoryType.foreign_film:
-      return LanguageTwoToneIcon;
+      return LanguageIcon;
     case CategoryType.documentary:
-      return TravelExploreTwoToneIcon;
+      return TravelExploreIcon;
 
     // Shorts
     case CategoryType.animated_short:
     case CategoryType.live_action_short:
     case CategoryType.documentary_short:
-      return VideoLibraryTwoToneIcon;
+      return VideoLibraryIcon;
   }
 } 
