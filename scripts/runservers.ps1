@@ -5,6 +5,8 @@ param(
     [switch]$stop
 )
 
+Set-Item -Path "env:ROOT_DIR" -Value (Get-Item -LiteralPath $PSScriptRoot).Parent.FullName
+
 # Load .env values
 Get-Content .env | ForEach-Object {
     if ($_ -match "(.+)=(.+)") {

@@ -4,6 +4,8 @@ import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+sys.path.append(os.environ.get("ROOT_DIR"))
+
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI
 from starlette.middleware.sessions import (
