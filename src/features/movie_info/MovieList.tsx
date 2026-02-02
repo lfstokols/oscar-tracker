@@ -16,6 +16,7 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {ShortsType, WatchStatus} from '../../types/Enums';
 import {groupByShort} from '../../utils/dataSelectors';
 import MovieCard from './MovieCard';
+import MovieListInfoHeader from './MovieListInfoHeader';
 import MoviePage from './MoviePage';
 import ShortsCard from './ShortsCard';
 
@@ -148,9 +149,12 @@ export default function MovieList({
 
   return (
     <>
-      <Grid container spacing={1.5} sx={{p: 1, width: '100%'}}>
-        {allCards}
-      </Grid>
+      <Stack direction="column" gap={1}>
+        <MovieListInfoHeader movies={filteredMovies} watchlist={myWatchlist} />
+        <Grid container spacing={1.5} sx={{width: '100%'}}>
+          {allCards}
+        </Grid>
+      </Stack>
 
       <PopupPage
         open={drawerOpen}

@@ -98,7 +98,7 @@ function createStatusSwitcher(
     if (seenIsLocked && prevStatus === WatchStatus.seen) {
       return WatchStatus.seen;
     }
-    const statuses = [WatchStatus.todo, WatchStatus.blank, WatchStatus.seen];
+    const statuses = [WatchStatus.blank, WatchStatus.todo, WatchStatus.seen];
     if (seenIsLocked) {
       statuses.splice(statuses.indexOf(WatchStatus.seen), 1);
     }
