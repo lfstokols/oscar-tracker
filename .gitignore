@@ -1,5 +1,4 @@
 .stfolder/
-!.vscode/launch.json
 __pycache__/
 node_modules/
 dist/
@@ -7,11 +6,13 @@ config.local.ps1
 .env
 venv/
 .venv/
-logs/
+logs/*
+var/logs/*
 backend/backups/
 Playground.ipynb
 var/database/db.sqlite-wal
 var/database/db.sqlite-shm
+var/database/db.sqlite.*
 fyi/big
 
 # For keeping empty directories git-tracked
