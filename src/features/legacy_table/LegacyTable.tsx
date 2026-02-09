@@ -17,9 +17,10 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
+import {FilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';
-import {WatchStatus} from '../../types/Enums';
 import {groupByShort, useSortUsers} from '../../utils/dataSelectors';
+import filterMovies from '../both_movie_views/filterMovies';
 import MovieRows from './MovieRows';
 import ShortsMovieRows from './ShortsMovieRows';
 
@@ -28,7 +29,7 @@ import ShortsMovieRows from './ShortsMovieRows';
 export default function LegacyTable({
   filterState,
 }: {
-  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
+  filterState: FilterState;
 }): React.ReactElement {
   const {year, preferences, activeUserId} = useOscarAppContext();
   const [isRuntimeFormatted, setIsRuntimeFormatted] = useState(true);
@@ -38,7 +39,7 @@ export default function LegacyTable({
       queries: [
         userOptions(),
         nomOptions(year),
-        categoryOptions(),
+        categoryOptions(year),
         movieOptions(year),
         watchlistOptions(year),
       ],
@@ -135,31 +136,4 @@ export default function LegacyTable({
       </Table>
     </TableContainer>
   );
-}
-
-function filterMovies(
-  movies: Movie[],
-  nominations: Nom[],
-  myWatchlist: WatchNotice[],
-  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]},
-): Movie[] {
-  let currentMovies = movies;
-  if (filterState.watchstatus.length !== 0) {
-    currentMovies = movies.filter(movie => {
-      const status =
-        myWatchlist.find(watch => watch.movieId === movie.id)?.status ??
-        WatchStatus.blank;
-      return filterState.watchstatus.includes(status);
-    });
-  }
-  if (filterState.categories.length !== 0) {
-    currentMovies = currentMovies.filter(movie => {
-      const myNoms = nominations.filter(nom => nom.movieId === movie.id);
-      return myNoms.some(nom =>
-        filterState.categories.includes(nom.categoryId),
-      );
-    });
-  }
-
-  return currentMovies;
 }

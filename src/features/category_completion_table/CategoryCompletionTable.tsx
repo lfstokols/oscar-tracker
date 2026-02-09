@@ -40,7 +40,7 @@ export default function CategoryCompletionTable({
         categoryCompletionOptions(year),
         userOptions(),
         nomOptions(year),
-        categoryOptions(),
+        categoryOptions(year),
         movieOptions(year),
         watchlistOptions(year),
       ],

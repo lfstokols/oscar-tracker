@@ -14,7 +14,7 @@ import {z} from 'zod';
 import imdbIcon from '../../assets/IMDb_Logo_Rectangle_Gold.png';
 import JWIcon from '../../assets/JW_logo_color_10px.svg';
 import {SEEN_COLOR, TODO_COLOR} from '../../config/StyleChoices';
-import {WatchlistCell} from '../../features/legacy_table/cells/WatchlistCell';
+import {WatchlistCell} from '../both_movie_views/WatchlistCell';
 import {
   categoryOptions,
   nomOptions,
@@ -61,7 +61,7 @@ export default function MoviePage({movie}: Props): React.ReactElement {
 function MoviePageContent({movie}: Props): React.ReactElement {
   const {year} = useOscarAppContext();
   const [nominationsQ, categoriesQ] = useSuspenseQueries({
-    queries: [nomOptions(year), categoryOptions()],
+    queries: [nomOptions(year), categoryOptions(year)],
   });
   const categories = categoriesQ.data;
   const nominations = nominationsQ.data;

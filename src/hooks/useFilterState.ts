@@ -6,9 +6,10 @@ import {CategoryIdSchema} from '../types/APIDataSchema';
 import {WatchStatus} from '../types/Enums';
 import {isKeyInObject} from '../utils/objectUtils';
 
-type FilterState = {
+export type FilterState = {
   watchstatus: WatchStatus[];
   categories: CategoryId[];
+  subString?: string;
 };
 
 const SEPARATOR = '-';
@@ -24,6 +25,7 @@ export function useFilterState(): {
     const result: FilterState = {
       watchstatus: [],
       categories: [],
+      subString: searchParams.get('search') ?? undefined,
     };
     if (searchParams.get('category') !== null) {
       const writtenCategories =
@@ -86,6 +88,9 @@ function createParamsFromFilterState(
   if (filterState.watchstatus.length > 0) {
     const stringOfWatchStatuses = filterState.watchstatus.join(SEPARATOR);
     newSearchParams.set('watchstatus', stringOfWatchStatuses);
+  }
+  if (filterState.subString) {
+    newSearchParams.set('search', filterState.subString);
   }
   return newSearchParams;
 }

@@ -18,6 +18,7 @@ import {
 import {useSuspenseQuery} from '@tanstack/react-query';
 import {NoAccountBlocker} from '../../../components/NoAccountBlocker';
 import {categoryOptions} from '../../../hooks/dataOptions';
+import {FilterState} from '../../../hooks/useFilterState';
 import {useOscarAppContext} from '../../../providers/AppContext';
 
 import {
@@ -35,11 +36,8 @@ export default function FilterRowsWidget({
   noun,
 }: {
   isMobile: boolean;
-  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
-  setFilterState: (filterState: {
-    watchstatus: WatchStatus[];
-    categories: CategoryId[];
-  }) => void;
+  filterState: FilterState;
+  setFilterState: (filterState: FilterState) => void;
   noun: string;
 }): React.ReactElement {
   const [isOpen, menuPosition, handleClick, handleClose] = useMenuState();
@@ -76,13 +74,12 @@ export default function FilterRowsWidget({
     setFilterState({...filterState, categories: newState});
   };
 
+  const numActiveFilters =
+    filterState.watchstatus.length + filterState.categories.length;
+
   return (
     <>
       <DisplayedSettingsButton
-        hasActive={
-          filterState.watchstatus.length !== 0 ||
-          filterState.categories.length !== 0
-        }
         icon={<FilterAlt />}
         isMobile={isMobile}
         onClick={handleClick}
@@ -90,6 +87,9 @@ export default function FilterRowsWidget({
           setFilterState({watchstatus: [], categories: []});
         }}
         text={`Filter ${noun}`}
+        whatIsActive={
+          numActiveFilters > 0 ? String(numActiveFilters) : undefined
+        }
       />
       {!!isOpen && (
         <SelectionMenu
@@ -123,7 +123,8 @@ function SelectionMenu({
   toggleWatchStatusFilter: (watchStatus: WatchStatus) => void;
   toggleGroupingFilter: (idList: CategoryId[], add: boolean) => void;
 }): React.ReactElement {
-  const {data: categories} = useSuspenseQuery(categoryOptions());
+  const {year} = useOscarAppContext();
+  const {data: categories} = useSuspenseQuery(categoryOptions(year));
   const isLoggedIn = useOscarAppContext().activeUserId !== null;
   let watchStatusMessage = 'Showing all statuses';
   if (filterState.watchstatus.length !== 0) {

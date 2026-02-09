@@ -9,7 +9,6 @@ import {
   Typography,
 } from '@mui/material';
 import XButton from '../../../components/XButton';
-import {useFilterState} from '../../../hooks/useFilterState';
 import {useIsMobile} from '../../../hooks/useIsMobile';
 
 export function DisplayedSettingsButton({
@@ -17,14 +16,14 @@ export function DisplayedSettingsButton({
   isMobile,
   icon,
   text,
-  hasActive,
+  whatIsActive,
   reset,
 }: {
   onClick: (event: React.MouseEvent<HTMLElement>) => void;
   isMobile: boolean;
   icon: React.ReactNode;
   text: string;
-  hasActive: boolean;
+  whatIsActive?: string;
   reset?: () => void;
 }): React.ReactElement {
   const mainButton = isMobile ? (
@@ -45,24 +44,26 @@ export function DisplayedSettingsButton({
   return (
     <Stack alignItems="center" direction="row" gap="8px">
       {mainButton}
-      {hasActive ? (
-        <ActiveFilterChip resetFilters={reset ?? (() => {})} />
-      ) : null}
+      {whatIsActive === undefined ? null : (
+        <ActiveFilterChip
+          resetFilters={reset ?? (() => {})}
+          whatIsActive={whatIsActive}
+        />
+      )}
     </Stack>
   );
 }
 
 function ActiveFilterChip({
   resetFilters,
+  whatIsActive,
 }: {
   resetFilters: () => void;
+  whatIsActive: string;
 }): React.ReactElement {
-  const {filterState} = useFilterState();
-  const activeFilters =
-    filterState.watchstatus.length + filterState.categories.length;
   return (
     <Chip
-      label={<Typography>{activeFilters}</Typography>}
+      label={<Typography>{whatIsActive}</Typography>}
       onDelete={resetFilters}
     />
   );

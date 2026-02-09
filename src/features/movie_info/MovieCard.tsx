@@ -121,7 +121,7 @@ type ImportantCategories = {
 function useGetImportantCategories(movie: Movie): ImportantCategories {
   const {year} = useOscarAppContext();
   const [nominationsQ] = useSuspenseQueries({
-    queries: [nomOptions(year), categoryOptions()],
+    queries: [nomOptions(year), categoryOptions(year)],
   });
   const nominations = nominationsQ.data;
   const bestAnimatedCategoryId = CategoryIdSchema.parse('cat_anim');

@@ -4,7 +4,8 @@ import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-sys.path.append(os.environ.get("ROOT_DIR"))
+if ROOT_DIR := os.environ.get("ROOT_DIR"):
+    sys.path.append(ROOT_DIR)
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from fastapi import FastAPI

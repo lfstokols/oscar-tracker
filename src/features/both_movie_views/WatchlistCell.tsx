@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query';
 import * as React from 'react';
 import {Suspense} from 'react';
-import {ClickableTooltip} from '../../../components/ClickableTooltip';
+import {ClickableTooltip} from '../../components/ClickableTooltip';
 import {
   NO_STATUS_COLOR,
   NO_STATUS_CONTRAST_COLOR,
@@ -15,17 +15,17 @@ import {
   SEEN_CONTRAST_COLOR,
   TODO_COLOR,
   TODO_CONTRAST_COLOR,
-} from '../../../config/StyleChoices';
-import {watchlistOptions} from '../../../hooks/dataOptions';
+} from '../../config/StyleChoices';
+import {watchlistOptions} from '../../hooks/dataOptions';
 import {
   onMutateError,
   updateCacheOnSuccess,
   updateWatchlistMutationFn,
-} from '../../../hooks/mutationOptions';
-import {useOscarAppContext} from '../../../providers/AppContext';
-import {useNotifications} from '../../../providers/NotificationContext';
-import {WatchListSchema} from '../../../types/APIDataSchema';
-import {WatchStatus} from '../../../types/Enums';
+} from '../../hooks/mutationOptions';
+import {useOscarAppContext} from '../../providers/AppContext';
+import {useNotifications} from '../../providers/NotificationContext';
+import {WatchListSchema} from '../../types/APIDataSchema';
+import {WatchStatus} from '../../types/Enums';
 
 type Props = {
   movieId: MovieId | MovieId[];

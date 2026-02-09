@@ -19,7 +19,7 @@ export default function QuickNominations({
 }): React.ReactElement {
   const {year} = useOscarAppContext();
   const [nominationsQ, categoriesQ] = useSuspenseQueries({
-    queries: [nomOptions(year), categoryOptions()],
+    queries: [nomOptions(year), categoryOptions(year)],
   });
   const categories = categoriesQ.data;
   const nominations = nominationsQ.data;

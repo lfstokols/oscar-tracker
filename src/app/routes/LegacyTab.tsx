@@ -4,7 +4,7 @@ import AppErrorScreen from '../../components/AppErrorScreen';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
 import {LoadScreen} from '../../components/LoadScreen';
 import LegacyTable from '../../features/legacy_table/LegacyTable';
-import TableControls from '../../features/legacy_table/table_controls/TableControls';
+import TableControls from '../../features/both_movie_views/table_controls/TableControls';
 import {useFilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';
 

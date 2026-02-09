@@ -12,9 +12,11 @@ import {
   userOptions,
   watchlistOptions,
 } from '../../hooks/dataOptions';
+import {FilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';
-import {ShortsType, WatchStatus} from '../../types/Enums';
+import {ShortsType} from '../../types/Enums';
 import {groupByShort} from '../../utils/dataSelectors';
+import filterMovies from '../both_movie_views/filterMovies';
 import MovieCard from './MovieCard';
 import MovieListInfoHeader from './MovieListInfoHeader';
 import MoviePage from './MoviePage';
@@ -67,7 +69,7 @@ function GridItem({
 export default function MovieList({
   filterState,
 }: {
-  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]};
+  filterState: FilterState;
 }): React.ReactElement {
   const {year, preferences, activeUserId} = useOscarAppContext();
   const [selectedMovie, setSelectedMovie] = React.useState<Movie | null>(null);
@@ -78,7 +80,7 @@ export default function MovieList({
       queries: [
         userOptions(),
         nomOptions(year),
-        categoryOptions(),
+        categoryOptions(year),
         movieOptions(year),
         watchlistOptions(year),
       ],
@@ -201,31 +203,4 @@ function shortsSection(
   return movies.map(movie => (
     <GridItem key={movie.id} movie={movie} onCardClick={onCardClick} />
   ));
-}
-
-function filterMovies(
-  movies: Movie[],
-  nominations: Nom[],
-  myWatchlist: WatchNotice[],
-  filterState: {watchstatus: WatchStatus[]; categories: CategoryId[]},
-): Movie[] {
-  let currentMovies = movies;
-  if (filterState.watchstatus.length !== 0) {
-    currentMovies = movies.filter(movie => {
-      const status =
-        myWatchlist.find(watch => watch.movieId === movie.id)?.status ??
-        WatchStatus.blank;
-      return filterState.watchstatus.includes(status);
-    });
-  }
-  if (filterState.categories.length !== 0) {
-    currentMovies = currentMovies.filter(movie => {
-      const myNoms = nominations.filter(nom => nom.movieId === movie.id);
-      return myNoms.some(nom =>
-        filterState.categories.includes(nom.categoryId),
-      );
-    });
-  }
-
-  return currentMovies;
 }

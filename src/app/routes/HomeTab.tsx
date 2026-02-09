@@ -3,7 +3,7 @@ import {ErrorBoundary} from 'react-error-boundary';
 import AppErrorScreen from '../../components/AppErrorScreen';
 import DefaultTabContainer from '../../components/DefaultTabContainer';
 import {LoadScreen} from '../../components/LoadScreen';
-import TableControls from '../../features/legacy_table/table_controls/TableControls';
+import TableControls from '../../features/both_movie_views/table_controls/TableControls';
 import MovieList from '../../features/movie_info/MovieList';
 import {useFilterState} from '../../hooks/useFilterState';
 import {useOscarAppContext} from '../../providers/AppContext';

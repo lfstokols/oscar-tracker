@@ -101,10 +101,14 @@ export function movieOptions(year: number) {
 }
 
 // * Categories // *
-export function categoryOptions() {
+export function categoryOptions(year: number) {
   return queryOptions({
-    queryKey: ['categories'],
-    queryFn: qFunction(Endpoints.categories, {}, CategoryListSchema.parse),
+    queryKey: ['categories', year],
+    queryFn: qFunction(
+      Endpoints.categories,
+      {year: year.toString()},
+      CategoryListSchema.parse,
+    ),
     retry: retryFunction,
     staleTime: Infinity,
   });

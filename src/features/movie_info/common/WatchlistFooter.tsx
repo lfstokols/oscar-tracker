@@ -5,7 +5,7 @@ import {SEEN_ICON, TODO_ICON} from '../../../components/Icons';
 import {userOptions, watchlistOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {WatchStatus} from '../../../types/Enums';
-import {WatchlistCell} from '../../legacy_table/cells/WatchlistCell';
+import {WatchlistCell} from '../../both_movie_views/WatchlistCell';
 
 declare module '@mui/material/Chip' {
   interface ChipPropsColorOverrides {

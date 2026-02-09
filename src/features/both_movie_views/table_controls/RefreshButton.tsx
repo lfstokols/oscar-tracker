@@ -7,7 +7,7 @@ import {API_BASE_URL} from '../../../config/GlobalConstants';
 import {watchlistOptions} from '../../../hooks/dataOptions';
 import {useOscarAppContext} from '../../../providers/AppContext';
 import {useNotifications} from '../../../providers/NotificationContext';
-import {DisplayedSettingsButton} from '../../legacy_table/table_controls/Common';
+import {DisplayedSettingsButton} from './Common';
 
 export default function RefreshWidget({
   isMobile,
