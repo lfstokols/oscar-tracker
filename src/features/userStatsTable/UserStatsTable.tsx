@@ -17,6 +17,7 @@ import {
   NUM_SHORT_FILMS_PER_CATEGORY,
 } from '../../config/GlobalConstants';
 import {
+  categoryOptions,
   movieOptions,
   userOptions,
   userStatsOptions,
@@ -25,7 +26,6 @@ import {useOscarAppContext} from '../../providers/AppContext';
 import {UserStats} from '../../types/APIDataSchema';
 import {getUsernameFromId} from '../../utils/dataSelectors';
 // import {TODO_COLOR} from '../../config/StyleChoices';
-import {TOTAL_CATEGORY_COUNT} from '../../utils/hardcodedFunctions';
 import {enumToBool} from '../category_completion_table/utils';
 import {ColumnLabels, Hypotheticality} from './Enums';
 // import {useIsMobile} from '../../hooks/useIsMobile';
@@ -49,12 +49,19 @@ export default function UserStatsTable({
     year,
     preferences: {shortsAreOneFilm},
   } = useOscarAppContext();
-  const [userStatsQ, usersQ, movieListQ] = useSuspenseQueries({
-    queries: [userStatsOptions(year), userOptions(), movieOptions(year)],
+  const [userStatsQ, usersQ, movieListQ, categoryListQ] = useSuspenseQueries({
+    queries: [
+      userStatsOptions(year),
+      userOptions(),
+      movieOptions(year),
+      categoryOptions(year),
+    ],
   });
   const userStats = userStatsQ.data;
   const users = sortUsers(usersQ.data, userStats);
   const movieList = movieListQ.data;
+  const categoryList = categoryListQ.data;
+  const numCategoriesTotal = categoryList.length;
   const numMoviesTotal = movieList.length;
   const numMoviesShort = NUM_SHORT_CATEGORIES * NUM_SHORT_FILMS_PER_CATEGORY;
   const numMoviesFeature = numMoviesTotal - numMoviesShort;
@@ -138,7 +145,10 @@ export default function UserStatsTable({
       title: 'Complete Categories',
       label: ColumnLabels.COMPLETE_CATEGORIES,
       getValue: (user: UserStats) =>
-        makeFraction_categories(numCats(user, hypotheticality)),
+        makeFraction_categories(
+          numCats(user, hypotheticality),
+          numCategoriesTotal,
+        ),
     },
     {
       title: 'Total Watchtime',
@@ -259,8 +269,11 @@ function makeFraction(
   return makeFraction_display(numerator, denominator);
 }
 
-function makeFraction_categories(numerator: number) {
-  return makeFraction_display(numerator, TOTAL_CATEGORY_COUNT);
+function makeFraction_categories(
+  numerator: number,
+  numCategoriesTotal: number,
+) {
+  return makeFraction_display(numerator, numCategoriesTotal);
 }
 
 function makeFraction_display(numerator: number, denominator: number) {

@@ -150,8 +150,7 @@ async def serve_users_DELETE(request: Request) -> list[dict[str, Primitive]]:
 
 @router.get("/categories", response_model=list[api_Category])
 async def serve_categories(year: parser.ActiveYear) -> list[dict[str, Primitive]]:
-    _ = year
-    return qu.get_categories()
+    return qu.get_categories(year)
 
 
 # Expect justMe = bool

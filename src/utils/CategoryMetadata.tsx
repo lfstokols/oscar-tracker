@@ -15,6 +15,7 @@ import MovieIcon from '@mui/icons-material/Movie';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import SatelliteIcon from '@mui/icons-material/Satellite';
 import StarIcon from '@mui/icons-material/StarRate';
+import DramaIcon from '@mui/icons-material/TheaterComedy';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 import SvgIcon from '@mui/material/SvgIcon/SvgIcon';
@@ -145,6 +146,8 @@ function getIconNameForCategory(category: Category): typeof SvgIcon {
       return CameraIcon;
     case CategoryType.editing:
       return ContentCutIcon;
+    case CategoryType.casting:
+      return DramaIcon;
 
     // Best in Class
     case CategoryType.animated_feature:

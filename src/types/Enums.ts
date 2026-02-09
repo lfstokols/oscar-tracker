@@ -72,6 +72,7 @@ export enum CategoryType {
   // Filmkraft
   cinematography = 'cat_cine',
   editing = 'cat_edit',
+  casting = 'cat_cast',
   // Best in Class
   animated_feature = 'cat_anim',
   foreign_film = 'cat_frgn',

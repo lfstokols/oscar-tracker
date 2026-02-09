@@ -129,12 +129,13 @@
     function showTab(tab) {
       currentTab = tab;
       selected = null;
-      document.getElementById('add-btn').style.display = tab === 'key-dates' ? 'inline' : 'none';
+      document.getElementById('add-btn').style.display = (tab === 'key-dates' || tab === 'nominations') ? 'inline' : 'none';
       render();
     }
 
     function addItem() {
       if (currentTab === 'key-dates') addKeyDate();
+      if (currentTab === 'nominations') showAddNominationForm();
     }
 
     async function addKeyDate() {
@@ -151,6 +152,44 @@
         });
         if (!res.ok) throw new Error('Create failed');
         // reload data
+        loadData();
+      } catch (e) {
+        document.getElementById('error').textContent = 'Error: ' + e;
+      }
+    }
+
+    function showAddNominationForm() {
+      selected = null;
+      const movieOptions = movies.map(m =>
+        `<option value="${m.movie_id}">${m.title}</option>`
+      ).join('');
+      const catOptions = categories.map(c =>
+        `<option value="${c.category_id}">${c.short_name}</option>`
+      ).join('');
+      document.getElementById('detail').innerHTML = `
+        <h3>Add Nomination</h3>
+        <table>
+          <tr><td>Movie</td><td><select id="new-nom-movie">${movieOptions}</select></td></tr>
+          <tr><td>Category</td><td><select id="new-nom-cat">${catOptions}</select></td></tr>
+          <tr><td>Note</td><td><input id="new-nom-note" type="text" placeholder="optional"></td></tr>
+        </table>
+        <button onclick="submitNomination()">Save</button>
+      `;
+    }
+
+    async function submitNomination() {
+      const year = document.getElementById('year').value;
+      const movie_id = document.getElementById('new-nom-movie').value;
+      const category_id = document.getElementById('new-nom-cat').value;
+      const note = document.getElementById('new-nom-note').value || null;
+
+      try {
+        const res = await fetch('/api/admin/nominations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ year: parseInt(year), movie_id, category_id, note })
+        });
+        if (!res.ok) throw new Error('Create failed');
         loadData();
       } catch (e) {
         document.getElementById('error').textContent = 'Error: ' + e;

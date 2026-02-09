@@ -133,6 +133,45 @@ async def update_admin_nomination(
         }
 
 
+@router.post("/nominations")
+async def create_admin_nomination(data: dict[str, Any]) -> dict[str, Any]:
+    """Create a new nomination."""
+    year = data.get("year")
+    movie_id = data.get("movie_id")
+    category_id = data.get("category_id")
+    note = data.get("note") or None
+
+    if not year or not movie_id or not category_id:
+        raise HTTPException(
+            status_code=400, detail="year, movie_id, and category_id are required"
+        )
+
+    with Session() as session:
+        new_nom = Nomination(
+            year=int(year), movie_id=movie_id, category_id=category_id, note=note
+        )
+        session.add(new_nom)
+        session.commit()
+        session.refresh(new_nom)
+
+        result = session.execute(
+            sa.select(Nomination, Movie.title, Category.short_name)
+            .join(Movie, Nomination.movie_id == Movie.movie_id)
+            .join(Category, Nomination.category_id == Category.category_id)
+            .where(Nomination.nomination_id == new_nom.nomination_id)
+        ).one()
+        n, title, cat_name = result
+        return {
+            "nomination_id": n.nomination_id,
+            "year": n.year,
+            "movie_id": n.movie_id,
+            "movie_title": title,
+            "category_id": n.category_id,
+            "category_name": cat_name,
+            "note": n.note,
+        }
+
+
 @router.get("/categories")
 async def get_admin_categories() -> list[dict[str, Any]]:
     """Get all categories for dropdowns."""

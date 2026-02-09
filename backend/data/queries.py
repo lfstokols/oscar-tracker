@@ -166,8 +166,12 @@ def get_category_completion_dict(
     all_groupings = [g.value for g in Grouping]
 
     with Session() as session:
-        result = session.execute(sa.select(Category.category_id)).fetchall()
-    all_categories = [c for c, in result]
+        result = session.execute(sa.select(Category.category_id).where(sa.exists(
+            sa.select(Nomination.nomination_id)
+            .where(Nomination.category_id == Category.category_id)
+            .where(Nomination.year == year)
+        ))).scalars().all()
+    all_categories = [c for c in result]
 
     seen_watchlist = (
         sa.select(User.user_id.label("user_id"),
@@ -392,7 +396,7 @@ def get_watchlist(year: int) -> list[dict[str, Any]]:
         return result_to_dict(result)
 
 
-def get_categories() -> list[dict[str, Any]]:
+def get_categories(year: int) -> list[dict[str, Any]]:
     with Session() as session:
         result = session.execute(
             sa.select(
@@ -403,6 +407,12 @@ def get_categories() -> list[dict[str, Any]]:
                 Category.is_short.label("isShort"),
                 Category.has_note.label("hasNote"),
                 Category.grouping.label("grouping"),
+            ).where(
+                sa.exists(
+                    sa.select(Nomination.nomination_id)
+                    .where(Nomination.category_id == Category.category_id)
+                    .where(Nomination.year == year)
+                )
             )
         )
         return result_to_dict(result)
