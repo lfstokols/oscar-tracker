@@ -14,7 +14,6 @@ import {z} from 'zod';
 import imdbIcon from '../../assets/IMDb_Logo_Rectangle_Gold.png';
 import JWIcon from '../../assets/JW_logo_color_10px.svg';
 import {SEEN_COLOR, TODO_COLOR} from '../../config/StyleChoices';
-import {WatchlistCell} from '../both_movie_views/WatchlistCell';
 import {
   categoryOptions,
   nomOptions,
@@ -31,6 +30,7 @@ import {Movie, MovieId} from '../../types/APIDataSchema';
 import {WatchStatus} from '../../types/Enums';
 import {TMDBCrewMember} from '../../types/TMDBTypes';
 import {errorToConsole} from '../../utils/Logger';
+import {WatchlistCell} from '../both_movie_views/WatchlistCell';
 import PosterImage from './common/PosterImage';
 import RuntimeChip from './common/RuntimeChip';
 import NominationsCard from './movie_page_components/NominationsCard';

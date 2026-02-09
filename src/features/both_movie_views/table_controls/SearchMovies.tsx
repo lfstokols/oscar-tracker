@@ -1,5 +1,6 @@
 import {Search} from '@mui/icons-material';
 import {TextField} from '@mui/material';
+import {useRef} from 'react';
 import {FilterState} from '../../../hooks/useFilterState';
 import {DisplayedSettingsButton, FlexibleMenu} from './Common';
 import useMenuState from './useMenuState';
@@ -57,11 +58,24 @@ function SearchBar({
   filterState: FilterState;
   setSearchFilter: (subString: string) => void;
 }): React.ReactElement {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <FlexibleMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
+    <FlexibleMenu
+      isOpen={isOpen}
+      menuPosition={menuPosition}
+      onClose={onClose}
+      onOpened={() => inputRef.current?.focus()}>
       <TextField
+        inputRef={inputRef}
         label="Search"
         onChange={e => setSearchFilter(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
         value={filterState.subString}
       />
     </FlexibleMenu>

@@ -151,7 +151,7 @@ export default function MovieList({
 
   return (
     <>
-      <Stack direction="column" gap={1}>
+      <Stack direction="column" gap={1} width="100%">
         <MovieListInfoHeader movies={filteredMovies} watchlist={myWatchlist} />
         <Grid container spacing={1.5} sx={{width: '100%'}}>
           {allCards}

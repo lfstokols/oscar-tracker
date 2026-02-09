@@ -73,15 +73,18 @@ export function CenteredMenu({
   menuPosition,
   isOpen,
   onClose,
+  onOpened,
   children,
 }: {
   menuPosition: HTMLElement | null;
   isOpen: boolean;
   onClose: () => void;
+  onOpened?: () => void;
   children: React.ReactNode;
 }): React.ReactElement {
   return (
     <Menu
+      TransitionProps={{onEntered: onOpened}}
       anchorEl={menuPosition}
       anchorOrigin={{
         vertical: 'bottom',
@@ -101,14 +104,20 @@ export function CenteredMenu({
 export function MobileMenu({
   isOpen,
   onClose,
+  onOpened,
   children,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onOpened?: () => void;
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <Dialog PaperProps={{sx: {marginX: 0}}} onClose={onClose} open={isOpen}>
+    <Dialog
+      PaperProps={{sx: {marginX: 0}}}
+      TransitionProps={{onEntered: onOpened}}
+      onClose={onClose}
+      open={isOpen}>
       <DialogContent sx={{borderRadius: '12px'}}>
         <XButton onClick={onClose} />
         {children}
@@ -120,24 +129,30 @@ export function MobileMenu({
 export function FlexibleMenu({
   isOpen,
   onClose,
+  onOpened,
   children,
   menuPosition,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onOpened?: () => void;
   children: React.ReactNode;
   menuPosition: HTMLElement | null;
 }): React.ReactElement {
   const isMobile = useIsMobile();
   if (isMobile) {
     return (
-      <MobileMenu isOpen={isOpen} onClose={onClose}>
+      <MobileMenu isOpen={isOpen} onClose={onClose} onOpened={onOpened}>
         {children}
       </MobileMenu>
     );
   }
   return (
-    <CenteredMenu isOpen={isOpen} menuPosition={menuPosition} onClose={onClose}>
+    <CenteredMenu
+      isOpen={isOpen}
+      menuPosition={menuPosition}
+      onClose={onClose}
+      onOpened={onOpened}>
       {children}
     </CenteredMenu>
   );

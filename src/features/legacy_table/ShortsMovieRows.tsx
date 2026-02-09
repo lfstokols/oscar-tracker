@@ -1,9 +1,9 @@
 import TableRow from '@mui/material/TableRow';
+import WatchlistCell from '../both_movie_views/WatchlistCell';
 import MovieRows from './MovieRows';
 import MultiMovieRuntimeCell from './cells/MultiMovieRuntimeCell';
 import MultiMovieTitleCell from './cells/MultiMovieTitleCell';
 import NominationsCell from './cells/NominationsCell';
-import WatchlistCell from '../both_movie_views/WatchlistCell';
 
 type Props = {
   merge: boolean;

@@ -1,10 +1,10 @@
 import TableRow from '@mui/material/TableRow';
+import WatchlistCell from '../both_movie_views/WatchlistCell';
 import ExternalLinkCell from './cells/ExternalLinkCell';
 import MoviePosterCell from './cells/MoviePosterCell';
 import NominationsCell from './cells/NominationsCell';
 import RuntimeCell from './cells/RuntimeCell';
 import TitleCell from './cells/TitleCell';
-import WatchlistCell from '../both_movie_views/WatchlistCell';
 
 type Props = {
   filteredMovies: Movie[];
